@@ -266,16 +266,56 @@ function formatSegmentData(segmentRows, variableRows, selectorSetRows, selectorR
         continue;
       }
 
-      // Filter selectors for this selector set and preserve the raw data
+      // Filter selectors for this selector set
       const selectors = selectorRows
         .filter(selector => selector.selector_set_id === selectorSet.selector_set_id)
         .map(selector => {
-          // Store match_criteria and payload as they are
+          // Parse the JSON stored in match_criteria and payload
+          let matchCriteria = {};
+          let payload = {};
+
+          try {
+            // Make sure we properly handle the match_criteria
+            if (selector.match_criteria) {
+              if (typeof selector.match_criteria === 'string') {
+                matchCriteria = JSON.parse(selector.match_criteria);
+              } else if (typeof selector.match_criteria === 'object') {
+                matchCriteria = selector.match_criteria;
+              }
+            }
+          } catch (e) {
+            console.error(`Error parsing match_criteria for selector ${selector.selector_id}: ${e.message}`);
+            console.error(`Raw value: ${selector.match_criteria}`);
+          }
+
+          try {
+            // Make sure we properly handle the payload
+            if (selector.payload) {
+              // Log raw payload for debugging
+              console.log(`Raw payload for selector ${selector.selector_id}: ${JSON.stringify(selector.payload)}`);
+
+              if (typeof selector.payload === 'string') {
+                try {
+                  payload = JSON.parse(selector.payload);
+                  console.log(`Parsed payload: ${JSON.stringify(payload)}`);
+                } catch (e) {
+                  console.error(`JSON parse error: ${e.message}`);
+                  // If parsing fails, return the raw string as fallback
+                  payload = { raw: selector.payload };
+                }
+              } else if (typeof selector.payload === 'object') {
+                payload = selector.payload;
+              }
+            }
+          } catch (e) {
+            console.error(`Error handling payload for selector ${selector.selector_id}: ${e.message}`);
+          }
+
           return {
             id: selector.selector_id,
-            raw_match_criteria: selector.match_criteria,
-            raw_payload: selector.payload,
-            priority: selector.priority
+            match_criteria: matchCriteria,
+            priority: selector.priority,
+            payload
           };
         });
 
