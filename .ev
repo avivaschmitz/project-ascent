@@ -1,0 +1,9 @@
+# Environment variables for local development
+# This file should be added to .gitignore to keep sensitive info out of version control
+
+# Local PostgreSQL connection
+# Replace with your local database connection string for development
+DATABASE_URL=postgres://username:password@localhost:5432/project_ascent
+
+# Port for Express server
+PORT=3000
