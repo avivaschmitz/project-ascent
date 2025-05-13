@@ -168,8 +168,13 @@ app.get('/api/segments', async (req, res) => {
       selectorsResult.rows
     );
 
-    console.log(`Formatted ${formattedSegments.length} segments successfully`);
-    res.json(formattedSegments);
+    // Ensure all objects are properly serialized
+    const sanitizedResponse = JSON.parse(JSON.stringify(formattedSegments));
+
+    // Log what we're sending to the client
+    console.log('Sending to client:', JSON.stringify(sanitizedResponse, null, 2));
+
+    res.json(sanitizedResponse);
   } catch (error) {
     console.error('Error fetching segments:', error);
     res.status(500).json({
