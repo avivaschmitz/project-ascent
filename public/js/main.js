@@ -1,4 +1,15 @@
-/**
+document.addEventListener('DOMContentLoaded', () => {
+  // DOM elements
+  const searchForm = document.getElementById('segment-search-form');
+  const domainNameInput = document.getElementById('domain-name');
+  const resultsSection = document.getElementById('results-section');
+  const segmentsContainer = document.getElementById('segments-container');
+  const resultCount = document.getElementById('result-count');
+  const loadingIndicator = document.getElementById('loading-indicator');
+  const errorMessage = document.getElementById('error-message');
+  const segmentTemplate = document.getElementById('segment-card-template');
+
+  /**
    * Format payload object for display
    * @param {Object} payload - The payload object to format
    * @returns {string} - Formatted HTML string
@@ -24,16 +35,7 @@
       console.error('Error formatting payload:', error);
       return 'Error displaying payload';
     }
-  }document.addEventListener('DOMContentLoaded', () => {
-  // DOM elements
-  const searchForm = document.getElementById('segment-search-form');
-  const domainNameInput = document.getElementById('domain-name');
-  const resultsSection = document.getElementById('results-section');
-  const segmentsContainer = document.getElementById('segments-container');
-  const resultCount = document.getElementById('result-count');
-  const loadingIndicator = document.getElementById('loading-indicator');
-  const errorMessage = document.getElementById('error-message');
-  const segmentTemplate = document.getElementById('segment-card-template');
+  }
 
   // Event listener for the search form
   searchForm.addEventListener('submit', async (e) => {
@@ -84,29 +86,29 @@
     return await response.json();
   }
 
-/**
- * Display the segments in the UI
- * @param {Array} segments - An array of segment objects
- */
-function displaySegments(segments) {
-  if (segments.length === 0) {
-    showError('No segments found for the given domain name.');
-    return;
+  /**
+   * Display the segments in the UI
+   * @param {Array} segments - An array of segment objects
+   */
+  function displaySegments(segments) {
+    if (segments.length === 0) {
+      showError('No segments found for the given domain name.');
+      return;
+    }
+
+    // Update the result count
+    resultCount.textContent = `(${segments.length})`;
+    resultsSection.classList.remove('hidden');
+
+    // Save raw data to window for later use
+    window.rawSegmentsData = JSON.stringify(segments, null, 2);
+
+    // Create and append segment cards
+    segments.forEach(segment => {
+      const segmentCard = createSegmentCard(segment);
+      segmentsContainer.appendChild(segmentCard);
+    });
   }
-
-  // Update the result count
-  resultCount.textContent = `(${segments.length})`;
-  resultsSection.classList.remove('hidden');
-
-  // Save raw data to window for later use
-  window.rawSegmentsData = JSON.stringify(segments, null, 2);
-
-  // Create and append segment cards
-  segments.forEach(segment => {
-    const segmentCard = createSegmentCard(segment);
-    segmentsContainer.appendChild(segmentCard);
-  });
-}
 
   /**
    * Check for scrollable content and add appropriate styling
@@ -190,19 +192,16 @@ function displaySegments(segments) {
         selectorCard.className = 'selector-card';
 
         // Create match criteria display
-        const criteriaItems = Object.entries(selector.match_criteria)
-          .map(([key, value]) => `<span>${key}: <strong>${value}</strong></span>`)
-          .join(', ');
+        let criteriaItems = 'None';
+        if (selector.match_criteria && Object.keys(selector.match_criteria).length > 0) {
+          criteriaItems = JSON.stringify(selector.match_criteria, null, 2);
+        }
 
-        // Create payload display
-        const payloadItems = Object.entries(selector.payload)
-          .map(([key, value]) => {
-            if (typeof value === 'boolean') {
-              return `<span>${key}: <strong class="boolean-${value}">${value}</strong></span>`;
-            }
-            return `<span>${key}: <strong>${value}</strong></span>`;
-          })
-          .join(', ');
+        // Create payload display using the formatPayload function
+        let payloadDisplay = 'None';
+        if (selector.payload && Object.keys(selector.payload).length > 0) {
+          payloadDisplay = formatPayload(selector.payload);
+        }
 
         selectorCard.innerHTML = `
           <div class="selector-header">
@@ -211,11 +210,11 @@ function displaySegments(segments) {
           </div>
           <div class="match-criteria">
             <h5>Match Criteria</h5>
-            <div class="criteria-list">${criteriaItems || 'None'}</div>
+            <pre class="criteria-list">${criteriaItems}</pre>
           </div>
           <div class="payload">
             <h5>Payload</h5>
-            <div class="payload-list">${payloadItems || 'None'}</div>
+            <pre class="payload-list">${payloadDisplay}</pre>
           </div>
         `;
 
