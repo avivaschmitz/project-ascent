@@ -1,4 +1,211 @@
-const express = require('express');
+// Get all domains
+app.get('/api/domains', async (req, res) => {
+  try {
+    const result = await db.query('SELECT * FROM domains ORDER BY domain_name');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching domains:', error);
+    res.status(500).json({ error: 'An error occurred while fetching domains' });
+  }
+});
+
+// Get all segment templates
+app.get('/api/segment-templates', async (req, res) => {
+  try {
+    const result = await db.query(`
+      SELECT st.*, ss.set_name
+      FROM segment_templates st
+      JOIN selector_sets ss ON st.selector_set_id = ss.selector_set_id
+      ORDER BY st.segment_template_name
+    `);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching segment templates:', error);
+    res.status(500).json({ error: 'An error occurred while fetching segment templates' });
+  }
+});
+
+// Get all selector sets
+app.get('/api/selector-sets', async (req, res) => {
+  try {
+    const result = await db.query('SELECT * FROM selector_sets ORDER BY set_name');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching selector sets:', error);
+    res.status(500).json({ error: 'An error occurred while fetching selector sets' });
+  }
+});
+
+// Create a new segment with existing template
+app.post('/api/segments', async (req, res) => {
+  const { segment_name, domain_id, segment_template_id, segment_variables } = req.body;
+
+  // Validate required fields
+  if (!segment_name || !domain_id || !segment_template_id) {
+    return res.status(400).json({ error: 'segment_name, domain_id, and segment_template_id are required' });
+  }
+
+  try {
+    // Start a transaction
+    await db.query('BEGIN');
+
+    // Create the segment
+    const segmentResult = await db.query(
+      'INSERT INTO segments (segment_name, domain_id, segment_template_id) VALUES ($1, $2, $3) RETURNING segment_id',
+      [segment_name, domain_id, segment_template_id]
+    );
+
+    const segmentId = segmentResult.rows[0].segment_id;
+
+    // Add segment variables if they exist
+    if (segment_variables && segment_variables.length > 0) {
+      for (const variable of segment_variables) {
+        if (variable.name && variable.value) {
+          await db.query(
+            'INSERT INTO segment_variables (variable_name, variable_value, segment_id) VALUES ($1, $2, $3)',
+            [variable.name, variable.value, segmentId]
+          );
+        }
+      }
+    }
+
+    // Commit the transaction
+    await db.query('COMMIT');
+
+    // Return the created segment
+    res.status(201).json({
+      message: 'Segment created successfully',
+      segment_id: segmentId
+    });
+  } catch (error) {
+    // Rollback the transaction in case of error
+    await db.query('ROLLBACK');
+    console.error('Error creating segment:', error);
+    res.status(500).json({
+      error: 'An error occurred while creating the segment',
+      details: error.message
+    });
+  }
+});
+
+// Create a new segment with a new template
+app.post('/api/segments/with-template', async (req, res) => {
+  const {
+    segment_name,
+    domain_id,
+    segment_variables,
+    template_name,
+    configuration,
+    selector_set_option,
+    selector_set_id,
+    new_selector_set
+  } = req.body;
+
+  // Validate required fields
+  if (!segment_name || !domain_id || !template_name) {
+    return res.status(400).json({
+      error: 'segment_name, domain_id, and template_name are required'
+    });
+  }
+
+  try {
+    // Start a transaction
+    await db.query('BEGIN');
+
+    let selectedSelectorSetId;
+
+    // Handle selector set (use existing or create new)
+    if (selector_set_option === 'existing') {
+      if (!selector_set_id) {
+        await db.query('ROLLBACK');
+        return res.status(400).json({ error: 'selector_set_id is required when using an existing selector set' });
+      }
+      selectedSelectorSetId = selector_set_id;
+    } else {
+      // Create new selector set
+      if (!new_selector_set || !new_selector_set.name) {
+        await db.query('ROLLBACK');
+        return res.status(400).json({ error: 'Selector set name is required when creating a new selector set' });
+      }
+
+      // Insert the new selector set
+      const selectorSetResult = await db.query(
+        'INSERT INTO selector_sets (set_name) VALUES ($1) RETURNING selector_set_id',
+        [new_selector_set.name]
+      );
+
+      selectedSelectorSetId = selectorSetResult.rows[0].selector_set_id;
+
+      // Create selectors if provided
+      if (new_selector_set.selectors && new_selector_set.selectors.length > 0) {
+        for (const selector of new_selector_set.selectors) {
+          // Validate selector data
+          if (!selector.match_criteria || !selector.payload) {
+            continue; // Skip invalid selectors
+          }
+
+          // Insert the selector
+          await db.query(
+            'INSERT INTO selectors (match_criteria, payload, selector_set_id, priority) VALUES ($1, $2, $3, $4)',
+            [
+              selector.match_criteria,
+              selector.payload,
+              selectedSelectorSetId,
+              selector.priority || 1
+            ]
+          );
+        }
+      }
+    }
+
+    // Create the segment template
+    const templateResult = await db.query(
+      'INSERT INTO segment_templates (segment_template_name, configuration, selector_set_id) VALUES ($1, $2, $3) RETURNING segment_template_id',
+      [template_name, configuration, selectedSelectorSetId]
+    );
+
+    const templateId = templateResult.rows[0].segment_template_id;
+
+    // Create the segment
+    const segmentResult = await db.query(
+      'INSERT INTO segments (segment_name, domain_id, segment_template_id) VALUES ($1, $2, $3) RETURNING segment_id',
+      [segment_name, domain_id, templateId]
+    );
+
+    const segmentId = segmentResult.rows[0].segment_id;
+
+    // Add segment variables if they exist
+    if (segment_variables && segment_variables.length > 0) {
+      for (const variable of segment_variables) {
+        if (variable.name && variable.value) {
+          await db.query(
+            'INSERT INTO segment_variables (variable_name, variable_value, segment_id) VALUES ($1, $2, $3)',
+            [variable.name, variable.value, segmentId]
+          );
+        }
+      }
+    }
+
+    // Commit the transaction
+    await db.query('COMMIT');
+
+    // Return the created segment
+    res.status(201).json({
+      message: 'Segment and template created successfully',
+      segment_id: segmentId,
+      template_id: templateId,
+      selector_set_id: selectedSelectorSetId
+    });
+  } catch (error) {
+    // Rollback the transaction in case of error
+    await db.query('ROLLBACK');
+    console.error('Error creating segment with template:', error);
+    res.status(500).json({
+      error: 'An error occurred while creating the segment with template',
+      details: error.message
+    });
+  }
+});const express = require('express');
 const path = require('path');
 require('dotenv').config(); // Load environment variables
 const db = require('./db'); // Import the database connection

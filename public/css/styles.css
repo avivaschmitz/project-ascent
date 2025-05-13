@@ -1,4 +1,148 @@
-/* Template Properties */
+/* Mode Selection Buttons */
+.mode-selection {
+  margin-bottom: 2rem;
+}
+
+.mode-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.mode-btn {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  background-color: var(--background-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mode-btn.active {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.mode-btn:hover:not(.active) {
+  background-color: #eaeaea;
+}
+
+.mode-divider {
+  margin-top: 1rem;
+  border: 0;
+  border-top: 1px solid var(--border-color);
+}
+
+/* Form Groups and Controls */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.radio-group {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.radio-label input[type="radio"] {
+  margin-right: 0.5rem;
+}
+
+textarea {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  font-family: monospace;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  resize: vertical;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(74, 111, 220, 0.2);
+}
+
+/* Selector Item Styling */
+.selector-item {
+  background-color: #f8f9fa;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.selectors {
+  margin-bottom: 1rem;
+}
+
+/* Variable Row Styling */
+.segment-variables {
+  margin-bottom: 1rem;
+}
+
+.variable-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  align-items: center;
+}
+
+.variable-name, .variable-value {
+  flex: 1;
+}
+
+.btn-small {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.btn-secondary {
+  color: var(--text-color);
+  background-color: #f1f3f5;
+  border-color: var(--border-color);
+}
+
+.btn-secondary:hover {
+  background-color: #e9ecef;
+}
+
+.add-variable, .add-selector {
+  margin-top: 0.5rem;
+  background-color: #eaeaea;
+  border-color: var(--border-color);
+}
+
+.remove-variable, .remove-selector {
+  background-color: #ffebee;
+  border-color: #ffcdd2;
+  color: var(--error-color);
+}
+
+/* Success Message */
+.success-message {
+  background-color: #e6f7ed;
+  color: #28a745;
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  border-left: 4px solid #28a745;
+  margin-bottom: 2rem;
+}/* Template Properties */
 .template-property {
   margin-bottom: 0.5rem;
   display: flex;
