@@ -1,3 +1,89 @@
+const express = require('express');
+const path = require('path');
+require('dotenv').config(); // Load environment variables
+const db = require('./db'); // Import the database connection
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Middleware
+app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Initialize database tables if they don't exist (run once on startup)
+async function initializeDatabase() {
+  try {
+    // Create domains table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS domains (
+        domain_id SERIAL PRIMARY KEY,
+        domain_name VARCHAR(255) NOT NULL
+      )
+    `);
+
+    // Create selector_sets table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS selector_sets (
+        selector_set_id SERIAL PRIMARY KEY,
+        set_name VARCHAR(255) NOT NULL
+      )
+    `);
+
+    // Create selectors table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS selectors (
+        selector_id SERIAL PRIMARY KEY,
+        match_criteria VARCHAR(255) NOT NULL,
+        payload VARCHAR(255),
+        selector_set_id INTEGER NOT NULL,
+        priority INTEGER,
+        FOREIGN KEY (selector_set_id) REFERENCES selector_sets(selector_set_id)
+      )
+    `);
+
+    // Create segment_templates table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS segment_templates (
+        segment_template_id SERIAL PRIMARY KEY,
+        segment_template_name VARCHAR(255) NOT NULL,
+        configuration VARCHAR(255),
+        selector_set_id INTEGER NOT NULL,
+        FOREIGN KEY (selector_set_id) REFERENCES selector_sets(selector_set_id)
+      )
+    `);
+
+    // Create segments table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS segments (
+        segment_id SERIAL PRIMARY KEY,
+        segment_name VARCHAR(255) NOT NULL,
+        segment_template_id INTEGER NOT NULL,
+        domain_id INTEGER NOT NULL,
+        FOREIGN KEY (segment_template_id) REFERENCES segment_templates(segment_template_id),
+        FOREIGN KEY (domain_id) REFERENCES domains(domain_id)
+      )
+    `);
+
+    // Create segment_variables table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS segment_variables (
+        variable_id SERIAL PRIMARY KEY,
+        variable_name VARCHAR(255) NOT NULL,
+        variable_value VARCHAR(255),
+        segment_id INTEGER NOT NULL,
+        FOREIGN KEY (segment_id) REFERENCES segments(segment_id)
+      )
+    `);
+
+    console.log('Database initialized successfully');
+  } catch (error) {
+    console.error('Error initializing database:', error);
+  }
+}
+
+// Initialize the database when the server starts
+initializeDatabase();
+
 // Get all domains
 app.get('/api/domains', async (req, res) => {
   try {
@@ -33,6 +119,82 @@ app.get('/api/selector-sets', async (req, res) => {
   } catch (error) {
     console.error('Error fetching selector sets:', error);
     res.status(500).json({ error: 'An error occurred while fetching selector sets' });
+  }
+});
+
+// API endpoint to get segments by domain_name or partner_id
+app.get('/api/segments', async (req, res) => {
+  const { domain_name, partner_id } = req.query;
+
+  if (!domain_name && !partner_id) {
+    return res.status(400).json({ error: 'Either domain_name or partner_id is required' });
+  }
+
+  try {
+    let segments = [];
+
+    // Search by domain_name
+    if (domain_name) {
+      console.log(`Searching for domain: ${domain_name}`);
+
+      // Get domain_id for the given domain_name
+      const domainResult = await db.query(
+        'SELECT domain_id FROM domains WHERE domain_name = $1',
+        [domain_name]
+      );
+
+      if (domainResult.rows.length === 0) {
+        console.log(`No domain found with name: ${domain_name}`);
+        return res.json([]);
+      }
+
+      const domainId = domainResult.rows[0].domain_id;
+      console.log(`Found domain_id: ${domainId}`);
+
+      // Get segments for the domain
+      segments = await getSegmentsByDomainId(domainId);
+    }
+    // Search by partner_id
+    else if (partner_id) {
+      console.log(`Searching for partner_id: ${partner_id}`);
+
+      // Find segments that have a segment_variable with variable_name "partner_id" and matching variable_value
+      const segmentResult = await db.query(
+        `SELECT s.segment_id
+         FROM segments s
+         JOIN segment_variables sv ON s.segment_id = sv.segment_id
+         WHERE sv.variable_name = 'partner_id' AND sv.variable_value = $1`,
+        [partner_id]
+      );
+
+      if (segmentResult.rows.length === 0) {
+        console.log(`No segments found with partner_id: ${partner_id}`);
+        return res.json([]);
+      }
+
+      // Get all segments
+      const segmentIds = segmentResult.rows.map(row => row.segment_id);
+      console.log(`Found segment IDs: ${segmentIds.join(', ')}`);
+
+      segments = await getSegmentsByIds(segmentIds);
+    }
+
+    if (segments.length === 0) {
+      console.log(`No segments found for the query`);
+      return res.json([]);
+    }
+
+    console.log(`Found ${segments.length} segments`);
+
+    // Return the segments
+    res.json(segments);
+  } catch (error) {
+    console.error('Error fetching segments:', error);
+    res.status(500).json({
+      error: 'An error occurred while fetching segments',
+      details: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 
@@ -205,166 +367,6 @@ app.post('/api/segments/with-template', async (req, res) => {
       details: error.message
     });
   }
-});const express = require('express');
-const path = require('path');
-require('dotenv').config(); // Load environment variables
-const db = require('./db'); // Import the database connection
-
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-// Middleware
-app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Initialize database tables if they don't exist (run once on startup)
-async function initializeDatabase() {
-  try {
-    // Create domains table
-    await db.query(`
-      CREATE TABLE IF NOT EXISTS domains (
-        domain_id SERIAL PRIMARY KEY,
-        domain_name VARCHAR(255) NOT NULL
-      )
-    `);
-
-    // Create selector_sets table
-    await db.query(`
-      CREATE TABLE IF NOT EXISTS selector_sets (
-        selector_set_id SERIAL PRIMARY KEY,
-        set_name VARCHAR(255) NOT NULL
-      )
-    `);
-
-    // Create selectors table
-    await db.query(`
-      CREATE TABLE IF NOT EXISTS selectors (
-        selector_id SERIAL PRIMARY KEY,
-        match_criteria VARCHAR(255) NOT NULL,
-        payload VARCHAR(255),
-        selector_set_id INTEGER NOT NULL,
-        priority INTEGER,
-        FOREIGN KEY (selector_set_id) REFERENCES selector_sets(selector_set_id)
-      )
-    `);
-
-    // Create segment_templates table
-    await db.query(`
-      CREATE TABLE IF NOT EXISTS segment_templates (
-        segment_template_id SERIAL PRIMARY KEY,
-        segment_template_name VARCHAR(255) NOT NULL,
-        configuration VARCHAR(255),
-        selector_set_id INTEGER NOT NULL,
-        FOREIGN KEY (selector_set_id) REFERENCES selector_sets(selector_set_id)
-      )
-    `);
-
-    // Create segments table
-    await db.query(`
-      CREATE TABLE IF NOT EXISTS segments (
-        segment_id SERIAL PRIMARY KEY,
-        segment_name VARCHAR(255) NOT NULL,
-        segment_template_id INTEGER NOT NULL,
-        domain_id INTEGER NOT NULL,
-        FOREIGN KEY (segment_template_id) REFERENCES segment_templates(segment_template_id),
-        FOREIGN KEY (domain_id) REFERENCES domains(domain_id)
-      )
-    `);
-
-    // Create segment_variables table
-    await db.query(`
-      CREATE TABLE IF NOT EXISTS segment_variables (
-        variable_id SERIAL PRIMARY KEY,
-        variable_name VARCHAR(255) NOT NULL,
-        variable_value VARCHAR(255),
-        segment_id INTEGER NOT NULL,
-        FOREIGN KEY (segment_id) REFERENCES segments(segment_id)
-      )
-    `);
-
-    console.log('Database initialized successfully');
-  } catch (error) {
-    console.error('Error initializing database:', error);
-  }
-}
-
-// Initialize the database when the server starts
-initializeDatabase();
-
-// API endpoint to get segments by domain_name or partner_id
-app.get('/api/segments', async (req, res) => {
-  const { domain_name, partner_id } = req.query;
-
-  if (!domain_name && !partner_id) {
-    return res.status(400).json({ error: 'Either domain_name or partner_id is required' });
-  }
-
-  try {
-    let segments = [];
-
-    // Search by domain_name
-    if (domain_name) {
-      console.log(`Searching for domain: ${domain_name}`);
-
-      // Get domain_id for the given domain_name
-      const domainResult = await db.query(
-        'SELECT domain_id FROM domains WHERE domain_name = $1',
-        [domain_name]
-      );
-
-      if (domainResult.rows.length === 0) {
-        console.log(`No domain found with name: ${domain_name}`);
-        return res.json([]);
-      }
-
-      const domainId = domainResult.rows[0].domain_id;
-      console.log(`Found domain_id: ${domainId}`);
-
-      // Get segments for the domain
-      segments = await getSegmentsByDomainId(domainId);
-    }
-    // Search by partner_id
-    else if (partner_id) {
-      console.log(`Searching for partner_id: ${partner_id}`);
-
-      // Find segments that have a segment_variable with variable_name "partner_id" and matching variable_value
-      const segmentResult = await db.query(
-        `SELECT s.segment_id
-         FROM segments s
-         JOIN segment_variables sv ON s.segment_id = sv.segment_id
-         WHERE sv.variable_name = 'partner_id' AND sv.variable_value = $1`,
-        [partner_id]
-      );
-
-      if (segmentResult.rows.length === 0) {
-        console.log(`No segments found with partner_id: ${partner_id}`);
-        return res.json([]);
-      }
-
-      // Get all segments
-      const segmentIds = segmentResult.rows.map(row => row.segment_id);
-      console.log(`Found segment IDs: ${segmentIds.join(', ')}`);
-
-      segments = await getSegmentsByIds(segmentIds);
-    }
-
-    if (segments.length === 0) {
-      console.log(`No segments found for the query`);
-      return res.json([]);
-    }
-
-    console.log(`Found ${segments.length} segments`);
-
-    // Return the segments
-    res.json(segments);
-  } catch (error) {
-    console.error('Error fetching segments:', error);
-    res.status(500).json({
-      error: 'An error occurred while fetching segments',
-      details: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
-    });
-  }
 });
 
 // Helper function to get segments by domain ID
@@ -493,7 +495,7 @@ function formatSegmentData(segmentRows, variableRows, selectorSetRows, selectorR
           segment_template: {
             id: segmentRow.segment_template_id,
             name: segmentRow.segment_template_name,
-            configuration: segmentRow.configuration
+            configuration: segmentRow.configuration  // Include configuration
           },
           segment_variables: segmentVariables,
           selector_set: {
