@@ -94,6 +94,9 @@
       return;
     }
 
+    // Save the raw data in a global variable so we can access it later
+    window.rawSegmentsData = segments;
+
     // Update the result count
     resultCount.textContent = `(${segments.length})`;
     resultsSection.classList.remove('hidden');
