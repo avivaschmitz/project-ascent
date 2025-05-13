@@ -93,6 +93,8 @@ app.get('/api/segments', async (req, res) => {
   }
 
   try {
+    console.log(`Searching for domain: ${domain_name}`);
+
     // Get domain_id for the given domain_name
     const domainResult = await db.query(
       'SELECT domain_id FROM domains WHERE domain_name = $1',
@@ -100,14 +102,22 @@ app.get('/api/segments', async (req, res) => {
     );
 
     if (domainResult.rows.length === 0) {
+      console.log(`No domain found with name: ${domain_name}`);
       return res.json([]);
     }
 
     const domainId = domainResult.rows[0].domain_id;
+    console.log(`Found domain_id: ${domainId}`);
 
     // Get segments for the domain
     const segmentsResult = await db.query(
-      `SELECT s.segment_id, s.segment_name, st.segment_template_id, st.segment_template_name, st.configuration
+      `SELECT
+         s.segment_id,
+         s.segment_name,
+         st.segment_template_id,
+         st.segment_template_name,
+         st.configuration,
+         st.selector_set_id
        FROM segments s
        JOIN segment_templates st ON s.segment_template_id = st.segment_template_id
        WHERE s.domain_id = $1`,
@@ -115,37 +125,40 @@ app.get('/api/segments', async (req, res) => {
     );
 
     if (segmentsResult.rows.length === 0) {
+      console.log(`No segments found for domain_id: ${domainId}`);
       return res.json([]);
     }
 
+    console.log(`Found ${segmentsResult.rows.length} segments`);
+
     // Get all segment IDs
     const segmentIds = segmentsResult.rows.map(segment => segment.segment_id);
+    console.log(`Segment IDs: ${segmentIds.join(', ')}`);
+
+    // Get all selector_set_ids
+    const selectorSetIds = segmentsResult.rows
+      .map(segment => segment.selector_set_id)
+      .filter(id => id != null);
+
+    console.log(`Selector Set IDs: ${selectorSetIds.join(', ')}`);
 
     // Get all related data in parallel
-    const [variablesResult, selectorSetsResult] = await Promise.all([
+    const [variablesResult, selectorSetsResult, selectorsResult] = await Promise.all([
       db.query(
         'SELECT * FROM segment_variables WHERE segment_id = ANY($1)',
         [segmentIds]
       ),
       db.query(
-        `SELECT ss.*, st.segment_id
-         FROM selector_sets ss
-         JOIN segment_templates st ON ss.selector_set_id = st.selector_set_id
-         WHERE st.segment_template_id IN (
-           SELECT segment_template_id FROM segments WHERE segment_id = ANY($1)
-         )`,
-        [segmentIds]
+        'SELECT * FROM selector_sets WHERE selector_set_id = ANY($1)',
+        [selectorSetIds]
+      ),
+      db.query(
+        'SELECT * FROM selectors WHERE selector_set_id = ANY($1) ORDER BY priority',
+        [selectorSetIds]
       )
     ]);
 
-    // Get all selector_set_ids
-    const selectorSetIds = selectorSetsResult.rows.map(set => set.selector_set_id);
-
-    // Get selectors for all selector sets
-    const selectorsResult = await db.query(
-      'SELECT * FROM selectors WHERE selector_set_id = ANY($1) ORDER BY priority',
-      [selectorSetIds]
-    );
+    console.log(`Found ${variablesResult.rows.length} variables, ${selectorSetsResult.rows.length} selector sets, ${selectorsResult.rows.length} selectors`);
 
     // Format the data into the expected structure
     const formattedSegments = formatSegmentData(
@@ -155,10 +168,15 @@ app.get('/api/segments', async (req, res) => {
       selectorsResult.rows
     );
 
+    console.log(`Formatted ${formattedSegments.length} segments successfully`);
     res.json(formattedSegments);
   } catch (error) {
     console.error('Error fetching segments:', error);
-    res.status(500).json({ error: 'An error occurred while fetching segments' });
+    res.status(500).json({
+      error: 'An error occurred while fetching segments',
+      details: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 
@@ -167,71 +185,95 @@ function formatSegmentData(segmentRows, variableRows, selectorSetRows, selectorR
   const segments = [];
 
   for (const segmentRow of segmentRows) {
-    // Filter variables for this segment
-    const segmentVariables = variableRows
-      .filter(variable => variable.segment_id === segmentRow.segment_id)
-      .reduce((acc, variable) => {
-        // Determine value type (basic conversion for boolean strings)
-        let value = variable.variable_value;
-        if (value === 'true') value = true;
-        if (value === 'false') value = false;
+    try {
+      // Filter variables for this segment
+      const segmentVariables = variableRows
+        .filter(variable => variable.segment_id === segmentRow.segment_id)
+        .reduce((acc, variable) => {
+          // Determine value type (basic conversion for boolean strings)
+          let value = variable.variable_value;
+          if (value === 'true') value = true;
+          if (value === 'false') value = false;
 
-        acc[variable.variable_name] = value;
-        return acc;
-      }, {});
+          acc[variable.variable_name] = value;
+          return acc;
+        }, {});
 
-    // Find the selector set for this segment's template
-    const selectorSet = selectorSetRows.find(set =>
-      set.selector_set_id === segmentRow.selector_set_id
-    );
+      // Find the selector set for this segment's template
+      const selectorSet = selectorSetRows.find(set =>
+        set.selector_set_id === segmentRow.selector_set_id
+      );
 
-    if (!selectorSet) continue;
-
-    // Filter selectors for this selector set
-    const selectors = selectorRows
-      .filter(selector => selector.selector_set_id === selectorSet.selector_set_id)
-      .map(selector => {
-        // Parse the JSON stored in match_criteria and payload
-        let matchCriteria = {};
-        let payload = {};
-
-        try {
-          matchCriteria = JSON.parse(selector.match_criteria);
-        } catch (e) {
-          console.error('Error parsing match_criteria:', e);
-        }
-
-        try {
-          payload = JSON.parse(selector.payload);
-        } catch (e) {
-          console.error('Error parsing payload:', e);
-        }
-
-        return {
-          id: selector.selector_id,
-          match_criteria: matchCriteria,
-          priority: selector.priority,
-          payload
-        };
-      });
-
-    // Construct the segment object
-    const segment = {
-      id: segmentRow.segment_id,
-      name: segmentRow.segment_name,
-      segment_template: {
-        id: segmentRow.segment_template_id,
-        name: segmentRow.segment_template_name
-      },
-      segment_variables: segmentVariables,
-      selector_set: {
-        id: selectorSet.selector_set_id,
-        name: selectorSet.set_name,
-        selectors
+      if (!selectorSet) {
+        console.warn(`No selector set found for segment_template_id ${segmentRow.segment_template_id}, selector_set_id ${segmentRow.selector_set_id}`);
+        // Create a segment with empty selector set
+        segments.push({
+          id: segmentRow.segment_id,
+          name: segmentRow.segment_name,
+          segment_template: {
+            id: segmentRow.segment_template_id,
+            name: segmentRow.segment_template_name
+          },
+          segment_variables: segmentVariables,
+          selector_set: {
+            id: segmentRow.selector_set_id,
+            name: "Unknown Selector Set",
+            selectors: []
+          }
+        });
+        continue;
       }
-    };
 
-    segments.push(segment);
+      // Filter selectors for this selector set
+      const selectors = selectorRows
+        .filter(selector => selector.selector_set_id === selectorSet.selector_set_id)
+        .map(selector => {
+          // Parse the JSON stored in match_criteria and payload
+          let matchCriteria = {};
+          let payload = {};
+
+          try {
+            matchCriteria = JSON.parse(selector.match_criteria);
+          } catch (e) {
+            console.error(`Error parsing match_criteria for selector ${selector.selector_id}: ${e.message}`);
+            console.error(`Raw value: ${selector.match_criteria}`);
+          }
+
+          try {
+            payload = JSON.parse(selector.payload);
+          } catch (e) {
+            console.error(`Error parsing payload for selector ${selector.selector_id}: ${e.message}`);
+            console.error(`Raw value: ${selector.payload}`);
+          }
+
+          return {
+            id: selector.selector_id,
+            match_criteria: matchCriteria,
+            priority: selector.priority,
+            payload
+          };
+        });
+
+      // Construct the segment object
+      const segment = {
+        id: segmentRow.segment_id,
+        name: segmentRow.segment_name,
+        segment_template: {
+          id: segmentRow.segment_template_id,
+          name: segmentRow.segment_template_name
+        },
+        segment_variables: segmentVariables,
+        selector_set: {
+          id: selectorSet.selector_set_id,
+          name: selectorSet.set_name,
+          selectors
+        }
+      };
+
+      segments.push(segment);
+    } catch (err) {
+      console.error(`Error formatting segment ${segmentRow.segment_id}:`, err);
+    }
   }
 
   return segments;
