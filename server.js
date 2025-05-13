@@ -84,97 +84,77 @@ async function initializeDatabase() {
 // Initialize the database when the server starts
 initializeDatabase();
 
-// API endpoint to get segments by domain_name
+// API endpoint to get segments by domain_name or partner_id
 app.get('/api/segments', async (req, res) => {
-  const { domain_name } = req.query;
+  const { domain_name, partner_id } = req.query;
 
-  if (!domain_name) {
-    return res.status(400).json({ error: 'domain_name is required' });
+  if (!domain_name && !partner_id) {
+    return res.status(400).json({ error: 'Either domain_name or partner_id is required' });
   }
 
   try {
-    console.log(`Searching for domain: ${domain_name}`);
+    let segments = [];
 
-    // Get domain_id for the given domain_name
-    const domainResult = await db.query(
-      'SELECT domain_id FROM domains WHERE domain_name = $1',
-      [domain_name]
-    );
+    // Search by domain_name
+    if (domain_name) {
+      console.log(`Searching for domain: ${domain_name}`);
 
-    if (domainResult.rows.length === 0) {
-      console.log(`No domain found with name: ${domain_name}`);
+      // Get domain_id for the given domain_name
+      const domainResult = await db.query(
+        'SELECT domain_id FROM domains WHERE domain_name = $1',
+        [domain_name]
+      );
+
+      if (domainResult.rows.length === 0) {
+        console.log(`No domain found with name: ${domain_name}`);
+        return res.json([]);
+      }
+
+      const domainId = domainResult.rows[0].domain_id;
+      console.log(`Found domain_id: ${domainId}`);
+
+      // Get segments for the domain
+      segments = await getSegmentsByDomainId(domainId);
+    }
+    // Search by partner_id
+    else if (partner_id) {
+      console.log(`Searching for partner_id: ${partner_id}`);
+
+      // Find segments that have a segment_variable with variable_name "partner_id" and matching variable_value
+      const segmentResult = await db.query(
+        `SELECT s.segment_id
+         FROM segments s
+         JOIN segment_variables sv ON s.segment_id = sv.segment_id
+         WHERE sv.variable_name = 'partner_id' AND sv.variable_value = $1`,
+        [partner_id]
+      );
+
+      if (segmentResult.rows.length === 0) {
+        console.log(`No segments found with partner_id: ${partner_id}`);
+        return res.json([]);
+      }
+
+      // Get all segments
+      const segmentIds = segmentResult.rows.map(row => row.segment_id);
+      console.log(`Found segment IDs: ${segmentIds.join(', ')}`);
+
+      segments = await getSegmentsByIds(segmentIds);
+    }
+
+    if (segments.length === 0) {
+      console.log(`No segments found for the query`);
       return res.json([]);
     }
 
-    const domainId = domainResult.rows[0].domain_id;
-    console.log(`Found domain_id: ${domainId}`);
-
-    // Get segments for the domain
-    const segmentsResult = await db.query(
-      `SELECT
-         s.segment_id,
-         s.segment_name,
-         st.segment_template_id,
-         st.segment_template_name,
-         st.configuration,
-         st.selector_set_id
-       FROM segments s
-       JOIN segment_templates st ON s.segment_template_id = st.segment_template_id
-       WHERE s.domain_id = $1`,
-      [domainId]
-    );
-
-    if (segmentsResult.rows.length === 0) {
-      console.log(`No segments found for domain_id: ${domainId}`);
-      return res.json([]);
-    }
-
-    console.log(`Found ${segmentsResult.rows.length} segments`);
-
-    // Get all segment IDs
-    const segmentIds = segmentsResult.rows.map(segment => segment.segment_id);
-    console.log(`Segment IDs: ${segmentIds.join(', ')}`);
-
-    // Get all selector_set_ids
-    const selectorSetIds = segmentsResult.rows
-      .map(segment => segment.selector_set_id)
-      .filter(id => id != null);
-
-    console.log(`Selector Set IDs: ${selectorSetIds.join(', ')}`);
-
-    // Get all related data in parallel
-    const [variablesResult, selectorSetsResult, selectorsResult] = await Promise.all([
-      db.query(
-        'SELECT * FROM segment_variables WHERE segment_id = ANY($1)',
-        [segmentIds]
-      ),
-      db.query(
-        'SELECT * FROM selector_sets WHERE selector_set_id = ANY($1)',
-        [selectorSetIds]
-      ),
-      db.query(
-        'SELECT * FROM selectors WHERE selector_set_id = ANY($1) ORDER BY priority',
-        [selectorSetIds]
-      )
-    ]);
-
-    console.log(`Found ${variablesResult.rows.length} variables, ${selectorSetsResult.rows.length} selector sets, ${selectorsResult.rows.length} selectors`);
-
-    // Format the data into the expected structure
-    let formattedSegments = formatSegmentData(
-      segmentsResult.rows,
-      variablesResult.rows,
-      selectorSetsResult.rows,
-      selectorsResult.rows
-    );
+    console.log(`Found ${segments.length} segments`);
 
     // Convert to string and back to ensure all objects are properly serialized
     try {
-      const serializedData = JSON.stringify(formattedSegments);
-      formattedSegments = JSON.parse(serializedData);
+      const serializedData = JSON.stringify(segments);
+      segments = JSON.parse(serializedData);
 
       // Make an extra pass through selectors to ensure payload is stringifiable
-      formattedSegments.forEach(segment => {
+      segments.forEach(segment => {
         if (segment.selector_set && segment.selector_set.selectors) {
           segment.selector_set.selectors.forEach(selector => {
             // Force payload to be a simple structure
@@ -211,7 +191,7 @@ app.get('/api/segments', async (req, res) => {
       console.error('Error serializing segments:', e);
     }
 
-    res.json(formattedSegments);
+    res.json(segments);
   } catch (error) {
     console.error('Error fetching segments:', error);
     res.status(500).json({
@@ -221,6 +201,94 @@ app.get('/api/segments', async (req, res) => {
     });
   }
 });
+
+// Helper function to get segments by domain ID
+async function getSegmentsByDomainId(domainId) {
+  // Get segments for the domain
+  const segmentsResult = await db.query(
+    `SELECT
+       s.segment_id,
+       s.segment_name,
+       st.segment_template_id,
+       st.segment_template_name,
+       st.configuration,
+       st.selector_set_id
+     FROM segments s
+     JOIN segment_templates st ON s.segment_template_id = st.segment_template_id
+     WHERE s.domain_id = $1`,
+    [domainId]
+  );
+
+  if (segmentsResult.rows.length === 0) {
+    return [];
+  }
+
+  return await processSegmentResults(segmentsResult.rows);
+}
+
+// Helper function to get segments by segment IDs
+async function getSegmentsByIds(segmentIds) {
+  // Get segments by IDs
+  const segmentsResult = await db.query(
+    `SELECT
+       s.segment_id,
+       s.segment_name,
+       st.segment_template_id,
+       st.segment_template_name,
+       st.configuration,
+       st.selector_set_id
+     FROM segments s
+     JOIN segment_templates st ON s.segment_template_id = st.segment_template_id
+     WHERE s.segment_id = ANY($1)`,
+    [segmentIds]
+  );
+
+  if (segmentsResult.rows.length === 0) {
+    return [];
+  }
+
+  return await processSegmentResults(segmentsResult.rows);
+}
+
+// Helper function to process segment results and get related data
+async function processSegmentResults(segmentRows) {
+  // Get all segment IDs
+  const segmentIds = segmentRows.map(segment => segment.segment_id);
+  console.log(`Segment IDs: ${segmentIds.join(', ')}`);
+
+  // Get all selector_set_ids
+  const selectorSetIds = segmentRows
+    .map(segment => segment.selector_set_id)
+    .filter(id => id != null);
+
+  console.log(`Selector Set IDs: ${selectorSetIds.join(', ')}`);
+
+  // Get all related data in parallel
+  const [variablesResult, selectorSetsResult, selectorsResult] = await Promise.all([
+    db.query(
+      'SELECT * FROM segment_variables WHERE segment_id = ANY($1)',
+      [segmentIds]
+    ),
+    db.query(
+      'SELECT * FROM selector_sets WHERE selector_set_id = ANY($1)',
+      [selectorSetIds]
+    ),
+    db.query(
+      'SELECT * FROM selectors WHERE selector_set_id = ANY($1) ORDER BY priority',
+      [selectorSetIds]
+    )
+  ]);
+
+  console.log(`Found ${variablesResult.rows.length} variables, ${selectorSetsResult.rows.length} selector sets, ${selectorsResult.rows.length} selectors`);
+
+  // Format the data into the expected structure
+  return formatSegmentData(
+    segmentRows,
+    variablesResult.rows,
+    selectorSetsResult.rows,
+    selectorsResult.rows
+  );
+}
 
 // Helper function to format database results into the expected segment format
 function formatSegmentData(segmentRows, variableRows, selectorSetRows, selectorRows) {

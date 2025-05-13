@@ -19,20 +19,31 @@
     <main class="container">
         <section class="search-section">
             <div class="card">
-                <h2>View Domain Segments</h2>
-                <p>Enter a domain name to view all associated segments.</p>
+                <h2>View Segments</h2>
+                <p>Search for segments by domain name or partner ID.</p>
 
                 <form id="segment-search-form">
                     <div class="form-group">
+                        <label for="search-type">Search By:</label>
+                        <select id="search-type">
+                            <option value="domain">Domain Name</option>
+                            <option value="partner">Partner ID</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="domain-search-group">
                         <label for="domain-name">Domain Name:</label>
                         <input type="text" id="domain-name" placeholder="example.com" required>
+                    </div>
+
+                    <div class="form-group hidden" id="partner-search-group">
+                        <label for="partner-id">Partner ID:</label>
+                        <input type="text" id="partner-id" placeholder="partner123">
                     </div>
 
                     <button type="submit" class="btn btn-primary">Search</button>
                 </form>
             </div>
-
-
         </section>
 
         <section id="results-section" class="results-section hidden">

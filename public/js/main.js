@@ -1,7 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
   // DOM elements
   const searchForm = document.getElementById('segment-search-form');
+  const searchTypeSelect = document.getElementById('search-type');
+  const domainSearchGroup = document.getElementById('domain-search-group');
+  const partnerSearchGroup = document.getElementById('partner-search-group');
   const domainNameInput = document.getElementById('domain-name');
+  const partnerIdInput = document.getElementById('partner-id');
   const resultsSection = document.getElementById('results-section');
   const segmentsContainer = document.getElementById('segments-container');
   const resultCount = document.getElementById('result-count');
@@ -57,15 +61,44 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Toggle search input fields based on selected search type
+  searchTypeSelect.addEventListener('change', () => {
+    const searchType = searchTypeSelect.value;
+
+    if (searchType === 'domain') {
+      domainSearchGroup.classList.remove('hidden');
+      partnerSearchGroup.classList.add('hidden');
+      domainNameInput.setAttribute('required', '');
+      partnerIdInput.removeAttribute('required');
+    } else {
+      domainSearchGroup.classList.add('hidden');
+      partnerSearchGroup.classList.remove('hidden');
+      domainNameInput.removeAttribute('required');
+      partnerIdInput.setAttribute('required', '');
+    }
+  });
+
   // Event listener for the search form
   searchForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const domainName = domainNameInput.value.trim();
+    const searchType = searchTypeSelect.value;
+    let searchParams = {};
 
-    if (!domainName) {
-      showError('Please enter a domain name to search for.');
-      return;
+    if (searchType === 'domain') {
+      const domainName = domainNameInput.value.trim();
+      if (!domainName) {
+        showError('Please enter a domain name to search for.');
+        return;
+      }
+      searchParams.domain_name = domainName;
+    } else {
+      const partnerId = partnerIdInput.value.trim();
+      if (!partnerId) {
+        showError('Please enter a partner ID to search for.');
+        return;
+      }
+      searchParams.partner_id = partnerId;
     }
 
     // Clear previous results and error messages
@@ -78,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       // Fetch segments from the API
-      const segments = await fetchSegments(domainName);
+      const segments = await fetchSegments(searchParams);
 
       // Hide loading indicator
       loadingIndicator.classList.add('hidden');
@@ -93,11 +126,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /**
    * Fetch segments from the API
-   * @param {string} domainName - The domain name to search for
+   * @param {Object} searchParams - The search parameters (domain_name or partner_id)
    * @returns {Promise<Array>} - An array of segment objects
    */
-  async function fetchSegments(domainName) {
-    const response = await fetch(`/api/segments?domain_name=${encodeURIComponent(domainName)}`);
+  async function fetchSegments(searchParams) {
+    // Build query string
+    const queryParams = new URLSearchParams();
+    if (searchParams.domain_name) {
+      queryParams.append('domain_name', searchParams.domain_name);
+    } else if (searchParams.partner_id) {
+      queryParams.append('partner_id', searchParams.partner_id);
+    }
+
+    const response = await fetch(`/api/segments?${queryParams.toString()}`);
 
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
