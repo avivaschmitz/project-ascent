@@ -179,6 +179,7 @@ select:focus {
   flex-direction: column;
   height: auto;
   max-height: 800px;
+  overflow: hidden; /* Prevent content from spilling out */
 }
 
 .segment-header {
@@ -216,6 +217,8 @@ select:focus {
   display: flex;
   flex-direction: column;
   margin-bottom: 1.5rem;
+  position: relative; /* Added to contain child elements */
+  overflow: hidden; /* Prevent overflow issues */
 }
 
 .segment-section:last-child {
@@ -239,6 +242,8 @@ select:focus {
   scrollbar-width: thin;
   position: relative;
   padding-right: 5px;
+  margin-bottom: 0; /* Ensure no margin causes overflow */
+  contain: content; /* Help contain the scrollable content */
 }
 
 .variable-item {
@@ -282,14 +287,19 @@ select:focus {
   scrollbar-width: thin;
   position: relative;
   padding-right: 5px;
+  contain: content; /* Help contain the scrollable content */
+  margin-bottom: 0; /* Ensure no margin causes overflow */
 }
 
+/* Better handle content overflow in selectors */
 .selector-card {
   background-color: white;
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
   padding: 10px;
   margin-bottom: 10px;
+  word-break: break-word; /* Allow long words to break */
+  overflow: hidden; /* Prevent content from spilling out */
 }
 
 .selector-card:last-child {
@@ -335,6 +345,9 @@ select:focus {
   padding: 0.5rem;
   font-family: monospace;
   font-size: 0.9rem;
+  overflow-wrap: break-word; /* Ensure long strings wrap properly */
+  word-break: break-word; /* Allow long words to break */
+  max-width: 100%; /* Ensure content doesn't overflow parent */
 }
 
 /* Utility Classes */
@@ -442,7 +455,7 @@ select:focus {
   box-shadow: inset 0 -5px 5px -5px rgba(0, 0, 0, 0.1);
 }
 
-/* Add a visual indicator for scrollable content */
+/* Fix for scrollable content visual indicators */
 .segment-variables-info::after,
 .selectors-list::after {
   content: '';
@@ -457,6 +470,7 @@ select:focus {
   transition: opacity 0.2s;
   border-bottom-left-radius: var(--border-radius);
   border-bottom-right-radius: var(--border-radius);
+  z-index: 1; /* Ensure gradient appears above content */
 }
 
 .segment-variables-info.scrollable-content::after,
