@@ -161,20 +161,57 @@ app.get('/api/segments', async (req, res) => {
     console.log(`Found ${variablesResult.rows.length} variables, ${selectorSetsResult.rows.length} selector sets, ${selectorsResult.rows.length} selectors`);
 
     // Format the data into the expected structure
-    const formattedSegments = formatSegmentData(
+    let formattedSegments = formatSegmentData(
       segmentsResult.rows,
       variablesResult.rows,
       selectorSetsResult.rows,
       selectorsResult.rows
     );
 
-    // Ensure all objects are properly serialized
-    const sanitizedResponse = JSON.parse(JSON.stringify(formattedSegments));
+    // Convert to string and back to ensure all objects are properly serialized
+    try {
+      const serializedData = JSON.stringify(formattedSegments);
+      formattedSegments = JSON.parse(serializedData);
 
-    // Log what we're sending to the client
-    console.log('Sending to client:', JSON.stringify(sanitizedResponse, null, 2));
+      // Make an extra pass through selectors to ensure payload is stringifiable
+      formattedSegments.forEach(segment => {
+        if (segment.selector_set && segment.selector_set.selectors) {
+          segment.selector_set.selectors.forEach(selector => {
+            // Force payload to be a simple structure
+            if (selector.payload) {
+              try {
+                // Convert to string and back to remove any non-serializable elements
+                selector.payload = JSON.parse(JSON.stringify(selector.payload));
 
-    res.json(sanitizedResponse);
+                // Ensure feature_flags is properly structured
+                if (selector.payload.feature_flags &&
+                    typeof selector.payload.feature_flags === 'object') {
+                  // Handle each feature flag
+                  const cleanFlags = {};
+                  Object.entries(selector.payload.feature_flags).forEach(([key, value]) => {
+                    // Ensure values are simple types
+                    if (typeof value === 'object') {
+                      cleanFlags[key] = JSON.stringify(value);
+                    } else {
+                      cleanFlags[key] = value;
+                    }
+                  });
+                  selector.payload.feature_flags = cleanFlags;
+                }
+              } catch (e) {
+                console.error(`Error processing payload for selector ${selector.id}:`, e);
+                // Set a simple fallback if there's an error
+                selector.payload = { error: "Could not process payload" };
+              }
+            }
+          });
+        }
+      });
+    } catch (e) {
+      console.error('Error serializing segments:', e);
+    }
+
+    res.json(formattedSegments);
   } catch (error) {
     console.error('Error fetching segments:', error);
     res.status(500).json({
