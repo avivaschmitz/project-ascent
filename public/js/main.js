@@ -9,6 +9,26 @@ document.addEventListener('DOMContentLoaded', () => {
   const errorMessage = document.getElementById('error-message');
   const segmentTemplate = document.getElementById('segment-card-template');
 
+  // Function to toggle segment card expand/collapse
+  function toggleSegmentCard(event) {
+    const header = event.currentTarget;
+    const card = header.closest('.segment-card');
+    const body = card.querySelector('.segment-body');
+    const expandIcon = header.querySelector('.expand-icon');
+
+    // Toggle the collapsed class
+    card.classList.toggle('collapsed');
+
+    // Update the expand icon
+    if (card.classList.contains('collapsed')) {
+      expandIcon.textContent = '▶';
+      body.style.display = 'none';
+    } else {
+      expandIcon.textContent = '▼';
+      body.style.display = 'flex';
+    }
+  }
+
   /**
    * Format payload object for display
    * @param {Object} payload - The payload object to format
@@ -126,9 +146,29 @@ document.addEventListener('DOMContentLoaded', () => {
   function createSegmentCard(segment) {
     const card = document.importNode(segmentTemplate.content, true).children[0];
 
-    // Set segment name and ID
-    card.querySelector('.segment-name').textContent = segment.name;
+    // Add collapsed class by default
+    card.classList.add('collapsed');
+
+    // Set segment name and ID with expand/collapse icon
+    const segmentHeader = card.querySelector('.segment-header');
+    const segmentName = card.querySelector('.segment-name');
+    segmentName.textContent = segment.name;
+
+    // Add expand/collapse icon
+    const expandIcon = document.createElement('span');
+    expandIcon.className = 'expand-icon';
+    expandIcon.textContent = '▶';
+    segmentName.prepend(expandIcon);
+
     card.querySelector('.segment-id').textContent = `ID: ${segment.id}`;
+
+    // Make the header clickable to expand/collapse
+    segmentHeader.addEventListener('click', toggleSegmentCard);
+    segmentHeader.style.cursor = 'pointer';
+
+    // Initially hide the body
+    const segmentBody = card.querySelector('.segment-body');
+    segmentBody.style.display = 'none';
 
     // Set segment template info
     const templateInfo = card.querySelector('.segment-template-info');
