@@ -84,26 +84,29 @@
     return await response.json();
   }
 
-  /**
-   * Display the segments in the UI
-   * @param {Array} segments - An array of segment objects
-   */
-  function displaySegments(segments) {
-    if (segments.length === 0) {
-      showError('No segments found for the given domain name.');
-      return;
-    }
-
-    // Update the result count
-    resultCount.textContent = `(${segments.length})`;
-    resultsSection.classList.remove('hidden');
-
-    // Create and append segment cards
-    segments.forEach(segment => {
-      const segmentCard = createSegmentCard(segment);
-      segmentsContainer.appendChild(segmentCard);
-    });
+/**
+ * Display the segments in the UI
+ * @param {Array} segments - An array of segment objects
+ */
+function displaySegments(segments) {
+  if (segments.length === 0) {
+    showError('No segments found for the given domain name.');
+    return;
   }
+
+  // Update the result count
+  resultCount.textContent = `(${segments.length})`;
+  resultsSection.classList.remove('hidden');
+
+  // Save raw data to window for later use
+  window.rawSegmentsData = JSON.stringify(segments, null, 2);
+
+  // Create and append segment cards
+  segments.forEach(segment => {
+    const segmentCard = createSegmentCard(segment);
+    segmentsContainer.appendChild(segmentCard);
+  });
+}
 
   /**
    * Check for scrollable content and add appropriate styling
