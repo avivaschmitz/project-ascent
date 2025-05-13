@@ -89,23 +89,8 @@ document.addEventListener('DOMContentLoaded', () => {
    * Check for scrollable content and add appropriate styling
    */
   function checkScrollableContent() {
-    // Check variables sections
-    document.querySelectorAll('.segment-variables-info').forEach(element => {
-      if (element.scrollHeight > element.clientHeight) {
-        element.classList.add('scrollable-content');
-      } else {
-        element.classList.remove('scrollable-content');
-      }
-    });
-
-    // Check selectors sections
-    document.querySelectorAll('.selectors-list').forEach(element => {
-      if (element.scrollHeight > element.clientHeight) {
-        element.classList.add('scrollable-content');
-      } else {
-        element.classList.remove('scrollable-content');
-      }
-    });
+    // We're no longer adding scrollable classes as we've changed the approach
+    // This function is now empty but kept for compatibility
   }
 
   /**

@@ -1,15 +1,4 @@
-/* JSON object styling */
-.json-object {
-  display: inline-block;
-  white-space: pre-wrap;
-  font-family: monospace;
-  font-size: 0.9rem;
-  padding: 0.25rem;
-  border-radius: 3px;
-  background-color: rgba(0, 0, 0, 0.03);
-  border: 1px dashed var(--border-color);
-  margin: 0.25rem 0;
-}/* Base Styles */
+/* Base Styles */
 :root {
   --primary-color: #4a6fdc;
   --primary-light: #e0e7ff;
@@ -31,6 +20,7 @@
   box-sizing: border-box;
 }
 
+/* Base container for the entire page */
 body {
   font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   color: var(--text-color);
@@ -41,6 +31,7 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden; /* Prevent horizontal scrolling */
 }
 
 .container {
@@ -48,6 +39,7 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 1rem;
+  overflow: visible; /* Allow content to be visible */
 }
 
 /* Typography */
@@ -183,16 +175,32 @@ select:focus {
   margin-bottom: 2rem;
 }
 
+/* Main content area */
+main.container {
+  flex: 1;
+  padding-bottom: 2rem; /* Add padding at bottom for footer */
+}
+
+/* Results section containing all segment cards */
+.results-section {
+  margin-bottom: 3rem;
+}
+
+#segments-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Individual segment card */
 .segment-card {
-  margin-bottom: 1.5rem;
+  margin-bottom: 0; /* Remove bottom margin as we're using flex gap */
   border-left: 4px solid var(--primary-color);
   display: flex;
   flex-direction: column;
-  height: auto;
-  max-height: 800px;
-  overflow: hidden; /* Prevent content from spilling out */
 }
 
+/* Segment header and body */
 .segment-header {
   display: flex;
   justify-content: space-between;
@@ -219,18 +227,15 @@ select:focus {
 .segment-body {
   display: flex;
   flex-direction: column;
-  flex: 1;
-  max-height: 100%;
-  overflow: visible;
+  gap: 1.5rem; /* Use gap instead of margins */
 }
 
+/* Individual section within a segment */
 .segment-section {
   display: flex;
   flex-direction: column;
-  margin-bottom: 1.5rem;
-  position: relative; /* Added to contain child elements */
-  overflow: visible; /* Allow visibility while preventing layout issues */
-  min-height: 50px; /* Ensure minimum height for empty sections */
+  margin-bottom: 0; /* Remove margin as we're using flex gap */
+  position: relative;
 }
 
 .segment-section:last-child {
@@ -244,18 +249,12 @@ select:focus {
   border: 1px solid var(--border-color);
 }
 
+/* Variables section */
 .segment-variables-info {
   background-color: #f8f9fa;
   border-radius: var(--border-radius);
   border: 1px solid var(--border-color);
   padding: 0;
-  max-height: 200px;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  position: relative;
-  padding-right: 5px;
-  margin-bottom: 0; /* Ensure no margin causes overflow */
-  contain: content; /* Help contain the scrollable content */
 }
 
 .variable-item {
@@ -293,32 +292,20 @@ select:focus {
   margin-bottom: 1rem;
 }
 
+/* Selector set section */
 .selectors-list {
-  max-height: 500px; /* Increased height to show more selectors */
-  overflow-y: auto;
-  scrollbar-width: thin;
-  position: relative;
-  padding-right: 5px;
-  contain: content; /* Help contain the scrollable content */
-  margin-bottom: 0; /* Ensure no margin causes overflow */
   display: flex;
   flex-direction: column;
-  gap: 10px; /* Add gap between selector cards */
+  gap: 1rem;
 }
 
-/* Better handle content overflow in selectors */
+/* Individual selector card */
 .selector-card {
   background-color: white;
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
-  padding: 10px;
-  margin-bottom: 10px;
-  word-break: break-word; /* Allow long words to break */
-  overflow: hidden; /* Prevent content from spilling out */
-}
-
-.selector-card:last-child {
-  margin-bottom: 0;
+  padding: 12px;
+  word-break: break-word;
 }
 
 .selector-header {
@@ -360,9 +347,8 @@ select:focus {
   padding: 0.5rem;
   font-family: monospace;
   font-size: 0.9rem;
-  overflow-wrap: break-word; /* Ensure long strings wrap properly */
-  word-break: break-word; /* Allow long words to break */
-  max-width: 100%; /* Ensure content doesn't overflow parent */
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 /* Utility Classes */
@@ -441,56 +427,17 @@ select:focus {
   margin-bottom: 0.5rem;
 }
 
-/* Scrollbar styling for Webkit browsers */
-.segment-variables-info::-webkit-scrollbar,
-.selectors-list::-webkit-scrollbar {
-  width: 6px;
-}
-
-.segment-variables-info::-webkit-scrollbar-track,
-.selectors-list::-webkit-scrollbar-track {
-  background: #f1f1f1;
+/* JSON object styling */
+.json-object {
+  display: inline-block;
+  white-space: pre-wrap;
+  font-family: monospace;
+  font-size: 0.9rem;
+  padding: 0.25rem;
   border-radius: 3px;
-}
-
-.segment-variables-info::-webkit-scrollbar-thumb,
-.selectors-list::-webkit-scrollbar-thumb {
-  background: var(--primary-light);
-  border-radius: 3px;
-}
-
-.segment-variables-info::-webkit-scrollbar-thumb:hover,
-.selectors-list::-webkit-scrollbar-thumb:hover {
-  background: var(--primary-color);
-}
-
-/* Add box shadow to indicate scrollable content */
-.segment-variables-info.scrollable-content,
-.selectors-list.scrollable-content {
-  box-shadow: inset 0 -5px 5px -5px rgba(0, 0, 0, 0.1);
-}
-
-/* Fix for scrollable content visual indicators */
-.segment-variables-info::after,
-.selectors-list::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 10px;
-  background: linear-gradient(to top, rgba(0,0,0,0.05), transparent);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.2s;
-  border-bottom-left-radius: var(--border-radius);
-  border-bottom-right-radius: var(--border-radius);
-  z-index: 1; /* Ensure gradient appears above content */
-}
-
-.segment-variables-info.scrollable-content::after,
-.selectors-list.scrollable-content::after {
-  opacity: 1;
+  background-color: rgba(0, 0, 0, 0.03);
+  border: 1px dashed var(--border-color);
+  margin: 0.25rem 0;
 }
 
 /* Empty State Styling */
