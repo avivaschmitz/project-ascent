@@ -1,4 +1,31 @@
-/* Base Styles */
+/* Template Properties */
+.template-property {
+  margin-bottom: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.property-label {
+  font-weight: 500;
+  min-width: 120px;
+  color: var(--text-light);
+}
+
+.property-value {
+  flex: 1;
+}
+
+.configuration-data {
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  padding: 0.5rem;
+  font-family: monospace;
+  font-size: 0.9rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0.5rem 0;
+  border: 1px solid var(--border-color);
+}/* Base Styles */
 :root {
   --primary-color: #4a6fdc;
   --primary-light: #e0e7ff;

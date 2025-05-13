@@ -1,4 +1,30 @@
-document.addEventListener('DOMContentLoaded', () => {
+/**
+   * Format payload object for display
+   * @param {Object} payload - The payload object to format
+   * @returns {string} - Formatted HTML string
+   */
+  function formatPayload(payload) {
+    if (!payload || Object.keys(payload).length === 0) {
+      return 'None';
+    }
+
+    try {
+      // Pretty print the JSON with indentation
+      return JSON.stringify(payload, null, 2)
+        // Escape HTML characters
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        // Highlight keys
+        .replace(/"([^"]+)":/g, '<span class="json-key">"$1":</span>')
+        // Highlight boolean values
+        .replace(/"true"/g, '"<span class="boolean-true">true</span>"')
+        .replace(/"false"/g, '"<span class="boolean-false">false</span>"');
+    } catch (error) {
+      console.error('Error formatting payload:', error);
+      return 'Error displaying payload';
+    }
+  }document.addEventListener('DOMContentLoaded', () => {
   // DOM elements
   const searchForm = document.getElementById('segment-search-form');
   const searchTypeSelect = document.getElementById('search-type');
@@ -34,18 +60,35 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * Format payload object for display
-   * @param {Object} payload - The payload object to format
+   * Format configuration object for display
+   * @param {Object|string} configuration - The configuration object or string to format
    * @returns {string} - Formatted HTML string
    */
-  function formatPayload(payload) {
-    if (!payload || Object.keys(payload).length === 0) {
+  function formatConfiguration(configuration) {
+    if (!configuration || (typeof configuration === 'object' && Object.keys(configuration).length === 0)) {
       return 'None';
     }
 
     try {
+      // If it's a string but looks like JSON, try to parse it for better display
+      if (typeof configuration === 'string') {
+        // Try to parse it as JSON if it looks like an object
+        if ((configuration.startsWith('{') && configuration.endsWith('}')) ||
+            (configuration.startsWith('[') && configuration.endsWith(']'))) {
+          try {
+            configuration = JSON.parse(configuration);
+          } catch (e) {
+            // If parsing fails, just use the raw string
+            return configuration;
+          }
+        } else {
+          // Not JSON-like, return as is
+          return configuration;
+        }
+      }
+
       // Pretty print the JSON with indentation
-      return JSON.stringify(payload, null, 2)
+      return JSON.stringify(configuration, null, 2)
         // Escape HTML characters
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
@@ -56,8 +99,8 @@ document.addEventListener('DOMContentLoaded', () => {
         .replace(/"true"/g, '"<span class="boolean-true">true</span>"')
         .replace(/"false"/g, '"<span class="boolean-false">false</span>"');
     } catch (error) {
-      console.error('Error formatting payload:', error);
-      return 'Error displaying payload';
+      console.error('Error formatting configuration:', error);
+      return String(configuration);
     }
   }
 
@@ -213,9 +256,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Set segment template info
     const templateInfo = card.querySelector('.segment-template-info');
+
+    // Get the configuration value
+    let configurationDisplay = 'None';
+    if (segment.segment_template.configuration) {
+      configurationDisplay = formatConfiguration(segment.segment_template.configuration);
+    }
+
     templateInfo.innerHTML = `
-      <strong>${segment.segment_template.name}</strong><br>
-      <span class="text-light">Template ID: ${segment.segment_template.id}</span>
+      <div class="template-property">
+        <span class="property-label">Name:</span>
+        <span class="property-value"><strong>${segment.segment_template.name}</strong></span>
+      </div>
+      <div class="template-property">
+        <span class="property-label">Template ID:</span>
+        <span class="property-value">${segment.segment_template.id}</span>
+      </div>
+      <div class="template-property">
+        <span class="property-label">Selector Set ID:</span>
+        <span class="property-value">${segment.selector_set.id}</span>
+      </div>
+      <div class="template-property">
+        <span class="property-label">Configuration:</span>
+      </div>
+      <pre class="configuration-data">${configurationDisplay}</pre>
     `;
 
     // Set segment variables info
