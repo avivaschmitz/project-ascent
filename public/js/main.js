@@ -77,6 +77,35 @@ document.addEventListener('DOMContentLoaded', () => {
       const segmentCard = createSegmentCard(segment);
       segmentsContainer.appendChild(segmentCard);
     });
+
+    // Check for scrollable content after a slight delay to ensure DOM is fully rendered
+    setTimeout(checkScrollableContent, 100);
+
+    // Add window resize event listener to recheck scrollable content
+    window.addEventListener('resize', checkScrollableContent);
+  }
+
+  /**
+   * Check for scrollable content and add appropriate styling
+   */
+  function checkScrollableContent() {
+    // Check variables sections
+    document.querySelectorAll('.segment-variables-info').forEach(element => {
+      if (element.scrollHeight > element.clientHeight) {
+        element.classList.add('scrollable-content');
+      } else {
+        element.classList.remove('scrollable-content');
+      }
+    });
+
+    // Check selectors sections
+    document.querySelectorAll('.selectors-list').forEach(element => {
+      if (element.scrollHeight > element.clientHeight) {
+        element.classList.add('scrollable-content');
+      } else {
+        element.classList.remove('scrollable-content');
+      }
+    });
   }
 
   /**
@@ -100,6 +129,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Set segment variables info
     const variablesInfo = card.querySelector('.segment-variables-info');
+
+    // Add a heading if there are variables
+    if (Object.keys(segment.segment_variables).length > 0) {
+      const heading = document.createElement('div');
+      heading.className = 'variable-item variables-heading';
+      heading.innerHTML = `
+        <span class="variable-name"><strong>Name</strong></span>
+        <span class="variable-value"><strong>Value</strong></span>
+      `;
+      variablesInfo.appendChild(heading);
+    } else {
+      variablesInfo.innerHTML = '<div class="empty-message">No variables defined</div>';
+    }
+
+    // Add the variables
     for (const [key, value] of Object.entries(segment.segment_variables)) {
       const variableItem = document.createElement('div');
       variableItem.className = 'variable-item';
@@ -128,42 +172,48 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Add selectors
     const selectorsList = card.querySelector('.selectors-list');
-    segment.selector_set.selectors.forEach(selector => {
-      const selectorCard = document.createElement('div');
-      selectorCard.className = 'selector-card';
 
-      // Create match criteria display
-      const criteriaItems = Object.entries(selector.match_criteria)
-        .map(([key, value]) => `<span>${key}: <strong>${value}</strong></span>`)
-        .join(', ');
+    // Check if there are selectors
+    if (segment.selector_set.selectors.length === 0) {
+      selectorsList.innerHTML = '<div class="empty-message">No selectors defined</div>';
+    } else {
+      segment.selector_set.selectors.forEach(selector => {
+        const selectorCard = document.createElement('div');
+        selectorCard.className = 'selector-card';
 
-      // Create payload display
-      const payloadItems = Object.entries(selector.payload)
-        .map(([key, value]) => {
-          if (typeof value === 'boolean') {
-            return `<span>${key}: <strong class="boolean-${value}">${value}</strong></span>`;
-          }
-          return `<span>${key}: <strong>${value}</strong></span>`;
-        })
-        .join(', ');
+        // Create match criteria display
+        const criteriaItems = Object.entries(selector.match_criteria)
+          .map(([key, value]) => `<span>${key}: <strong>${value}</strong></span>`)
+          .join(', ');
 
-      selectorCard.innerHTML = `
-        <div class="selector-header">
-          <div class="selector-title">Selector ID: ${selector.id}</div>
-          <div class="priority-badge">Priority: ${selector.priority}</div>
-        </div>
-        <div class="match-criteria">
-          <h5>Match Criteria</h5>
-          <div class="criteria-list">${criteriaItems}</div>
-        </div>
-        <div class="payload">
-          <h5>Payload</h5>
-          <div class="payload-list">${payloadItems}</div>
-        </div>
-      `;
+        // Create payload display
+        const payloadItems = Object.entries(selector.payload)
+          .map(([key, value]) => {
+            if (typeof value === 'boolean') {
+              return `<span>${key}: <strong class="boolean-${value}">${value}</strong></span>`;
+            }
+            return `<span>${key}: <strong>${value}</strong></span>`;
+          })
+          .join(', ');
 
-      selectorsList.appendChild(selectorCard);
-    });
+        selectorCard.innerHTML = `
+          <div class="selector-header">
+            <div class="selector-title">Selector ID: ${selector.id}</div>
+            <div class="priority-badge">Priority: ${selector.priority}</div>
+          </div>
+          <div class="match-criteria">
+            <h5>Match Criteria</h5>
+            <div class="criteria-list">${criteriaItems || 'None'}</div>
+          </div>
+          <div class="payload">
+            <h5>Payload</h5>
+            <div class="payload-list">${payloadItems || 'None'}</div>
+          </div>
+        `;
+
+        selectorsList.appendChild(selectorCard);
+      });
+    }
 
     return card;
   }

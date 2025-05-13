@@ -175,6 +175,10 @@ select:focus {
 .segment-card {
   margin-bottom: 1.5rem;
   border-left: 4px solid var(--primary-color);
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  max-height: 800px;
 }
 
 .segment-header {
@@ -200,7 +204,17 @@ select:focus {
   border-radius: 4px;
 }
 
+.segment-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  max-height: 100%;
+  overflow: visible;
+}
+
 .segment-section {
+  display: flex;
+  flex-direction: column;
   margin-bottom: 1.5rem;
 }
 
@@ -220,6 +234,11 @@ select:focus {
   border-radius: var(--border-radius);
   border: 1px solid var(--border-color);
   padding: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  position: relative;
+  padding-right: 5px;
 }
 
 .variable-item {
@@ -257,12 +276,20 @@ select:focus {
   margin-bottom: 1rem;
 }
 
+.selectors-list {
+  max-height: 400px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  position: relative;
+  padding-right: 5px;
+}
+
 .selector-card {
   background-color: white;
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
-  padding: 1rem;
-  margin-bottom: 1rem;
+  padding: 10px;
+  margin-bottom: 10px;
 }
 
 .selector-card:last-child {
@@ -367,6 +394,95 @@ select:focus {
   margin-bottom: 2rem;
 }
 
+/* Info Card */
+.info-card {
+  border-left: 4px solid var(--secondary-color);
+  margin-top: 2rem;
+}
+
+.info-card h3 {
+  color: var(--secondary-color);
+  margin-top: 0;
+}
+
+.info-card ol {
+  padding-left: 1.5rem;
+}
+
+.info-card ol li {
+  margin-bottom: 0.5rem;
+}
+
+/* Scrollbar styling for Webkit browsers */
+.segment-variables-info::-webkit-scrollbar,
+.selectors-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.segment-variables-info::-webkit-scrollbar-track,
+.selectors-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.segment-variables-info::-webkit-scrollbar-thumb,
+.selectors-list::-webkit-scrollbar-thumb {
+  background: var(--primary-light);
+  border-radius: 3px;
+}
+
+.segment-variables-info::-webkit-scrollbar-thumb:hover,
+.selectors-list::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-color);
+}
+
+/* Add box shadow to indicate scrollable content */
+.segment-variables-info.scrollable-content,
+.selectors-list.scrollable-content {
+  box-shadow: inset 0 -5px 5px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* Add a visual indicator for scrollable content */
+.segment-variables-info::after,
+.selectors-list::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 10px;
+  background: linear-gradient(to top, rgba(0,0,0,0.05), transparent);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+  border-bottom-left-radius: var(--border-radius);
+  border-bottom-right-radius: var(--border-radius);
+}
+
+.segment-variables-info.scrollable-content::after,
+.selectors-list.scrollable-content::after {
+  opacity: 1;
+}
+
+/* Empty State Styling */
+.empty-message {
+  padding: 1rem;
+  color: var(--text-light);
+  font-style: italic;
+  text-align: center;
+  background-color: #f8f9fa;
+  border-radius: var(--border-radius);
+}
+
+.variables-heading {
+  background-color: #f1f3f9;
+  font-weight: bold;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  border-bottom: 1px solid var(--border-color);
+}
+
 /* Responsive Adjustments */
 @media (max-width: 768px) {
   .segment-header {
@@ -385,23 +501,4 @@ select:focus {
   .priority-badge {
     margin-top: 0.5rem;
   }
-}
-
-/* Additional styles for info card */
-.info-card {
-  border-left: 4px solid var(--secondary-color);
-  margin-top: 2rem;
-}
-
-.info-card h3 {
-  color: var(--secondary-color);
-  margin-top: 0;
-}
-
-.info-card ol {
-  padding-left: 1.5rem;
-}
-
-.info-card ol li {
-  margin-bottom: 0.5rem;
 }
