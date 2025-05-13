@@ -1,4 +1,30 @@
-document.addEventListener('DOMContentLoaded', () => {
+/**
+   * Format payload object for display
+   * @param {Object} payload - The payload object to format
+   * @returns {string} - Formatted HTML string
+   */
+  function formatPayload(payload) {
+    if (!payload || Object.keys(payload).length === 0) {
+      return 'None';
+    }
+
+    try {
+      // Pretty print the JSON with indentation
+      return JSON.stringify(payload, null, 2)
+        // Escape HTML characters
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        // Highlight keys
+        .replace(/"([^"]+)":/g, '<span class="json-key">"$1":</span>')
+        // Highlight boolean values
+        .replace(/"true"/g, '"<span class="boolean-true">true</span>"')
+        .replace(/"false"/g, '"<span class="boolean-false">false</span>"');
+    } catch (error) {
+      console.error('Error formatting payload:', error);
+      return 'Error displaying payload';
+    }
+  }document.addEventListener('DOMContentLoaded', () => {
   // DOM elements
   const searchForm = document.getElementById('segment-search-form');
   const domainNameInput = document.getElementById('domain-name');

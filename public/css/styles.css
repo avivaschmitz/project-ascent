@@ -1,4 +1,28 @@
-/* Base Styles */
+/* JSON formatting */
+pre.payload-list {
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  padding: 0.5rem;
+  font-family: monospace;
+  font-size: 0.9rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+}
+
+.json-key {
+  color: var(--primary-color);
+  font-weight: bold;
+}
+
+/* Better value highlighting in JSON */
+pre.payload-list .boolean-true {
+  color: var(--success-color);
+}
+
+pre.payload-list .boolean-false {
+  color: var(--error-color);
+}/* Base Styles */
 :root {
   --primary-color: #4a6fdc;
   --primary-light: #e0e7ff;
