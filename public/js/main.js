@@ -94,6 +94,18 @@
       return;
     }
 
+    // DEBUG: Show the raw data being received
+    console.log('Raw segments data:', JSON.stringify(segments));
+
+    // Create a raw data display for debugging
+    const rawDataElement = document.createElement('div');
+    rawDataElement.className = 'debug-data-container';
+    rawDataElement.innerHTML = `
+      <h3>Debug: Raw Data Received</h3>
+      <pre class="debug-data">${JSON.stringify(segments, null, 2)}</pre>
+    `;
+    document.querySelector('.results-section').prepend(rawDataElement);
+
     // Update the result count
     resultCount.textContent = `(${segments.length})`;
     resultsSection.classList.remove('hidden');
@@ -103,12 +115,6 @@
       const segmentCard = createSegmentCard(segment);
       segmentsContainer.appendChild(segmentCard);
     });
-
-    // Check for scrollable content after a slight delay to ensure DOM is fully rendered
-    setTimeout(checkScrollableContent, 100);
-
-    // Add window resize event listener to recheck scrollable content
-    window.addEventListener('resize', checkScrollableContent);
   }
 
   /**

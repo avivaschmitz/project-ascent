@@ -1,4 +1,40 @@
-.payload-list pre {
+.debug-info {
+  background-color: #fffbf0;
+  border: 1px dashed #ffd97d;
+  border-radius: 4px;
+  padding: 0.75rem;
+  margin-top: 0.5rem;
+  font-family: monospace;
+  font-size: 0.9rem;
+}
+
+.debug-info div {
+  margin-bottom: 0.5rem;
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid var(--border-color);
+  margin: 1rem 0;
+}.debug-data-container {
+  margin-bottom: 2rem;
+  background-color: #f8f9fa;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 1rem;
+}
+
+.debug-data {
+  background-color: #eff1f3;
+  padding: 1rem;
+  border-radius: 4px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: monospace;
+  font-size: 0.9rem;
+  max-height: 400px;
+  overflow-y: auto;
+}.payload-list pre {
   margin: 0;
   white-space: pre-wrap;
   word-break: break-word;
