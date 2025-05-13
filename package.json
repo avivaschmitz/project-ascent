@@ -1,24 +1,19 @@
 {
-  "name": "my-heroku-app",
+  "name": "project-ascent",
   "version": "1.0.0",
-  "description": "A simple HTML/CSS application for Heroku",
+  "description": "Self-Service Segment, Experiment and Site Creation & Management",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon server.js"
   },
-  "engines": {
-    "node": "18.x"
-  },
-  "keywords": [
-    "heroku",
-    "express",
-    "html",
-    "css"
-  ],
-  "author": "",
-  "license": "MIT",
   "dependencies": {
     "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
   }
 }

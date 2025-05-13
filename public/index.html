@@ -1,62 +1,94 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Heroku App</title>
+    <title>Project Ascent - Segment Manager</title>
     <link rel="stylesheet" href="css/normalize.css">
     <link rel="stylesheet" href="css/styles.css">
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <header>
+    <header class="app-header">
         <div class="container">
-            <h1>My Heroku App</h1>
-            <nav>
-                <ul>
-                    <li><a href="/">Home</a></li>
-                    <li><a href="/about">About</a></li>
-                    <li><a href="/contact">Contact</a></li>
-                </ul>
-            </nav>
+            <h1>Project Ascent</h1>
+            <p class="subtitle">Self-Service Segment Management</p>
         </div>
     </header>
 
-    <main>
-        <section class="hero">
-            <div class="container">
-                <h2>Welcome to Your Heroku App</h2>
-                <p>This is a starter template for your HTML/CSS application that's ready to deploy on Heroku.</p>
-                <button class="btn primary-btn">Get Started</button>
+    <main class="container">
+        <section class="search-section">
+            <div class="card">
+                <h2>View Segments</h2>
+                <p>Enter a site or partner_id to view associated segments.</p>
+
+                <form id="segment-search-form">
+                    <div class="form-group">
+                        <label for="search-type">Search by:</label>
+                        <select id="search-type" required>
+                            <option value="partner_id">Partner ID</option>
+                            <option value="site">Site</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="search-value">Value:</label>
+                        <input type="text" id="search-value" placeholder="Enter partner_id or site" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </form>
             </div>
         </section>
 
-        <section class="features">
-            <div class="container">
-                <h2>Features</h2>
-                <div class="feature-grid">
-                    <div class="feature-card">
-                        <h3>Responsive Design</h3>
-                        <p>Looks great on all devices from mobile to desktop.</p>
-                    </div>
-                    <div class="feature-card">
-                        <h3>Easy to Customize</h3>
-                        <p>Simple HTML/CSS structure that's easy to modify.</p>
-                    </div>
-                    <div class="feature-card">
-                        <h3>Heroku Ready</h3>
-                        <p>Set up for immediate deployment to Heroku.</p>
+        <section id="results-section" class="results-section hidden">
+            <h2>Segments <span id="result-count" class="badge">(0)</span></h2>
+            <div id="segments-container"></div>
+        </section>
+
+        <div id="loading-indicator" class="loading-indicator hidden">
+            <div class="spinner"></div>
+            <p>Loading segments...</p>
+        </div>
+
+        <div id="error-message" class="error-message hidden"></div>
+    </main>
+
+    <footer class="app-footer">
+        <div class="container">
+            <p>&copy; 2025 Project Ascent. Last updated: May 12, 2025</p>
+        </div>
+    </footer>
+
+    <!-- Segment card template -->
+    <template id="segment-card-template">
+        <div class="card segment-card">
+            <div class="segment-header">
+                <h3 class="segment-name"></h3>
+                <div class="segment-id"></div>
+            </div>
+
+            <div class="segment-body">
+                <div class="segment-section">
+                    <h4>Segment Template</h4>
+                    <div class="segment-template-info"></div>
+                </div>
+
+                <div class="segment-section">
+                    <h4>Segment Variables</h4>
+                    <div class="segment-variables-info"></div>
+                </div>
+
+                <div class="segment-section">
+                    <h4>Selector Set</h4>
+                    <div class="selector-set-info">
+                        <div class="selector-set-header"></div>
+                        <div class="selectors-list"></div>
                     </div>
                 </div>
             </div>
-        </section>
-    </main>
-
-    <footer>
-        <div class="container">
-            <p>&copy; 2025 My Heroku App. All rights reserved.</p>
         </div>
-    </footer>
+    </template>
 
     <script src="js/main.js"></script>
 </body>
