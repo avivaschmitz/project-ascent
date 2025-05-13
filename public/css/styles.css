@@ -386,3 +386,22 @@ select:focus {
     margin-top: 0.5rem;
   }
 }
+
+/* Additional styles for info card */
+.info-card {
+  border-left: 4px solid var(--secondary-color);
+  margin-top: 2rem;
+}
+
+.info-card h3 {
+  color: var(--secondary-color);
+  margin-top: 0;
+}
+
+.info-card ol {
+  padding-left: 1.5rem;
+}
+
+.info-card ol li {
+  margin-bottom: 0.5rem;
+}

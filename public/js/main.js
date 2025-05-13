@@ -1,8 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   // DOM elements
   const searchForm = document.getElementById('segment-search-form');
-  const searchType = document.getElementById('search-type');
-  const searchValue = document.getElementById('search-value');
+  const domainNameInput = document.getElementById('domain-name');
   const resultsSection = document.getElementById('results-section');
   const segmentsContainer = document.getElementById('segments-container');
   const resultCount = document.getElementById('result-count');
@@ -14,11 +13,10 @@ document.addEventListener('DOMContentLoaded', () => {
   searchForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const type = searchType.value;
-    const value = searchValue.value.trim();
+    const domainName = domainNameInput.value.trim();
 
-    if (!value) {
-      showError('Please enter a value to search for.');
+    if (!domainName) {
+      showError('Please enter a domain name to search for.');
       return;
     }
 
@@ -32,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       // Fetch segments from the API
-      const segments = await fetchSegments(type, value);
+      const segments = await fetchSegments(domainName);
 
       // Hide loading indicator
       loadingIndicator.classList.add('hidden');
@@ -47,12 +45,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /**
    * Fetch segments from the API
-   * @param {string} type - The search type (partner_id or site)
-   * @param {string} value - The search value
+   * @param {string} domainName - The domain name to search for
    * @returns {Promise<Array>} - An array of segment objects
    */
-  async function fetchSegments(type, value) {
-    const response = await fetch(`/api/segments?${type}=${encodeURIComponent(value)}`);
+  async function fetchSegments(domainName) {
+    const response = await fetch(`/api/segments?domain_name=${encodeURIComponent(domainName)}`);
 
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
@@ -67,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
    */
   function displaySegments(segments) {
     if (segments.length === 0) {
-      showError('No segments found for the given search criteria.');
+      showError('No segments found for the given domain name.');
       return;
     }
 

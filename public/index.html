@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -12,32 +12,34 @@
     <header class="app-header">
         <div class="container">
             <h1>Project Ascent</h1>
-            <p class="subtitle">Self-Service Segment Management</p>
+            <p class="subtitle">Domain Segment Management</p>
         </div>
     </header>
 
     <main class="container">
         <section class="search-section">
             <div class="card">
-                <h2>View Segments</h2>
-                <p>Enter a site or partner_id to view associated segments.</p>
+                <h2>View Domain Segments</h2>
+                <p>Enter a domain name to view all associated segments.</p>
 
                 <form id="segment-search-form">
                     <div class="form-group">
-                        <label for="search-type">Search by:</label>
-                        <select id="search-type" required>
-                            <option value="partner_id">Partner ID</option>
-                            <option value="site">Site</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="search-value">Value:</label>
-                        <input type="text" id="search-value" placeholder="Enter partner_id or site" required>
+                        <label for="domain-name">Domain Name:</label>
+                        <input type="text" id="domain-name" placeholder="example.com" required>
                     </div>
 
                     <button type="submit" class="btn btn-primary">Search</button>
                 </form>
+            </div>
+
+            <div class="card info-card">
+                <h3>Getting Started</h3>
+                <p>This application is designed to help you manage domain segments. Currently, the database is empty. To use this application:</p>
+                <ol>
+                    <li>Use the database management tools to add domains, segments, and their associated data</li>
+                    <li>Search for domains to view their associated segments</li>
+                </ol>
+                <p>The application provides a clean interface to explore segment data once it's available in the database.</p>
             </div>
         </section>
 
