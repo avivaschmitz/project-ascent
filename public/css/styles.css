@@ -1,4 +1,49 @@
-.debug-info {
+.feature-flags-container {
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  padding: 0.75rem;
+}
+
+.feature-flags-header {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  color: var(--primary-dark);
+}
+
+.feature-flags-content {
+  margin-left: 1rem;
+  border-left: 2px solid var(--primary-light);
+  padding-left: 0.75rem;
+}
+
+.feature-flag-item {
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.feature-flag-item:last-child {
+  margin-bottom: 0;
+}
+
+.feature-name {
+  font-weight: 500;
+  margin-right: 0.5rem;
+}
+
+.feature-value {
+  font-family: monospace;
+}
+
+.boolean-true {
+  color: var(--success-color);
+  font-weight: 600;
+}
+
+.boolean-false {
+  color: var(--error-color);
+  font-weight: 600;
+}.debug-info {
   background-color: #fffbf0;
   border: 1px dashed #ffd97d;
   border-radius: 4px;
