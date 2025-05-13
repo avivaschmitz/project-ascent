@@ -253,13 +253,146 @@ document.addEventListener('DOMContentLoaded', () => {
       // Add template options
       templates.forEach(template => {
         const option = new Option(template.segment_template_name, template.segment_template_id);
+        // Store full template data as a data attribute (serialized)
+        option.dataset.template = JSON.stringify(template);
         templateDropdown.add(option);
       });
+
+      // Add change event listener to show template details when selected
+      templateDropdown.addEventListener('change', showTemplateDetails);
 
       showLoading(false);
     } catch (error) {
       showLoading(false);
       showError(`Error loading templates: ${error.message}`);
+    }
+  }
+
+  // Show template details when a template is selected
+  async function showTemplateDetails() {
+    const templatePreview = document.getElementById('template-preview');
+    const templateValue = templateDropdown.value;
+
+    if (!templateValue) {
+      templatePreview.classList.add('hidden');
+      return;
+    }
+
+    try {
+      // Get template data from the data attribute
+      const selectedOption = templateDropdown.options[templateDropdown.selectedIndex];
+      const templateData = JSON.parse(selectedOption.dataset.template);
+
+      // Show the template preview section
+      templatePreview.classList.remove('hidden');
+
+      // Populate template info
+      const templateInfo = templatePreview.querySelector('.segment-template-info');
+      let configurationDisplay = 'None';
+
+      if (templateData.configuration) {
+        configurationDisplay = formatConfiguration(templateData.configuration);
+      }
+
+      templateInfo.innerHTML = `
+        <div class="template-property">
+          <span class="property-label">Name:</span>
+          <span class="property-value"><strong>${templateData.segment_template_name}</strong></span>
+        </div>
+        <div class="template-property">
+          <span class="property-label">Template ID:</span>
+          <span class="property-value">${templateData.segment_template_id}</span>
+        </div>
+        <div class="template-property">
+          <span class="property-label">Selector Set ID:</span>
+          <span class="property-value">${templateData.selector_set_id}</span>
+        </div>
+        <div class="template-property">
+          <span class="property-label">Configuration:</span>
+        </div>
+        <pre class="configuration-data">${configurationDisplay}</pre>
+      `;
+
+      // Get selector set details
+      const selectorSetHeader = templatePreview.querySelector('.selector-set-header');
+      selectorSetHeader.innerHTML = `
+        <strong>${templateData.set_name}</strong><br>
+        <span class="text-light">Selector Set ID: ${templateData.selector_set_id}</span>
+      `;
+
+      // Fetch selectors for this selector set
+      await loadSelectorsForTemplatePreview(templateData.selector_set_id);
+
+    } catch (error) {
+      console.error('Error showing template details:', error);
+      showError(`Error loading template details: ${error.message}`);
+    }
+  }
+
+  // Load selectors for the template preview
+  async function loadSelectorsForTemplatePreview(selectorSetId) {
+    try {
+      showLoading(true);
+
+      const response = await fetch(`/api/selectors?selector_set_id=${selectorSetId}`);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const selectors = await response.json();
+      const selectorsList = document.querySelector('#template-preview .selectors-list');
+
+      // Clear existing selectors
+      selectorsList.innerHTML = '';
+
+      // Check if there are selectors
+      if (selectors.length === 0) {
+        selectorsList.innerHTML = '<div class="empty-message">No selectors defined</div>';
+      } else {
+        selectors.forEach(selector => {
+          const selectorCard = document.createElement('div');
+          selectorCard.className = 'selector-card';
+
+          // Create match criteria display
+          let criteriaItems = 'None';
+          if (selector.match_criteria && Object.keys(selector.match_criteria).length > 0) {
+            criteriaItems = JSON.stringify(selector.match_criteria, null, 2);
+          }
+
+          // Create payload display
+          let payloadDisplay = 'None';
+          if (selector.payload && Object.keys(selector.payload).length > 0) {
+            payloadDisplay = formatPayload(selector.payload);
+          }
+
+          selectorCard.innerHTML = `
+            <div class="selector-header">
+              <div class="selector-title">Selector ID: ${selector.selector_id}</div>
+              <div class="priority-badge">Priority: ${selector.priority}</div>
+            </div>
+            <div class="match-criteria">
+              <h5>Match Criteria</h5>
+              <pre class="criteria-list">${criteriaItems}</pre>
+            </div>
+            <div class="payload">
+              <h5>Payload</h5>
+              <pre class="payload-list">${payloadDisplay}</pre>
+            </div>
+          `;
+
+          selectorsList.appendChild(selectorCard);
+        });
+      }
+
+      showLoading(false);
+    } catch (error) {
+      showLoading(false);
+      console.error('Error loading selectors:', error);
+
+      // Show a simpler error within the component
+      const selectorsList = document.querySelector('#template-preview .selectors-list');
+      selectorsList.innerHTML = `<div class="error-message">Error loading selectors: ${error.message}</div>`;
     }
   }
 

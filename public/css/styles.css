@@ -1,4 +1,18 @@
-/* Mode Selection Buttons */
+.template-details {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: #f9f9f9;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+}
+
+.template-details .segment-section {
+  margin-bottom: 1rem;
+}
+
+.template-details .segment-section:last-child {
+  margin-bottom: 0;
+}/* Mode Selection Buttons */
 .mode-selection {
   margin-bottom: 2rem;
 }

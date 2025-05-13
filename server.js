@@ -1,4 +1,62 @@
-const express = require('express');
+// Get selectors by selector_set_id
+app.get('/api/selectors', async (req, res) => {
+  const { selector_set_id } = req.query;
+
+  if (!selector_set_id) {
+    return res.status(400).json({ error: 'selector_set_id is required' });
+  }
+
+  try {
+    const result = await db.query(
+      'SELECT * FROM selectors WHERE selector_set_id = $1 ORDER BY priority',
+      [selector_set_id]
+    );
+
+    // Process the selectors to parse JSON fields
+    const processedSelectors = result.rows.map(selector => {
+      // Parse match_criteria
+      let matchCriteria = {};
+      try {
+        if (selector.match_criteria) {
+          if (typeof selector.match_criteria === 'string') {
+            matchCriteria = JSON.parse(selector.match_criteria);
+          } else {
+            matchCriteria = selector.match_criteria;
+          }
+        }
+      } catch (e) {
+        console.error(`Error parsing match_criteria for selector ${selector.selector_id}: ${e.message}`);
+      }
+
+      // Parse payload
+      let payload = {};
+      try {
+        if (selector.payload) {
+          if (typeof selector.payload === 'string') {
+            payload = JSON.parse(selector.payload);
+          } else {
+            payload = selector.payload;
+          }
+        }
+      } catch (e) {
+        console.error(`Error parsing payload for selector ${selector.selector_id}: ${e.message}`);
+      }
+
+      return {
+        selector_id: selector.selector_id,
+        match_criteria: matchCriteria,
+        payload: payload,
+        selector_set_id: selector.selector_set_id,
+        priority: selector.priority
+      };
+    });
+
+    res.json(processedSelectors);
+  } catch (error) {
+    console.error('Error fetching selectors:', error);
+    res.status(500).json({ error: 'An error occurred while fetching selectors' });
+  }
+});const express = require('express');
 const path = require('path');
 require('dotenv').config(); // Load environment variables
 const db = require('./db'); // Import the database connection
