@@ -257,10 +257,14 @@
     // Set segment template info
     const templateInfo = card.querySelector('.segment-template-info');
 
-    // Get the configuration value
+    // Get the configuration value and debug it
+    console.log("Template data:", segment.segment_template);
     let configurationDisplay = 'None';
-    if (segment.segment_template.configuration) {
+    if (segment.segment_template.configuration !== undefined && segment.segment_template.configuration !== null) {
+      console.log("Configuration found:", segment.segment_template.configuration);
       configurationDisplay = formatConfiguration(segment.segment_template.configuration);
+    } else {
+      console.log("No configuration found in template");
     }
 
     templateInfo.innerHTML = `

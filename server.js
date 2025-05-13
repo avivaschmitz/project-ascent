@@ -181,6 +181,11 @@ async function getSegmentsByDomainId(domainId) {
     return [];
   }
 
+  // Log the configuration data to verify it's present
+  segmentsResult.rows.forEach(row => {
+    console.log(`Segment ${row.segment_id} configuration:`, row.configuration);
+  });
+
   return await processSegmentResults(segmentsResult.rows);
 }
 
@@ -280,7 +285,8 @@ function formatSegmentData(segmentRows, variableRows, selectorSetRows, selectorR
           name: segmentRow.segment_name,
           segment_template: {
             id: segmentRow.segment_template_id,
-            name: segmentRow.segment_template_name
+            name: segmentRow.segment_template_name,
+            configuration: segmentRow.configuration
           },
           segment_variables: segmentVariables,
           selector_set: {
@@ -345,13 +351,17 @@ function formatSegmentData(segmentRows, variableRows, selectorSetRows, selectorR
           };
         });
 
+      // Log the configuration before adding it to the segment
+      console.log(`Adding configuration for segment ${segmentRow.segment_id}:`, segmentRow.configuration);
+
       // Construct the segment object
       const segment = {
         id: segmentRow.segment_id,
         name: segmentRow.segment_name,
         segment_template: {
           id: segmentRow.segment_template_id,
-          name: segmentRow.segment_template_name
+          name: segmentRow.segment_template_name,
+          configuration: segmentRow.configuration  // Explicitly include configuration
         },
         segment_variables: segmentVariables,
         selector_set: {
