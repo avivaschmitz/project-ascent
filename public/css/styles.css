@@ -1,4 +1,15 @@
-/* Base Styles */
+/* JSON object styling */
+.json-object {
+  display: inline-block;
+  white-space: pre-wrap;
+  font-family: monospace;
+  font-size: 0.9rem;
+  padding: 0.25rem;
+  border-radius: 3px;
+  background-color: rgba(0, 0, 0, 0.03);
+  border: 1px dashed var(--border-color);
+  margin: 0.25rem 0;
+}/* Base Styles */
 :root {
   --primary-color: #4a6fdc;
   --primary-light: #e0e7ff;
@@ -218,7 +229,8 @@ select:focus {
   flex-direction: column;
   margin-bottom: 1.5rem;
   position: relative; /* Added to contain child elements */
-  overflow: hidden; /* Prevent overflow issues */
+  overflow: visible; /* Allow visibility while preventing layout issues */
+  min-height: 50px; /* Ensure minimum height for empty sections */
 }
 
 .segment-section:last-child {
@@ -282,13 +294,16 @@ select:focus {
 }
 
 .selectors-list {
-  max-height: 400px;
+  max-height: 500px; /* Increased height to show more selectors */
   overflow-y: auto;
   scrollbar-width: thin;
   position: relative;
   padding-right: 5px;
   contain: content; /* Help contain the scrollable content */
   margin-bottom: 0; /* Ensure no margin causes overflow */
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Add gap between selector cards */
 }
 
 /* Better handle content overflow in selectors */

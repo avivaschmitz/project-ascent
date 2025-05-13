@@ -233,14 +233,28 @@ function formatSegmentData(segmentRows, variableRows, selectorSetRows, selectorR
           let payload = {};
 
           try {
-            matchCriteria = JSON.parse(selector.match_criteria);
+            // Make sure we properly handle the match_criteria
+            if (selector.match_criteria) {
+              if (typeof selector.match_criteria === 'string') {
+                matchCriteria = JSON.parse(selector.match_criteria);
+              } else if (typeof selector.match_criteria === 'object') {
+                matchCriteria = selector.match_criteria;
+              }
+            }
           } catch (e) {
             console.error(`Error parsing match_criteria for selector ${selector.selector_id}: ${e.message}`);
             console.error(`Raw value: ${selector.match_criteria}`);
           }
 
           try {
-            payload = JSON.parse(selector.payload);
+            // Make sure we properly handle the payload
+            if (selector.payload) {
+              if (typeof selector.payload === 'string') {
+                payload = JSON.parse(selector.payload);
+              } else if (typeof selector.payload === 'object') {
+                payload = selector.payload;
+              }
+            }
           } catch (e) {
             console.error(`Error parsing payload for selector ${selector.selector_id}: ${e.message}`);
             console.error(`Raw value: ${selector.payload}`);
