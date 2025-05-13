@@ -249,15 +249,24 @@ function formatSegmentData(segmentRows, variableRows, selectorSetRows, selectorR
           try {
             // Make sure we properly handle the payload
             if (selector.payload) {
+              // Log raw payload for debugging
+              console.log(`Raw payload for selector ${selector.selector_id}: ${JSON.stringify(selector.payload)}`);
+
               if (typeof selector.payload === 'string') {
-                payload = JSON.parse(selector.payload);
+                try {
+                  payload = JSON.parse(selector.payload);
+                  console.log(`Parsed payload: ${JSON.stringify(payload)}`);
+                } catch (e) {
+                  console.error(`JSON parse error: ${e.message}`);
+                  // If parsing fails, return the raw string as fallback
+                  payload = { raw: selector.payload };
+                }
               } else if (typeof selector.payload === 'object') {
                 payload = selector.payload;
               }
             }
           } catch (e) {
-            console.error(`Error parsing payload for selector ${selector.selector_id}: ${e.message}`);
-            console.error(`Raw value: ${selector.payload}`);
+            console.error(`Error handling payload for selector ${selector.selector_id}: ${e.message}`);
           }
 
           return {
