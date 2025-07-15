@@ -6,6 +6,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize navigation
     initializeNavigation();
 
+    // Load initial data for active section (domains)
+    loadDomainsData();
+
     // Test API connection
     testAPIConnection();
 });
@@ -26,8 +29,9 @@ function initializeNavigation() {
             document.querySelectorAll('.nav-link').forEach(nav => nav.classList.remove('active'));
             link.classList.add('active');
 
-            // Show corresponding section
+            // Show corresponding section and load data
             showSection(sectionId);
+            loadSectionData(sectionId);
         });
     });
 
@@ -41,8 +45,9 @@ function initializeNavigation() {
             document.querySelectorAll('.nav-link').forEach(nav => nav.classList.remove('active'));
             document.querySelector('.nav-link[data-section="segments"]').classList.add('active');
 
-            // Show corresponding section
+            // Show corresponding section and load data
             showSection(sectionId);
+            loadSectionData(sectionId);
         });
     });
 }
@@ -64,17 +69,132 @@ function showSection(sectionId) {
     }
 }
 
-// Example function to test your API endpoints
-async function testAPIConnection() {
+// Load data based on section
+function loadSectionData(sectionId) {
+    switch(sectionId) {
+        case 'domains':
+            loadDomainsData();
+            break;
+        case 'segments':
+            // Future: loadSegmentsData();
+            break;
+        case 'segment-variables':
+            // Future: loadSegmentVariablesData();
+            break;
+        case 'experiments':
+            // Future: loadExperimentsData();
+            break;
+    }
+}
+
+// Load and display domains data
+async function loadDomainsData() {
     try {
-        const response = await fetch('/api/domains');
-        if (response.ok) {
-            const domains = await response.json();
-            console.log('API Connection successful!');
-            console.log('Available domains:', domains);
+        const contentArea = document.querySelector('#domains-section .content-area');
+
+        // Show loading state
+        contentArea.innerHTML = '<div class="loading">Loading domains...</div>';
+
+        // Fetch domains from API (this uses the SQL: SELECT domain_id, domain_name FROM domains ORDER BY domain_name ASC)
+        const domains = await apiCall('/api/domains');
+
+        // Generate domains table HTML
+        let domainsHTML = `
+            <div class="data-header">
+                <h3>All Domains (${domains.length})</h3>
+                <button class="btn btn-primary" onclick="addNewDomain()">Add New Domain</button>
+            </div>
+            <div class="data-table">
+                <table class="domains-table">
+                    <thead>
+                        <tr>
+                            <th>Domain ID</th>
+                            <th>Domain Name</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        if (domains.length === 0) {
+            domainsHTML += `
+                        <tr>
+                            <td colspan="3" class="no-data">No domains found</td>
+                        </tr>
+            `;
+        } else {
+            domains.forEach(domain => {
+                domainsHTML += `
+                        <tr>
+                            <td class="domain-id">${domain.domain_id}</td>
+                            <td class="domain-name">${domain.domain_name}</td>
+                            <td class="actions">
+                                <button class="btn btn-small btn-secondary" onclick="editDomain(${domain.domain_id})">Edit</button>
+                                <button class="btn btn-small btn-danger" onclick="deleteDomain(${domain.domain_id})">Delete</button>
+                            </td>
+                        </tr>
+                `;
+            });
         }
+
+        domainsHTML += `
+                    </tbody>
+                </table>
+            </div>
+        `;
+
+        // Update the content area
+        contentArea.innerHTML = domainsHTML;
+
+        console.log(`Loaded ${domains.length} domains`);
+
     } catch (error) {
-        console.log('API test:', error.message);
+        console.error('Error loading domains:', error);
+        const contentArea = document.querySelector('#domains-section .content-area');
+        contentArea.innerHTML = `
+            <div class="error-message">
+                <h3>Error Loading Domains</h3>
+                <p>${error.message}</p>
+                <button class="btn btn-primary" onclick="loadDomainsData()">Retry</button>
+            </div>
+        `;
+    }
+}
+
+// Placeholder functions for domain actions
+function addNewDomain() {
+    alert('Add new domain functionality to be implemented');
+}
+
+function editDomain(domainId) {
+    alert(`Edit domain ${domainId} functionality to be implemented`);
+}
+
+function deleteDomain(domainId) {
+    if (confirm('Are you sure you want to delete this domain?')) {
+        alert(`Delete domain ${domainId} functionality to be implemented`);
+    }
+}
+
+// Utility function for making API calls
+async function apiCall(endpoint, options = {}) {
+    try {
+        const response = await fetch(endpoint, {
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            },
+            ...options
+        });
+
+        if (!response.ok) {
+            throw new Error(`API Error: ${response.status}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('API call failed:', error);
+        throw error;
     }
 }
 
