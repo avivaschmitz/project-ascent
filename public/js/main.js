@@ -1,12 +1,68 @@
-// Clean Slate JavaScript for Project Ascent
-// Your backend API endpoints are ready to use!
+// Project Ascent - Navigation and Section Management
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('Project Ascent - Clean slate ready!');
+    console.log('Project Ascent - Navigation ready!');
 
-    // Example: Test API connection
+    // Initialize navigation
+    initializeNavigation();
+
+    // Test API connection
     testAPIConnection();
 });
+
+// Navigation functionality
+function initializeNavigation() {
+    const navLinks = document.querySelectorAll('.nav-link[data-section]');
+    const submenuLinks = document.querySelectorAll('.submenu-link[data-section]');
+    const contentSections = document.querySelectorAll('.content-section');
+
+    // Handle main nav clicks
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const sectionId = link.getAttribute('data-section');
+
+            // Update active nav state
+            document.querySelectorAll('.nav-link').forEach(nav => nav.classList.remove('active'));
+            link.classList.add('active');
+
+            // Show corresponding section
+            showSection(sectionId);
+        });
+    });
+
+    // Handle submenu clicks
+    submenuLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const sectionId = link.getAttribute('data-section');
+
+            // Update active nav state (highlight parent)
+            document.querySelectorAll('.nav-link').forEach(nav => nav.classList.remove('active'));
+            document.querySelector('.nav-link[data-section="segments"]').classList.add('active');
+
+            // Show corresponding section
+            showSection(sectionId);
+        });
+    });
+}
+
+// Show specific section
+function showSection(sectionId) {
+    const contentSections = document.querySelectorAll('.content-section');
+
+    // Hide all sections
+    contentSections.forEach(section => {
+        section.classList.remove('active');
+    });
+
+    // Show target section
+    const targetSection = document.getElementById(`${sectionId}-section`);
+    if (targetSection) {
+        targetSection.classList.add('active');
+        console.log(`Switched to ${sectionId} section`);
+    }
+}
 
 // Example function to test your API endpoints
 async function testAPIConnection() {
