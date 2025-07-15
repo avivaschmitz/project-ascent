@@ -3,318 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project Ascent - Segment Manager</title>
+    <title>Project Ascent</title>
     <link rel="stylesheet" href="css/normalize.css">
     <link rel="stylesheet" href="css/styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <header class="app-header">
-        <div class="container">
+    <div class="container">
+        <header>
             <h1>Project Ascent</h1>
-            <p class="subtitle">Domain Segment Management</p>
-        </div>
-    </header>
+            <p>Ready for your new interface</p>
+        </header>
 
-    <main class="container">
-        <!-- Mode Selection -->
-        <section class="mode-selection">
-            <div class="mode-buttons">
-                <button id="view-mode-btn" class="mode-btn active">View Segments</button>
-                <button id="create-mode-btn" class="mode-btn">Create Segments</button>
-            </div>
-            <hr class="mode-divider">
-        </section>
+        <main>
+            <div class="welcome-card">
+                <h2>Clean Slate Ready</h2>
+                <p>Your backend infrastructure is intact and ready for a new UI!</p>
 
-        <!-- View Segments Section -->
-        <section id="view-segments-section" class="view-section">
-            <div class="card">
-                <h2>View Segments</h2>
-                <p>Search for segments by domain name or partner ID.</p>
-
-                <form id="segment-search-form">
-                    <div class="form-group">
-                        <label for="search-type">Search By:</label>
-                        <select id="search-type">
-                            <option value="domain">Domain Name</option>
-                            <option value="partner">Partner ID</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group" id="domain-search-group">
-                        <label for="domain-name">Domain Name:</label>
-                        <input type="text" id="domain-name" placeholder="example.com" required>
-                    </div>
-
-                    <div class="form-group hidden" id="partner-search-group">
-                        <label for="partner-id">Partner ID:</label>
-                        <input type="text" id="partner-id" placeholder="partner123">
-                    </div>
-
-                    <button type="submit" class="btn btn-primary">Search</button>
-                </form>
-            </div>
-        </section>
-
-        <!-- Create Segments Section (initially hidden) -->
-        <section id="create-segments-section" class="create-section hidden">
-            <div class="card">
-                <h2>Create New Segment</h2>
-                <p>Create a new segment using an existing template or by creating a new template.</p>
-
-                <div class="form-group">
-                    <label>Template Option:</label>
-                    <div class="radio-group">
-                        <label class="radio-label">
-                            <input type="radio" name="template-option" value="existing" checked>
-                            Use Existing Template
-                        </label>
-                        <label class="radio-label">
-                            <input type="radio" name="template-option" value="new">
-                            Create New Template
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Existing Template Flow (visible by default) -->
-                <div id="existing-template-flow">
-                    <div class="form-group">
-                        <label for="existing-template">Select Template:</label>
-                        <select id="existing-template" required>
-                            <option value="">-- Select a template --</option>
-                            <!-- Templates will be loaded dynamically -->
-                        </select>
-                    </div>
-
-                    <!-- Template details preview section (initially hidden) -->
-                    <div id="template-preview" class="hidden">
-                        <h4>Template Details</h4>
-                        <div class="template-details card">
-                            <div class="segment-section">
-                                <div class="segment-template-info">
-                                    <!-- Template info will be populated dynamically -->
-                                </div>
-                            </div>
-                            <div class="segment-section">
-                                <h4>Selector Set</h4>
-                                <div class="selector-set-info">
-                                    <div class="selector-set-header"></div>
-                                    <div class="selectors-list"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="segment-name">Segment Name:</label>
-                        <input type="text" id="segment-name" placeholder="Enter segment name" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="domain-id">Domain:</label>
-                        <select id="domain-id" required>
-                            <option value="">-- Select a domain --</option>
-                            <!-- Domains will be loaded dynamically -->
-                        </select>
-                    </div>
-
-                    <div class="form-group" id="segment-variables-container">
-                        <label>Segment Variables:</label>
-                        <div class="segment-variables">
-                            <div class="variable-row">
-                                <input type="text" placeholder="Variable name" class="variable-name">
-                                <input type="text" placeholder="Variable value" class="variable-value">
-                                <button type="button" class="btn btn-small remove-variable">-</button>
-                            </div>
-                        </div>
-                        <button type="button" class="btn btn-small add-variable">+ Add Variable</button>
-                    </div>
-                </div>
-
-                <!-- New Template Flow (initially hidden) -->
-                <div id="new-template-flow" class="hidden">
-                    <div class="form-group">
-                        <label for="new-template-name">Template Name:</label>
-                        <input type="text" id="new-template-name" placeholder="Enter template name">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="template-configuration">Configuration (JSON):</label>
-                        <textarea id="template-configuration" rows="5" placeholder='{"key": "value"}'></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Selector Set:</label>
-                        <div class="radio-group">
-                            <label class="radio-label">
-                                <input type="radio" name="selector-set-option" value="existing" checked>
-                                Use Existing Selector Set
-                            </label>
-                            <label class="radio-label">
-                                <input type="radio" name="selector-set-option" value="new">
-                                Create New Selector Set
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Existing Selector Set -->
-                    <div id="existing-selector-set">
-                        <div class="form-group">
-                            <label for="existing-selector-set">Select Selector Set:</label>
-                            <select id="existing-selector-set-dropdown" required>
-                                <option value="">-- Select a selector set --</option>
-                                <!-- Selector sets will be loaded dynamically -->
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- New Selector Set -->
-                    <div id="new-selector-set" class="hidden">
-                        <div class="form-group">
-                            <label for="selector-set-name">Selector Set Name:</label>
-                            <input type="text" id="selector-set-name" placeholder="Enter selector set name">
-                        </div>
-
-                        <div class="form-group" id="selectors-container">
-                            <label>Selectors:</label>
-                            <div class="selectors">
-                                <!-- Template for a selector -->
-                                <div class="selector-item">
-                                    <div class="form-group">
-                                        <label>Priority:</label>
-                                        <input type="number" class="selector-priority" value="1">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Match Criteria (JSON):</label>
-                                        <textarea class="match-criteria" rows="3" placeholder='{"page": "home"}'></textarea>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Payload (JSON):</label>
-                                        <textarea class="payload" rows="3" placeholder='{"feature_flags": {"dark_mode": true}}'></textarea>
-                                    </div>
-                                    <button type="button" class="btn btn-small remove-selector">Remove Selector</button>
-                                </div>
-                            </div>
-                            <button type="button" class="btn btn-small add-selector">+ Add Selector</button>
-                        </div>
-                    </div>
-
-                    <!-- Segment Details (for new template flow) -->
-                    <div class="form-group">
-                        <label for="new-segment-name">Segment Name:</label>
-                        <input type="text" id="new-segment-name" placeholder="Enter segment name">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="new-domain-id">Domain:</label>
-                        <select id="new-domain-id">
-                            <option value="">-- Select a domain --</option>
-                            <!-- Domains will be loaded dynamically -->
-                        </select>
-                    </div>
-
-                    <div class="form-group" id="new-segment-variables-container">
-                        <label>Segment Variables:</label>
-                        <div class="segment-variables">
-                            <div class="variable-row">
-                                <input type="text" placeholder="Variable name" class="variable-name">
-                                <input type="text" placeholder="Variable value" class="variable-value">
-                                <button type="button" class="btn btn-small remove-variable">-</button>
-                            </div>
-                        </div>
-                        <button type="button" class="btn btn-small add-variable">+ Add Variable</button>
-                    </div>
-                </div>
-
-                <div class="form-actions">
-                    <button type="button" id="create-segment-btn" class="btn btn-primary">Create Segment</button>
-                    <button type="button" id="cancel-create-btn" class="btn btn-secondary">Cancel</button>
+                <div class="api-info">
+                    <h3>Available API Endpoints:</h3>
+                    <ul class="endpoint-list">
+                        <li><code>GET /api/domains</code> - Get all domains</li>
+                        <li><code>GET /api/segment-templates</code> - Get all segment templates</li>
+                        <li><code>GET /api/selector-sets</code> - Get all selector sets</li>
+                        <li><code>GET /api/selectors?selector_set_id={id}</code> - Get selectors</li>
+                        <li><code>GET /api/segments?domain_name={name}</code> - Get segments by domain</li>
+                        <li><code>GET /api/segments?partner_id={id}</code> - Get segments by partner</li>
+                        <li><code>POST /api/segments</code> - Create segment with existing template</li>
+                        <li><code>POST /api/segments/with-template</code> - Create segment with new template</li>
+                    </ul>
                 </div>
             </div>
-        </section>
-
-        <!-- Results Section -->
-        <section id="results-section" class="results-section hidden">
-            <h2>Segments <span id="result-count" class="badge">(0)</span></h2>
-            <div id="segments-container"></div>
-        </section>
-
-        <!-- Loading Indicator -->
-        <div id="loading-indicator" class="loading-indicator hidden">
-            <div class="spinner"></div>
-            <p>Loading segments...</p>
-        </div>
-
-        <!-- Error Message -->
-        <div id="error-message" class="error-message hidden"></div>
-
-        <!-- Success Message -->
-        <div id="success-message" class="success-message hidden"></div>
-    </main>
-
-    <footer class="app-footer">
-        <div class="container">
-            <p>&copy; 2025 Project Ascent. Last updated: May 12, 2025</p>
-        </div>
-    </footer>
-
-    <!-- Segment card template -->
-    <template id="segment-card-template">
-        <div class="card segment-card">
-            <div class="segment-header">
-                <h3 class="segment-name"></h3>
-                <div class="segment-id"></div>
-            </div>
-
-            <div class="segment-body">
-                <div class="segment-section">
-                    <h4>Segment Template</h4>
-                    <div class="segment-template-info"></div>
-                </div>
-
-                <div class="segment-section">
-                    <h4>Segment Variables</h4>
-                    <div class="segment-variables-info"></div>
-                </div>
-
-                <div class="segment-section">
-                    <h4>Selector Set</h4>
-                    <div class="selector-set-info">
-                        <div class="selector-set-header"></div>
-                        <div class="selectors-list"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </template>
-
-    <!-- Selector template for cloning -->
-    <template id="selector-template">
-        <div class="selector-item">
-            <div class="form-group">
-                <label>Priority:</label>
-                <input type="number" class="selector-priority" value="1">
-            </div>
-            <div class="form-group">
-                <label>Match Criteria (JSON):</label>
-                <textarea class="match-criteria" rows="3" placeholder='{"page": "home"}'></textarea>
-            </div>
-            <div class="form-group">
-                <label>Payload (JSON):</label>
-                <textarea class="payload" rows="3" placeholder='{"feature_flags": {"dark_mode": true}}'></textarea>
-            </div>
-            <button type="button" class="btn btn-small remove-selector">Remove Selector</button>
-        </div>
-    </template>
-
-    <!-- Variable row template for cloning -->
-    <template id="variable-row-template">
-        <div class="variable-row">
-            <input type="text" placeholder="Variable name" class="variable-name">
-            <input type="text" placeholder="Variable value" class="variable-value">
-            <button type="button" class="btn btn-small remove-variable">-</button>
-        </div>
-    </template>
+        </main>
+    </div>
 
     <script src="js/main.js"></script>
 </body>
