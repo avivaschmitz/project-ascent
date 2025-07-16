@@ -53,6 +53,96 @@
                 </div>
             </section>
 
+            <!-- Add Domain Section -->
+            <section id="add-domain-section" class="content-section">
+                <div class="section-header">
+                    <h2>Add New Domain</h2>
+                    <p>Configure a new domain with all necessary settings</p>
+                </div>
+                <div class="content-area">
+                    <form id="add-domain-form" class="form-container">
+                        <div class="form-group">
+                            <label for="domain-name">Domain Name</label>
+                            <select id="domain-name" name="domain_name" required>
+                                <option value="">Select a domain...</option>
+                                <option value="purchased-domain-1">Purchased Domain 1</option>
+                                <option value="purchased-domain-2">Purchased Domain 2</option>
+                                <option value="purchased-domain-3">Purchased Domain 3</option>
+                            </select>
+                            <small class="form-help">Choose from your purchased domains</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Domain Ownership</label>
+                            <div class="radio-group">
+                                <label class="radio-option">
+                                    <input type="radio" name="domain_ownership" value="oo" required>
+                                    <span class="radio-label">O&O (Owned & Operated)</span>
+                                </label>
+                                <label class="radio-option">
+                                    <input type="radio" name="domain_ownership" value="third-party" required>
+                                    <span class="radio-label">Third-Party</span>
+                                </label>
+                            </div>
+                            <small class="form-help">Select the ownership model for this domain</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="content-subdomain">Content Site Subdomain</label>
+                            <input type="text" id="content-subdomain" name="content_subdomain" placeholder="content">
+                            <small class="form-help">Subdomain for content pages (e.g., content.yourdomain.com)</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="search-subdomain">Search Site Subdomain</label>
+                            <input type="text" id="search-subdomain" name="search_subdomain" placeholder="search">
+                            <small class="form-help">Subdomain for search functionality (e.g., search.yourdomain.com)</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="logo-file">Logo Image File</label>
+                            <div class="file-upload-container">
+                                <input type="file" id="logo-file" name="logo_file" accept="image/*">
+                                <div class="file-upload-info">
+                                    <span class="file-name" id="logo-file-name">No file selected</span>
+                                    <button type="button" class="btn btn-small btn-secondary" onclick="document.getElementById('logo-file').click()">Choose File</button>
+                                </div>
+                            </div>
+                            <small class="form-help">Upload your domain logo (PNG, JPG, or SVG recommended)</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="favicon-file">Favicon Image File</label>
+                            <div class="file-upload-container">
+                                <input type="file" id="favicon-file" name="favicon_file" accept="image/*">
+                                <div class="file-upload-info">
+                                    <span class="file-name" id="favicon-file-name">No file selected</span>
+                                    <button type="button" class="btn btn-small btn-secondary" onclick="document.getElementById('favicon-file').click()">Choose File</button>
+                                </div>
+                            </div>
+                            <small class="form-help">Upload favicon file (ICO, PNG 16x16 or 32x32 pixels)</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ads-txt-file">Ads.txt File</label>
+                            <div class="file-upload-container">
+                                <input type="file" id="ads-txt-file" name="ads_txt_file" accept=".txt">
+                                <div class="file-upload-info">
+                                    <span class="file-name" id="ads-txt-file-name">No file selected</span>
+                                    <button type="button" class="btn btn-small btn-secondary" onclick="document.getElementById('ads-txt-file').click()">Choose File</button>
+                                </div>
+                            </div>
+                            <small class="form-help">Upload ads.txt file for advertising transparency</small>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Add Domain</button>
+                            <button type="button" class="btn btn-secondary" onclick="cancelAddDomain()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
             <!-- Segments Section -->
             <section id="segments-section" class="content-section">
                 <div class="section-header">
