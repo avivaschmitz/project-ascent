@@ -56,6 +56,12 @@ body {
     opacity: 0.9;
 }
 
+.disclaimer {
+    font-size: 0.75rem;
+    color: red;
+}
+
+
 /* Main Navigation */
 .main-nav {
     background: var(--white);
