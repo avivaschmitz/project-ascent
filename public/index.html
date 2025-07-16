@@ -53,12 +53,24 @@
                 </div>
             </section>
 
-            <!-- Add Domain Section -->
+            <!-- Add Domain Section - Step 1 -->
             <section id="add-domain-section" class="content-section">
                 <div class="section-header">
                     <h2>Add New Domain</h2>
                     <p>Configure a new domain with all necessary settings</p>
                 </div>
+                <div class="step-indicator">
+                    <div class="step active">
+                        <span class="step-number">1</span>
+                        <span class="step-title">Content Site</span>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <span class="step-title">Search Site</span>
+                    </div>
+                </div>
+                <div class="step-content">
+                    <h3 class="step-heading">Step 1: Content Site</h3>
                 <div class="content-area">
                     <form id="add-domain-form" class="form-container">
                         <div class="form-group">
@@ -136,8 +148,45 @@
                         </div>
 
                         <div class="form-actions">
-                            <button type="submit" class="btn btn-primary">Add Domain</button>
+                            <button type="submit" class="btn btn-primary">Continue to Step 2</button>
                             <button type="button" class="btn btn-secondary" onclick="cancelAddDomain()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Add Domain Section - Step 2 -->
+            <section id="add-domain-step2-section" class="content-section">
+                <div class="section-header">
+                    <h2>Add New Domain</h2>
+                    <p>Configure a new domain with all necessary settings</p>
+                </div>
+                <div class="step-indicator">
+                    <div class="step completed">
+                        <span class="step-number">✓</span>
+                        <span class="step-title">Content Site</span>
+                    </div>
+                    <div class="step active">
+                        <span class="step-number">2</span>
+                        <span class="step-title">Search Site</span>
+                    </div>
+                </div>
+                <div class="step-content">
+                    <h3 class="step-heading">Step 2: Search Site</h3>
+                    <form id="add-domain-step2-form" class="form-container">
+                        <div class="form-group">
+                            <label for="search-theme">Search Site Theme</label>
+                            <select id="search-theme" name="search_theme" required>
+                                <option value="">Select a theme...</option>
+                                <option value="theme-1">Theme 1</option>
+                                <option value="theme-2">Theme 2</option>
+                            </select>
+                            <small class="form-help">Choose the visual theme for your search site</small>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Complete Setup</button>
+                            <button type="button" class="btn btn-secondary" onclick="goBackToStep1()">Back to Step 1</button>
                         </div>
                     </form>
                 </div>

@@ -329,6 +329,95 @@ body {
     color: #d32f2f;
 }
 
+/* Step Indicator Styles */
+.step-indicator {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+    padding: 1rem 0;
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    max-width: 200px;
+    position: relative;
+}
+
+.step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 15px;
+    right: -50%;
+    width: 100%;
+    height: 2px;
+    background-color: var(--border);
+    z-index: 1;
+}
+
+.step.completed:not(:last-child)::after,
+.step.active:not(:last-child)::after {
+    background-color: var(--primary-color);
+}
+
+.step-number {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: var(--border);
+    color: var(--text-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 2;
+}
+
+.step.active .step-number {
+    background-color: var(--primary-color);
+    color: var(--white);
+}
+
+.step.completed .step-number {
+    background-color: var(--primary-color);
+    color: var(--white);
+}
+
+.step-title {
+    font-size: 0.875rem;
+    color: var(--text-light);
+    text-align: center;
+}
+
+.step.active .step-title {
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+.step.completed .step-title {
+    color: var(--primary-color);
+}
+
+.step-content {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 2rem;
+}
+
+.step-heading {
+    text-align: center;
+    color: var(--text-color);
+    margin-bottom: 2rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
 /* Form Styles */
 .form-container {
     max-width: 600px;

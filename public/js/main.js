@@ -175,6 +175,22 @@ function showAddDomainForm() {
     }
 }
 
+// Show Step 2 of Add Domain form
+function showAddDomainStep2() {
+    showSection('add-domain-step2');
+
+    // Set up form submission handler for step 2
+    const form = document.getElementById('add-domain-step2-form');
+    if (form) {
+        // Remove any existing event listeners
+        const newForm = form.cloneNode(true);
+        form.parentNode.replaceChild(newForm, form);
+
+        // Add new event listener
+        newForm.addEventListener('submit', handleAddDomainStep2Submit);
+    }
+}
+
 // Set up file upload handlers to show selected file names
 function setupFileUploadHandlers() {
     const fileInputs = [
@@ -201,7 +217,7 @@ function setupFileUploadHandlers() {
     });
 }
 
-// Handle add domain form submission (no actual submission)
+// Handle add domain form submission (Step 1)
 async function handleAddDomainSubmit(e) {
     e.preventDefault();
 
@@ -237,10 +253,10 @@ async function handleAddDomainSubmit(e) {
         clearFormErrors();
 
         // Simulate processing time
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 800));
 
-        // Log form data for debugging (since we're not actually submitting)
-        console.log('Form Data (not submitted):', {
+        // Store step 1 data (in a real app, you'd store this temporarily)
+        window.domainStep1Data = {
             domain_name: domainName,
             domain_ownership: domainOwnership,
             content_subdomain: contentSubdomain,
@@ -248,23 +264,15 @@ async function handleAddDomainSubmit(e) {
             logo_file: logoFile ? logoFile.name : null,
             favicon_file: faviconFile ? faviconFile.name : null,
             ads_txt_file: adsTxtFile ? adsTxtFile.name : null
-        });
+        };
 
-        // Show success message
-        showFormSuccess('Domain configuration saved successfully! (Note: This is a demo - no data was actually saved)');
+        console.log('Step 1 Data:', window.domainStep1Data);
 
-        // Reset form after a delay
-        setTimeout(() => {
-            e.target.reset();
-            // Reset file displays
-            document.getElementById('logo-file-name').textContent = 'No file selected';
-            document.getElementById('favicon-file-name').textContent = 'No file selected';
-            document.getElementById('ads-txt-file-name').textContent = 'No file selected';
-            document.querySelectorAll('.file-name').forEach(el => el.classList.remove('has-file'));
-        }, 2000);
+        // Proceed to Step 2
+        showAddDomainStep2();
 
     } catch (error) {
-        console.error('Error processing form:', error);
+        console.error('Error processing step 1:', error);
         showFormError('domain-name', `Error processing form: ${error.message}`);
     } finally {
         // Reset button state
@@ -272,6 +280,92 @@ async function handleAddDomainSubmit(e) {
         submitBtn.textContent = originalText;
         submitBtn.disabled = false;
     }
+}
+
+// Handle step 2 form submission
+async function handleAddDomainStep2Submit(e) {
+    e.preventDefault();
+
+    // Get form data
+    const formData = new FormData(e.target);
+    const searchTheme = formData.get('search_theme');
+
+    // Basic validation
+    if (!searchTheme) {
+        showFormError('search-theme', 'Please select a theme');
+        return;
+    }
+
+    try {
+        // Show loading state
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = 'Completing Setup...';
+        submitBtn.disabled = true;
+
+        // Clear any previous errors
+        clearFormErrors('add-domain-step2-form');
+
+        // Simulate processing time
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        // Combine step 1 and step 2 data
+        const completeData = {
+            ...window.domainStep1Data,
+            search_theme: searchTheme
+        };
+
+        console.log('Complete Domain Setup Data (not submitted):', completeData);
+
+        // Show success message
+        showFormSuccess('Domain setup completed successfully! (Note: This is a demo - no data was actually saved)', 'add-domain-step2-form');
+
+        // Reset and redirect after delay
+        setTimeout(() => {
+            // Clear stored data
+            delete window.domainStep1Data;
+
+            // Reset both forms
+            const step1Form = document.getElementById('add-domain-form');
+            const step2Form = document.getElementById('add-domain-step2-form');
+            if (step1Form) step1Form.reset();
+            if (step2Form) step2Form.reset();
+
+            // Reset file displays
+            const fileDisplays = ['logo-file-name', 'favicon-file-name', 'ads-txt-file-name'];
+            fileDisplays.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = 'No file selected';
+                    element.classList.remove('has-file');
+                }
+            });
+
+            // Go back to domains list
+            showSection('domains');
+
+            // Update navigation state
+            document.querySelectorAll('.nav-link').forEach(nav => nav.classList.remove('active'));
+            document.querySelector('.nav-link[data-section="domains"]').classList.add('active');
+
+            // Reload domains data
+            loadDomainsData();
+        }, 2500);
+
+    } catch (error) {
+        console.error('Error completing setup:', error);
+        showFormError('search-theme', `Error completing setup: ${error.message}`);
+    } finally {
+        // Reset button state
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+    }
+}
+
+// Go back to step 1
+function goBackToStep1() {
+    showSection('add-domain');
 }
 
 // Cancel add domain and return to domains list
@@ -292,7 +386,7 @@ function cancelAddDomain() {
 }
 
 // Form utility functions
-function showFormError(fieldName, message) {
+function showFormError(fieldName, message, formId = 'add-domain-form') {
     let field = document.getElementById(fieldName);
     let parentNode;
 
@@ -328,8 +422,8 @@ function showFormError(fieldName, message) {
     }
 }
 
-function showFormSuccess(message) {
-    const form = document.getElementById('add-domain-form');
+function showFormSuccess(message, formId = 'add-domain-form') {
+    const form = document.getElementById(formId);
     if (!form) return;
 
     // Remove existing success message
@@ -352,8 +446,8 @@ function showFormSuccess(message) {
     form.insertBefore(successDiv, form.firstChild);
 }
 
-function clearFormErrors() {
-    const form = document.getElementById('add-domain-form');
+function clearFormErrors(formId = 'add-domain-form') {
+    const form = document.getElementById(formId);
     if (!form) return;
 
     // Remove all error messages
