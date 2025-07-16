@@ -95,7 +95,7 @@ async function loadDomainsData() {
         // Show loading state
         contentArea.innerHTML = '<div class="loading">Loading domains...</div>';
 
-        // Fetch domains from API (this uses the SQL: SELECT domain_id, domain_name FROM domains ORDER BY domain_name ASC)
+        // Fetch domains from API
         const domains = await apiCall('/api/domains');
 
         // Generate domains table HTML
@@ -108,8 +108,10 @@ async function loadDomainsData() {
                 <table class="domains-table">
                     <thead>
                         <tr>
+                            <th width="50">Expand</th>
                             <th>Domain ID</th>
                             <th>Domain Name</th>
+                            <th>Segments</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -118,15 +120,28 @@ async function loadDomainsData() {
         if (domains.length === 0) {
             domainsHTML += `
                         <tr>
-                            <td colspan="2" class="no-data">No domains found</td>
+                            <td colspan="4" class="no-data">No domains found</td>
                         </tr>
             `;
         } else {
             domains.forEach(domain => {
                 domainsHTML += `
-                        <tr>
+                        <tr class="domain-row" data-domain-id="${domain.domain_id}" data-domain-name="${domain.domain_name}">
+                            <td class="expand-cell">
+                                <button class="expand-btn" onclick="toggleDomainExpansion(${domain.domain_id}, '${domain.domain_name}')">
+                                    <span class="expand-icon">▶</span>
+                                </button>
+                            </td>
                             <td class="domain-id">${domain.domain_id}</td>
                             <td class="domain-name">${domain.domain_name}</td>
+                            <td class="segment-count">
+                                <span class="loading-segments">Loading...</span>
+                            </td>
+                        </tr>
+                        <tr class="segments-row" id="segments-row-${domain.domain_id}" style="display: none;">
+                            <td colspan="4" class="segments-container">
+                                <div class="segments-loading">Loading segments...</div>
+                            </td>
                         </tr>
                 `;
             });
@@ -143,6 +158,11 @@ async function loadDomainsData() {
 
         console.log(`Loaded ${domains.length} domains`);
 
+        // Load segment counts for each domain
+        if (domains.length > 0) {
+            loadSegmentCounts(domains);
+        }
+
     } catch (error) {
         console.error('Error loading domains:', error);
         const contentArea = document.querySelector('#domains-section .content-area');
@@ -154,6 +174,167 @@ async function loadDomainsData() {
             </div>
         `;
     }
+}
+
+// Load segment counts for domains
+async function loadSegmentCounts(domains) {
+    for (const domain of domains) {
+        try {
+            const segments = await apiCall(`/api/segments?domain_name=${encodeURIComponent(domain.domain_name)}`);
+            const countElement = document.querySelector(`tr[data-domain-id="${domain.domain_id}"] .segment-count`);
+            if (countElement) {
+                countElement.innerHTML = `<span class="segment-count-badge">${segments.length}</span>`;
+            }
+        } catch (error) {
+            console.error(`Error loading segment count for domain ${domain.domain_name}:`, error);
+            const countElement = document.querySelector(`tr[data-domain-id="${domain.domain_id}"] .segment-count`);
+            if (countElement) {
+                countElement.innerHTML = '<span class="segment-count-error">Error</span>';
+            }
+        }
+    }
+}
+
+// Toggle domain expansion
+async function toggleDomainExpansion(domainId, domainName) {
+    const domainRow = document.querySelector(`tr[data-domain-id="${domainId}"]`);
+    const segmentsRow = document.getElementById(`segments-row-${domainId}`);
+    const expandBtn = domainRow.querySelector('.expand-btn');
+    const expandIcon = expandBtn.querySelector('.expand-icon');
+
+    if (segmentsRow.style.display === 'none') {
+        // Expand - show segments
+        expandIcon.textContent = '▼';
+        expandBtn.classList.add('expanded');
+        segmentsRow.style.display = 'table-row';
+
+        // Load segments if not already loaded
+        if (!segmentsRow.dataset.loaded) {
+            await loadDomainSegments(domainId, domainName);
+            segmentsRow.dataset.loaded = 'true';
+        }
+    } else {
+        // Collapse - hide segments
+        expandIcon.textContent = '▶';
+        expandBtn.classList.remove('expanded');
+        segmentsRow.style.display = 'none';
+    }
+}
+
+// Load segments for a specific domain
+async function loadDomainSegments(domainId, domainName) {
+    const segmentsContainer = document.querySelector(`#segments-row-${domainId} .segments-container`);
+
+    try {
+        // Show loading state
+        segmentsContainer.innerHTML = '<div class="segments-loading">Loading segments...</div>';
+
+        // Fetch segments for this domain
+        const segments = await apiCall(`/api/segments?domain_name=${encodeURIComponent(domainName)}`);
+
+        // Generate segments HTML
+        let segmentsHTML = `
+            <div class="segments-header">
+                <h4>Segments for ${domainName} (${segments.length})</h4>
+            </div>
+        `;
+
+        if (segments.length === 0) {
+            segmentsHTML += `
+                <div class="no-segments">
+                    <p>No segments found for this domain.</p>
+                    <button class="btn btn-small btn-primary" onclick="createSegmentForDomain(${domainId}, '${domainName}')">
+                        Create First Segment
+                    </button>
+                </div>
+            `;
+        } else {
+            segmentsHTML += `
+                <div class="segments-table-container">
+                    <table class="segments-table">
+                        <thead>
+                            <tr>
+                                <th>Segment ID</th>
+                                <th>Segment Name</th>
+                                <th>Template</th>
+                                <th>Variables</th>
+                                <th>Selectors</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            segments.forEach(segment => {
+                const variableCount = Object.keys(segment.segment_variables || {}).length;
+                const selectorCount = segment.selector_set?.selectors?.length || 0;
+                const templateName = segment.segment_template?.name || 'Unknown Template';
+
+                segmentsHTML += `
+                    <tr class="segment-row">
+                        <td class="segment-id">${segment.id}</td>
+                        <td class="segment-name">${segment.name}</td>
+                        <td class="segment-template">${templateName}</td>
+                        <td class="segment-variables">
+                            <span class="count-badge">${variableCount}</span>
+                        </td>
+                        <td class="segment-selectors">
+                            <span class="count-badge">${selectorCount}</span>
+                        </td>
+                        <td class="segment-actions">
+                            <button class="btn btn-small btn-secondary" onclick="viewSegmentDetails(${segment.id})">
+                                View
+                            </button>
+                            <button class="btn btn-small btn-secondary" onclick="editSegment(${segment.id})">
+                                Edit
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            segmentsHTML += `
+                        </tbody>
+                    </table>
+                </div>
+                <div class="segments-footer">
+                    <button class="btn btn-small btn-primary" onclick="createSegmentForDomain(${domainId}, '${domainName}')">
+                        Add New Segment
+                    </button>
+                </div>
+            `;
+        }
+
+        // Update the segments container
+        segmentsContainer.innerHTML = segmentsHTML;
+
+        console.log(`Loaded ${segments.length} segments for domain ${domainName}`);
+
+    } catch (error) {
+        console.error(`Error loading segments for domain ${domainName}:`, error);
+        segmentsContainer.innerHTML = `
+            <div class="segments-error">
+                <h4>Error Loading Segments</h4>
+                <p>${error.message}</p>
+                <button class="btn btn-small btn-primary" onclick="loadDomainSegments(${domainId}, '${domainName}')">
+                    Retry
+                </button>
+            </div>
+        `;
+    }
+}
+
+// Placeholder functions for segment actions
+function viewSegmentDetails(segmentId) {
+    alert(`View details for segment ${segmentId} (functionality to be implemented)`);
+}
+
+function editSegment(segmentId) {
+    alert(`Edit segment ${segmentId} (functionality to be implemented)`);
+}
+
+function createSegmentForDomain(domainId, domainName) {
+    alert(`Create new segment for domain ${domainName} (ID: ${domainId}) (functionality to be implemented)`);
 }
 
 // Show Add Domain form
