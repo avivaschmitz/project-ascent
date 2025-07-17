@@ -758,6 +758,132 @@ body {
     margin-top: 0.25rem;
 }
 
+/* Step 3 - Segment Variables Section */
+.segment-variables-section {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+}
+
+.segment-variables-section h4 {
+    margin: 0 0 1rem 0;
+    color: var(--text-color);
+    font-size: 1.2rem;
+}
+
+.variables-editor-container {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+}
+
+.variable-editor-row {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 1rem;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.variable-editor-row:last-child {
+    border-bottom: none;
+}
+
+.variable-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.variable-label {
+    font-weight: 500;
+    color: var(--text-color);
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+.variable-type-badge {
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    width: fit-content;
+}
+
+.type-string {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.type-number {
+    background: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.type-boolean {
+    background: #e8f5e8;
+    color: #388e3c;
+}
+
+.type-object {
+    background: #fff3e0;
+    color: #f57c00;
+}
+
+.variable-input {
+    display: flex;
+    align-items: center;
+}
+
+.variable-input input[type="text"] {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.variable-input input[type="text"]:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
+}
+
+/* Checkbox Wrapper */
+.checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.checkbox-wrapper input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+}
+
+.checkbox-label {
+    color: var(--text-color);
+    font-weight: 500;
+    margin: 0;
+}
+
+.no-variables {
+    text-align: center;
+    color: var(--text-light);
+    padding: 2rem;
+}
+
+.no-variables p {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
 /* Segment Variables Styles */
 .segment-variables-controls {
     display: grid;
@@ -881,34 +1007,6 @@ body {
     text-align: center;
 }
 
-.type-badge {
-    padding: 0.2rem 0.5rem;
-    border-radius: 12px;
-    font-size: 0.7rem;
-    font-weight: 500;
-    text-transform: uppercase;
-}
-
-.type-string {
-    background: #e3f2fd;
-    color: #1976d2;
-}
-
-.type-number {
-    background: #f3e5f5;
-    color: #7b1fa2;
-}
-
-.type-boolean {
-    background: #e8f5e8;
-    color: #388e3c;
-}
-
-.type-object {
-    background: #fff3e0;
-    color: #f57c00;
-}
-
 .variable-actions {
     text-align: right;
     width: 120px;
@@ -942,6 +1040,21 @@ body {
     .variable-actions .btn {
         padding: 0.2rem 0.5rem;
         font-size: 0.7rem;
+    }
+
+    /* Step 3 Responsive */
+    .variable-editor-row {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        text-align: left;
+    }
+
+    .variable-info {
+        align-items: flex-start;
+    }
+
+    .variable-type-badge {
+        align-self: flex-start;
     }
 }
 

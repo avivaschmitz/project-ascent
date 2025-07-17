@@ -69,6 +69,10 @@
                         <span class="step-number">2</span>
                         <span class="step-title">Search Site</span>
                     </div>
+                    <div class="step">
+                        <span class="step-number">3</span>
+                        <span class="step-title">Create Organic Segment</span>
+                    </div>
                 </div>
                 <div class="step-content">
                     <h3 class="step-heading">Step 1: Content Site</h3>
@@ -171,6 +175,10 @@
                         <span class="step-number">2</span>
                         <span class="step-title">Search Site</span>
                     </div>
+                    <div class="step">
+                        <span class="step-number">3</span>
+                        <span class="step-title">Create Organic Segment</span>
+                    </div>
                 </div>
                 <div class="step-content">
                     <h3 class="step-heading">Step 2: Search Site</h3>
@@ -186,8 +194,55 @@
                         </div>
 
                         <div class="form-actions">
-                            <button type="submit" class="btn btn-primary">Complete Setup</button>
+                            <button type="submit" class="btn btn-primary">Continue to Step 3</button>
                             <button type="button" class="btn btn-secondary" onclick="goBackToStep1()">Back to Step 1</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Add Domain Section - Step 3 -->
+            <section id="add-domain-step3-section" class="content-section">
+                <div class="section-header">
+                    <h2>Add New Domain</h2>
+                    <p>Configure a new domain with all necessary settings</p>
+                </div>
+                <div class="step-indicator">
+                    <div class="step completed">
+                        <span class="step-number">✓</span>
+                        <span class="step-title">Content Site</span>
+                    </div>
+                    <div class="step completed">
+                        <span class="step-number">✓</span>
+                        <span class="step-title">Search Site</span>
+                    </div>
+                    <div class="step active">
+                        <span class="step-number">3</span>
+                        <span class="step-title">Create Organic Segment</span>
+                    </div>
+                </div>
+                <div class="step-content">
+                    <h3 class="step-heading">Step 3: Create Organic Segment</h3>
+                    <form id="add-domain-step3-form" class="form-container">
+                        <div class="form-group">
+                            <label for="model-segment-select">Select a Model Organic Segment</label>
+                            <select id="model-segment-select" name="model_segment_id" required onchange="onModelSegmentChange()">
+                                <option value="">Loading organic segments...</option>
+                            </select>
+                            <small class="form-help">Choose an existing organic segment to use as a template</small>
+                        </div>
+
+                        <div id="segment-variables-section" class="segment-variables-section" style="display: none;">
+                            <h4>Segment Variables</h4>
+                            <p class="form-help">Edit the variables for your new organic segment:</p>
+                            <div id="variables-container" class="variables-editor-container">
+                                <!-- Variables will be loaded here -->
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Create Organic Segment</button>
+                            <button type="button" class="btn btn-secondary" onclick="goBackToStep2()">Back to Step 2</button>
                         </div>
                     </form>
                 </div>

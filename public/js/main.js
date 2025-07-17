@@ -508,34 +508,284 @@ async function handleAddDomainStep2Submit(e) {
         // Show loading state
         const submitBtn = e.target.querySelector('button[type="submit"]');
         const originalText = submitBtn.textContent;
-        submitBtn.textContent = 'Completing Setup...';
+        submitBtn.textContent = 'Processing...';
         submitBtn.disabled = true;
 
         // Clear any previous errors
         clearFormErrors('add-domain-step2-form');
 
         // Simulate processing time for step 2 (theme config not saved to DB)
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 800));
 
+        // Store step 2 data
+        window.domainStep2Data = {
+            search_theme: searchTheme
+        };
+
+        console.log('Step 2 Data:', window.domainStep2Data);
+
+        // Proceed to Step 3
+        showAddDomainStep3();
+
+    } catch (error) {
+        console.error('Error processing step 2:', error);
+        showFormError('search-theme', `Error processing form: ${error.message}`);
+    } finally {
+        // Reset button state
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+    }
+}
+
+// Show Step 3 of Add Domain form
+function showAddDomainStep3() {
+    showSection('add-domain-step3');
+
+    // Set up form submission handler for step 3
+    const form = document.getElementById('add-domain-step3-form');
+    if (form) {
+        // Remove any existing event listeners
+        const newForm = form.cloneNode(true);
+        form.parentNode.replaceChild(newForm, form);
+
+        // Add new event listener
+        newForm.addEventListener('submit', handleAddDomainStep3Submit);
+    }
+
+    // Load organic segments
+    loadOrganicSegments();
+}
+
+// Load organic segments for the dropdown
+async function loadOrganicSegments() {
+    try {
+        const modelSegmentSelect = document.getElementById('model-segment-select');
+
+        // Show loading state
+        modelSegmentSelect.innerHTML = '<option value="">Loading organic segments...</option>';
+
+        // Fetch organic segments
+        const organicSegments = await apiCall('/api/organic-segments');
+
+        // Populate dropdown
+        modelSegmentSelect.innerHTML = '<option value="">Select a model organic segment...</option>';
+
+        if (organicSegments.length === 0) {
+            modelSegmentSelect.innerHTML = '<option value="">No organic segments found</option>';
+            modelSegmentSelect.disabled = true;
+        } else {
+            organicSegments.forEach(segment => {
+                const optionText = `Template ID: ${segment.segment_template_id} - Domain: ${segment.domain_name}`;
+                modelSegmentSelect.innerHTML += `<option value="${segment.segment_id}">${optionText}</option>`;
+            });
+            modelSegmentSelect.disabled = false;
+        }
+
+        console.log(`Loaded ${organicSegments.length} organic segments`);
+
+    } catch (error) {
+        console.error('Error loading organic segments:', error);
+        const modelSegmentSelect = document.getElementById('model-segment-select');
+        modelSegmentSelect.innerHTML = '<option value="">Error loading segments</option>';
+        modelSegmentSelect.disabled = true;
+    }
+}
+
+// Handle model segment selection change
+async function onModelSegmentChange() {
+    const modelSegmentSelect = document.getElementById('model-segment-select');
+    const segmentVariablesSection = document.getElementById('segment-variables-section');
+    const variablesContainer = document.getElementById('variables-container');
+
+    const selectedSegmentId = modelSegmentSelect.value;
+
+    if (!selectedSegmentId) {
+        segmentVariablesSection.style.display = 'none';
+        return;
+    }
+
+    try {
+        // Show loading state
+        segmentVariablesSection.style.display = 'block';
+        variablesContainer.innerHTML = '<div class="loading">Loading segment variables...</div>';
+
+        // Fetch segment variables
+        const variables = await apiCall(`/api/segments/${selectedSegmentId}/variables`);
+
+        // Display editable variables
+        displayEditableVariables(variables);
+
+        console.log(`Loaded variables for segment ${selectedSegmentId}:`, variables);
+
+    } catch (error) {
+        console.error('Error loading segment variables:', error);
+        variablesContainer.innerHTML = `
+            <div class="error-message">
+                <h4>Error Loading Variables</h4>
+                <p>${error.message}</p>
+                <button class="btn btn-small btn-primary" onclick="onModelSegmentChange()">Retry</button>
+            </div>
+        `;
+    }
+}
+
+// Display editable segment variables
+function displayEditableVariables(variables) {
+    const variablesContainer = document.getElementById('variables-container');
+
+    let variablesHTML = '';
+
+    if (Object.keys(variables).length === 0) {
+        variablesHTML = `
+            <div class="no-variables">
+                <p>No variables found for the selected segment.</p>
+            </div>
+        `;
+    } else {
+        Object.entries(variables).forEach(([key, value], index) => {
+            const dataType = typeof value;
+            const inputType = dataType === 'boolean' ? 'checkbox' : 'text';
+            const inputValue = dataType === 'boolean' ? '' : String(value);
+            const isChecked = dataType === 'boolean' && value === true;
+
+            variablesHTML += `
+                <div class="variable-editor-row">
+                    <div class="variable-info">
+                        <label class="variable-label" for="var-${index}">${key}</label>
+                        <span class="variable-type-badge type-${dataType}">${dataType}</span>
+                    </div>
+                    <div class="variable-input">
+            `;
+
+            if (dataType === 'boolean') {
+                variablesHTML += `
+                        <label class="checkbox-wrapper">
+                            <input type="checkbox" id="var-${index}" name="variable_${key}" ${isChecked ? 'checked' : ''}>
+                            <span class="checkbox-label">${isChecked ? 'True' : 'False'}</span>
+                        </label>
+                `;
+            } else {
+                variablesHTML += `
+                        <input type="text" id="var-${index}" name="variable_${key}" value="${inputValue}" placeholder="Enter ${key}">
+                `;
+            }
+
+            variablesHTML += `
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    variablesContainer.innerHTML = variablesHTML;
+
+    // Add event listeners for boolean checkboxes to update labels
+    const checkboxes = variablesContainer.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const label = this.parentNode.querySelector('.checkbox-label');
+            label.textContent = this.checked ? 'True' : 'False';
+        });
+    });
+}
+
+// Handle step 3 form submission
+async function handleAddDomainStep3Submit(e) {
+    e.preventDefault();
+
+    const formData = new FormData(e.target);
+    const modelSegmentId = formData.get('model_segment_id');
+
+    // Basic validation
+    if (!modelSegmentId) {
+        showFormError('model-segment-select', 'Please select a model organic segment', 'add-domain-step3-form');
+        return;
+    }
+
+    try {
+        // Show loading state
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = 'Creating Organic Segment...';
+        submitBtn.disabled = true;
+
+        // Clear any previous errors
+        clearFormErrors('add-domain-step3-form');
+
+        // Collect variable data from the form
+        const variableData = [];
+        const variableInputs = e.target.querySelectorAll('[name^="variable_"]');
+
+        variableInputs.forEach(input => {
+            const variableName = input.name.replace('variable_', '');
+            let variableValue;
+
+            if (input.type === 'checkbox') {
+                variableValue = input.checked;
+            } else {
+                variableValue = input.value;
+            }
+
+            variableData.push({
+                name: variableName,
+                value: variableValue
+            });
+        });
+
+        console.log('Variable data to save:', variableData);
+
+        // Get the created domain info from step 1
         const createdDomain = window.domainStep1Data?.created_domain;
-        const domainName = createdDomain?.domain_name || 'Unknown';
+        if (!createdDomain) {
+            throw new Error('Domain information not found. Please start over.');
+        }
+
+        // First, get the template_id from the selected model segment
+        const modelSegment = await apiCall(`/api/segments?domain_name=any`); // We'll filter this on the client side
+        const selectedModelSegment = await apiCall(`/api/segments/${modelSegmentId}/variables`); // This will help us get the template info
+
+        // For now, we'll use template_id = 1 as a placeholder since we need to fetch it properly
+        // In a real implementation, you'd want to get this from the selected segment
+        const templateId = 1; // This should come from the selected model segment
+
+        // Create the new organic segment
+        const segmentData = {
+            segment_name: 'organic',
+            domain_id: createdDomain.domain_id,
+            segment_template_id: templateId,
+            segment_variables: variableData
+        };
+
+        console.log('Creating segment with data:', segmentData);
+
+        const response = await apiCall('/api/segments', {
+            method: 'POST',
+            body: JSON.stringify(segmentData)
+        });
+
+        console.log('Organic segment created successfully:', response);
 
         // Show success message
+        const domainName = createdDomain.domain_name;
         showFormSuccess(
-            `Domain "${domainName}" has been successfully created! (ID: ${createdDomain?.domain_id})`,
-            'add-domain-step2-form'
+            `Organic segment created successfully for domain "${domainName}"! (Segment ID: ${response.segment_id})`,
+            'add-domain-step3-form'
         );
 
         // Reset and redirect after delay
         setTimeout(() => {
             // Clear stored data
             delete window.domainStep1Data;
+            delete window.domainStep2Data;
 
-            // Reset both forms
+            // Reset all forms
             const step1Form = document.getElementById('add-domain-form');
             const step2Form = document.getElementById('add-domain-step2-form');
+            const step3Form = document.getElementById('add-domain-step3-form');
             if (step1Form) step1Form.reset();
             if (step2Form) step2Form.reset();
+            if (step3Form) step3Form.reset();
 
             // Reset file displays
             const fileDisplays = ['logo-file-name', 'favicon-file-name', 'ads-txt-file-name'];
@@ -559,14 +809,19 @@ async function handleAddDomainStep2Submit(e) {
         }, 3000);
 
     } catch (error) {
-        console.error('Error completing setup:', error);
-        showFormError('search-theme', `Error completing setup: ${error.message}`);
+        console.error('Error creating organic segment:', error);
+        showFormError('model-segment-select', `Error creating organic segment: ${error.message}`, 'add-domain-step3-form');
     } finally {
         // Reset button state
         const submitBtn = e.target.querySelector('button[type="submit"]');
         submitBtn.textContent = originalText;
         submitBtn.disabled = false;
     }
+}
+
+// Go back to step 2
+function goBackToStep2() {
+    showSection('add-domain-step2');
 }
 
 // Go back to step 1
