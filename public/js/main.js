@@ -564,9 +564,37 @@ async function loadOrganicSegments() {
 
         // Show loading state
         modelSegmentSelect.innerHTML = '<option value="">Loading organic segments...</option>';
+        modelSegmentSelect.disabled = true;
+
+        console.log('Fetching organic segments...');
+
+        // Test if we can reach the API at all
+        try {
+            const testResponse = await fetch('/api/domains');
+            console.log('Test API call status:', testResponse.status);
+            if (!testResponse.ok) {
+                throw new Error(`Test API call failed: ${testResponse.status}`);
+            }
+        } catch (testError) {
+            console.error('Cannot reach API endpoints:', testError);
+            throw new Error('API endpoints not accessible');
+        }
 
         // Fetch organic segments
-        const organicSegments = await apiCall('/api/organic-segments');
+        console.log('Making request to /api/organic-segments');
+        const response = await fetch('/api/organic-segments');
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Response error text:', errorText);
+            throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
+
+        const organicSegments = await response.json();
+
+        console.log('Received organic segments:', organicSegments);
 
         // Populate dropdown
         modelSegmentSelect.innerHTML = '<option value="">Select a model organic segment...</option>';
@@ -574,6 +602,17 @@ async function loadOrganicSegments() {
         if (organicSegments.length === 0) {
             modelSegmentSelect.innerHTML = '<option value="">No organic segments found</option>';
             modelSegmentSelect.disabled = true;
+
+            // Show a message to the user about creating sample data
+            const segmentVariablesSection = document.getElementById('segment-variables-section');
+            segmentVariablesSection.innerHTML = `
+                <div class="no-organic-segments">
+                    <h4>No Organic Segments Found</h4>
+                    <p>To use this feature, you need existing segments with segment_name = 'organic' in your database.</p>
+                    <p>You can create some sample organic segments first, then return to complete this step.</p>
+                </div>
+            `;
+            segmentVariablesSection.style.display = 'block';
         } else {
             organicSegments.forEach(segment => {
                 const optionText = `Template ID: ${segment.segment_template_id} - Domain: ${segment.domain_name}`;
@@ -589,6 +628,24 @@ async function loadOrganicSegments() {
         const modelSegmentSelect = document.getElementById('model-segment-select');
         modelSegmentSelect.innerHTML = '<option value="">Error loading segments</option>';
         modelSegmentSelect.disabled = true;
+
+        // Show detailed error information
+        const segmentVariablesSection = document.getElementById('segment-variables-section');
+        segmentVariablesSection.innerHTML = `
+            <div class="error-message">
+                <h4>Error Loading Organic Segments</h4>
+                <p><strong>Error:</strong> ${error.message}</p>
+                <p>This might be because:</p>
+                <ul style="text-align: left; margin: 1rem 0;">
+                    <li>API endpoint not properly registered (check server console)</li>
+                    <li>No segments with segment_name = 'organic' exist in the database</li>
+                    <li>Database connection issues</li>
+                    <li>Missing segment_templates or domains data</li>
+                </ul>
+                <button class="btn btn-small btn-primary" onclick="loadOrganicSegments()">Retry</button>
+            </div>
+        `;
+        segmentVariablesSection.style.display = 'block';
     }
 }
 
