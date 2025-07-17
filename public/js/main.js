@@ -447,10 +447,16 @@ async function handleAddDomainSubmit(e) {
         // Clear any previous errors
         clearFormErrors();
 
-        // Simulate processing time
-        await new Promise(resolve => setTimeout(resolve, 800));
+        // Create domain in database (only save domain_name)
+        const domainData = { domain_name: domainName };
+        const response = await apiCall('/api/domains', {
+            method: 'POST',
+            body: JSON.stringify(domainData)
+        });
 
-        // Store step 1 data (in a real app, you'd store this temporarily)
+        console.log('Domain created successfully:', response);
+
+        // Store step 1 data for display purposes only (not saved to DB)
         window.domainStep1Data = {
             domain_name: domainName,
             domain_ownership: domainOwnership,
@@ -458,7 +464,8 @@ async function handleAddDomainSubmit(e) {
             search_subdomain: searchSubdomain,
             logo_file: logoFile ? logoFile.name : null,
             favicon_file: faviconFile ? faviconFile.name : null,
-            ads_txt_file: adsTxtFile ? adsTxtFile.name : null
+            ads_txt_file: adsTxtFile ? adsTxtFile.name : null,
+            created_domain: response.domain // Store the created domain info
         };
 
         console.log('Step 1 Data:', window.domainStep1Data);
@@ -467,8 +474,14 @@ async function handleAddDomainSubmit(e) {
         showAddDomainStep2();
 
     } catch (error) {
-        console.error('Error processing step 1:', error);
-        showFormError('domain-name', `Error processing form: ${error.message}`);
+        console.error('Error creating domain:', error);
+
+        // Handle specific error cases
+        if (error.message.includes('409') || error.message.includes('already exists')) {
+            showFormError('domain-name', 'This domain already exists in the system');
+        } else {
+            showFormError('domain-name', `Error creating domain: ${error.message}`);
+        }
     } finally {
         // Reset button state
         const submitBtn = e.target.querySelector('button[type="submit"]');
@@ -501,19 +514,17 @@ async function handleAddDomainStep2Submit(e) {
         // Clear any previous errors
         clearFormErrors('add-domain-step2-form');
 
-        // Simulate processing time
+        // Simulate processing time for step 2 (theme config not saved to DB)
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-        // Combine step 1 and step 2 data
-        const completeData = {
-            ...window.domainStep1Data,
-            search_theme: searchTheme
-        };
-
-        console.log('Complete Domain Setup Data (not submitted):', completeData);
+        const createdDomain = window.domainStep1Data?.created_domain;
+        const domainName = createdDomain?.domain_name || 'Unknown';
 
         // Show success message
-        showFormSuccess('Domain setup completed successfully! (Note: This is a demo - no data was actually saved)', 'add-domain-step2-form');
+        showFormSuccess(
+            `Domain "${domainName}" has been successfully created! (ID: ${createdDomain?.domain_id})`,
+            'add-domain-step2-form'
+        );
 
         // Reset and redirect after delay
         setTimeout(() => {
@@ -543,9 +554,9 @@ async function handleAddDomainStep2Submit(e) {
             document.querySelectorAll('.nav-link').forEach(nav => nav.classList.remove('active'));
             document.querySelector('.nav-link[data-section="domains"]').classList.add('active');
 
-            // Reload domains data
+            // Reload domains data to show the new domain
             loadDomainsData();
-        }, 2500);
+        }, 3000);
 
     } catch (error) {
         console.error('Error completing setup:', error);
@@ -636,6 +647,8 @@ function showFormSuccess(message, formId = 'add-domain-form') {
     successDiv.style.backgroundColor = '#d4edda';
     successDiv.style.border = '1px solid #c3e6cb';
     successDiv.style.borderRadius = '4px';
+    successDiv.style.color = '#155724';
+    successDiv.style.fontWeight = '500';
     successDiv.textContent = message;
 
     form.insertBefore(successDiv, form.firstChild);
@@ -672,7 +685,8 @@ async function apiCall(endpoint, options = {}) {
         });
 
         if (!response.ok) {
-            throw new Error(`API Error: ${response.status}`);
+            const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+            throw new Error(`API Error: ${response.status} - ${errorData.error || 'Unknown error'}`);
         }
 
         return await response.json();
@@ -685,11 +699,11 @@ async function apiCall(endpoint, options = {}) {
 // Test API connection
 async function testAPIConnection() {
     try {
-        // You can uncomment this to test your API connection
-        // const response = await apiCall('/api/domains');
-        // console.log('API connection successful');
+        // Test the domains endpoint
+        const response = await apiCall('/api/domains');
+        console.log('API connection successful - loaded domains:', response.length);
     } catch (error) {
-        console.log('API connection test skipped or failed:', error.message);
+        console.log('API connection test failed:', error.message);
     }
 }
 
@@ -988,25 +1002,3 @@ function deleteVariable(segmentId, variableName) {
         alert(`Delete variable "${variableName}" from segment ${segmentId} (functionality to be implemented)`);
     }
 }
-/*
-
-// Get all domains
-const domains = await apiCall('/api/domains');
-
-// Get segments by domain
-const segments = await apiCall('/api/segments?domain_name=example.com');
-
-// Create a new segment
-const newSegment = await apiCall('/api/segments', {
-    method: 'POST',
-    body: JSON.stringify({
-        segment_name: 'My Segment',
-        domain_id: 1,
-        segment_template_id: 1,
-        segment_variables: [
-            { name: 'partner_id', value: 'partner123' }
-        ]
-    })
-});
-
-*/

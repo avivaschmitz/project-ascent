@@ -17,7 +17,7 @@ async function initializeDatabase() {
     await db.query(`
       CREATE TABLE IF NOT EXISTS domains (
         domain_id SERIAL PRIMARY KEY,
-        domain_name VARCHAR(255) NOT NULL
+        domain_name VARCHAR(255) NOT NULL UNIQUE
       )
     `);
 
@@ -92,6 +92,60 @@ app.get('/api/domains', async (req, res) => {
   } catch (error) {
     console.error('Error fetching domains:', error);
     res.status(500).json({ error: 'An error occurred while fetching domains' });
+  }
+});
+
+// Create a new domain
+app.post('/api/domains', async (req, res) => {
+  const { domain_name } = req.body;
+
+  // Validate required field
+  if (!domain_name) {
+    return res.status(400).json({ error: 'domain_name is required' });
+  }
+
+  try {
+    // Check if domain already exists
+    const existingDomain = await db.query(
+      'SELECT domain_id FROM domains WHERE domain_name = $1',
+      [domain_name]
+    );
+
+    if (existingDomain.rows.length > 0) {
+      return res.status(409).json({
+        error: 'Domain already exists',
+        domain_id: existingDomain.rows[0].domain_id
+      });
+    }
+
+    // Insert the new domain
+    const result = await db.query(
+      'INSERT INTO domains (domain_name) VALUES ($1) RETURNING domain_id, domain_name',
+      [domain_name]
+    );
+
+    const newDomain = result.rows[0];
+
+    console.log(`Created new domain: ${newDomain.domain_name} (ID: ${newDomain.domain_id})`);
+
+    // Return the created domain
+    res.status(201).json({
+      message: 'Domain created successfully',
+      domain: newDomain
+    });
+
+  } catch (error) {
+    console.error('Error creating domain:', error);
+
+    // Handle unique constraint violation (in case of race condition)
+    if (error.code === '23505') {
+      return res.status(409).json({ error: 'Domain already exists' });
+    }
+
+    res.status(500).json({
+      error: 'An error occurred while creating the domain',
+      details: error.message
+    });
   }
 });
 
