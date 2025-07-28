@@ -297,6 +297,8 @@ function showModelSegmentDropdown() {
 
 async function selectModelSegment(segmentId) {
     try {
+        console.log('selectModelSegment called with ID:', segmentId);
+
         const searchInput = document.getElementById('model-segment-search');
         const dropdown = document.getElementById('model-segment-dropdown');
         const workspace = document.getElementById('segment-creation-workspace');
@@ -305,6 +307,8 @@ async function selectModelSegment(segmentId) {
         if (!selectedSegment) {
             throw new Error('Selected segment not found');
         }
+
+        console.log('Found segment:', selectedSegment);
 
         if (searchInput) {
             searchInput.value = `${selectedSegment.name} (${selectedSegment.source_domain.name})`;
@@ -320,14 +324,18 @@ async function selectModelSegment(segmentId) {
 
         window.selectedModelSegment = selectedSegment;
 
+        console.log('About to populate template panel...');
         populateTemplatePanel(selectedSegment);
+
+        console.log('About to populate new segment panel...');
         populateNewSegmentPanel(selectedSegment);
 
-        console.log('Selected model segment:', selectedSegment.name);
+        console.log('Successfully selected model segment:', selectedSegment.name);
 
     } catch (error) {
-        console.error('Error selecting model segment:', error);
-        alert(`Error selecting segment: ${error.message}`);
+        console.error('Error in selectModelSegment:', error);
+        // Remove the alert and just log the error
+        console.error(`Error selecting segment: ${error.message}`);
     }
 }
 
@@ -431,13 +439,17 @@ function populateNewSegmentPanel(segment) {
             const displayValue = typeof value === 'object' ? JSON.stringify(value) : String(value);
             const dataType = typeof value;
 
+            // Escape HTML characters in key and value
+            const escapedKey = escapeHtml(key);
+            const escapedValue = escapeHtml(displayValue);
+
             variablesHTML += `
                 <div class="editable-variable-item" data-variable-index="${currentIndex}">
                     <div class="variable-controls">
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Variable Name</label>
-                                <input type="text" class="variable-name-input" value="${key}">
+                                <input type="text" class="variable-name-input" value="${escapedKey}">
                             </div>
                             <div class="form-group">
                                 <label>Data Type</label>
@@ -455,7 +467,7 @@ function populateNewSegmentPanel(segment) {
                         <div class="form-group">
                             <label>Variable Value</label>
                             <div class="variable-value-input-container">
-                                ${generateEditableValueInput(dataType, displayValue, currentIndex)}
+                                ${generateEditableValueInput(dataType, escapedValue, currentIndex)}
                             </div>
                         </div>
                     </div>
@@ -469,6 +481,13 @@ function populateNewSegmentPanel(segment) {
 
     newSegmentVariables.innerHTML = variablesHTML;
     window.nextVariableIndex = currentIndex;
+}
+
+// Helper function to escape HTML characters
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 function generateEditableValueInput(type, currentValue, index) {
