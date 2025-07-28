@@ -10,26 +10,10 @@ document.addEventListener('DOMContentLoaded', () => {
     testAPIConnection();
 });
 
-// Make showSection globally available
-window.showSection = showSection;
-
-// Make other functions globally available
-window.toggleDomainExpansion = toggleDomainExpansion;
-window.viewSegmentDetails = viewSegmentDetails;
-window.editSegment = editSegment;
-window.createSegmentForDomain = createSegmentForDomain;
-window.showAddDomainForm = showAddDomainForm;
-window.onDomainChange = onDomainChange;
-window.onSegmentChange = onSegmentChange;
-window.addNewVariable = addNewVariable;
-window.editVariable = editVariable;
-window.deleteVariable = deleteVariable;
-
 // Navigation functionality
 function initializeNavigation() {
     const navLinks = document.querySelectorAll('.nav-link[data-section]');
     const submenuLinks = document.querySelectorAll('.submenu-link[data-section]');
-    const contentSections = document.querySelectorAll('.content-section');
 
     // Handle main nav clicks
     navLinks.forEach(link => {
@@ -37,13 +21,7 @@ function initializeNavigation() {
             e.preventDefault();
             const sectionId = link.getAttribute('data-section');
 
-            // Update active nav state
-            document.querySelectorAll('.nav-link').forEach(nav => nav.classList.remove('active'));
-            link.classList.add('active');
-
-            // Show corresponding section and load data
             showSection(sectionId);
-            loadSectionData(sectionId);
         });
     });
 
@@ -53,21 +31,7 @@ function initializeNavigation() {
             e.preventDefault();
             const sectionId = link.getAttribute('data-section');
 
-            // Update active nav state (highlight parent)
-            document.querySelectorAll('.nav-link').forEach(nav => nav.classList.remove('active'));
-
-            // Determine parent section and highlight it
-            if (sectionId.startsWith('domain-')) {
-                document.querySelector('.nav-link[data-section="domains"]').classList.add('active');
-            } else if (sectionId.startsWith('segment-')) {
-                document.querySelector('.nav-link[data-section="segments"]').classList.add('active');
-            } else if (sectionId.startsWith('experiment-')) {
-                document.querySelector('.nav-link[data-section="experiments"]').classList.add('active');
-            }
-
-            // Show corresponding section and load data
             showSection(sectionId);
-            loadSectionData(sectionId);
         });
     });
 }
@@ -102,11 +66,14 @@ function updateNavigationState(sectionId) {
 
     // Determine parent section and highlight it
     if (sectionId.startsWith('domain-') || sectionId === 'domains') {
-        document.querySelector('.nav-link[data-section="domains"]').classList.add('active');
+        const domainNav = document.querySelector('.nav-link[data-section="domains"]');
+        if (domainNav) domainNav.classList.add('active');
     } else if (sectionId.startsWith('segment-') || sectionId === 'segments') {
-        document.querySelector('.nav-link[data-section="segments"]').classList.add('active');
+        const segmentNav = document.querySelector('.nav-link[data-section="segments"]');
+        if (segmentNav) segmentNav.classList.add('active');
     } else if (sectionId.startsWith('experiment-') || sectionId === 'experiments') {
-        document.querySelector('.nav-link[data-section="experiments"]').classList.add('active');
+        const experimentNav = document.querySelector('.nav-link[data-section="experiments"]');
+        if (experimentNav) experimentNav.classList.add('active');
     }
 }
 
@@ -382,12 +349,13 @@ function showSegmentUpdate(segmentId = null) {
     // Switch to segment update section
     showSection('segment-update');
 
-    // Update navigation state
-    document.querySelectorAll('.nav-link').forEach(nav => nav.classList.remove('active'));
-    document.querySelector('.nav-link[data-section="segments"]').classList.add('active');
-
-    // Load the segment update page
-    loadSegmentUpdateData(segmentId);
+    // Load the segment update page with preselected segment
+    if (segmentId) {
+        // Wait a bit for the section to load, then preselect
+        setTimeout(() => {
+            loadSegmentUpdateData(segmentId);
+        }, 100);
+    }
 }
 
 // Show Add Domain form (placeholder)
@@ -461,7 +429,7 @@ async function loadSegmentUpdateData(preselectedSegmentId = null) {
                 <p>${error.message}</p>
                 <button class="btn btn-primary" onclick="loadSegmentUpdateData()">Retry</button>
             </div>
-        ';
+        `;
     }
 }
 
@@ -471,6 +439,11 @@ async function onDomainChange() {
     const segmentSelect = document.getElementById('segment-select');
     const segmentVariablesDisplay = document.getElementById('segment-variables-display');
 
+    if (!domainSelect || !segmentSelect || !segmentVariablesDisplay) {
+        console.error('Required elements not found');
+        return;
+    }
+
     // Clear segment dropdown
     segmentSelect.innerHTML = '<option value="">Select a segment...</option>';
     segmentSelect.disabled = true;
@@ -479,7 +452,8 @@ async function onDomainChange() {
     segmentVariablesDisplay.style.display = 'none';
 
     const selectedDomainId = domainSelect.value;
-    const selectedDomainName = domainSelect.options[domainSelect.selectedIndex].dataset.domainName;
+    const selectedOption = domainSelect.options[domainSelect.selectedIndex];
+    const selectedDomainName = selectedOption.dataset.domainName;
 
     if (!selectedDomainId) {
         return;
@@ -515,8 +489,14 @@ async function onSegmentChange() {
     const domainSelect = document.getElementById('domain-select');
     const segmentVariablesDisplay = document.getElementById('segment-variables-display');
 
+    if (!segmentSelect || !domainSelect || !segmentVariablesDisplay) {
+        console.error('Required elements not found');
+        return;
+    }
+
     const selectedSegmentId = segmentSelect.value;
-    const selectedDomainName = domainSelect.options[domainSelect.selectedIndex].dataset.domainName;
+    const selectedOption = domainSelect.options[domainSelect.selectedIndex];
+    const selectedDomainName = selectedOption.dataset.domainName;
 
     if (!selectedSegmentId) {
         segmentVariablesDisplay.style.display = 'none';
@@ -526,7 +506,10 @@ async function onSegmentChange() {
     try {
         // Show loading state
         segmentVariablesDisplay.style.display = 'block';
-        document.getElementById('variables-container').innerHTML = '<div class="loading">Loading segment variables...</div>';
+        const variablesContainer = document.getElementById('variables-container');
+        if (variablesContainer) {
+            variablesContainer.innerHTML = '<div class="loading">Loading segment variables...</div>';
+        }
 
         // Fetch segment details
         const segments = await apiCall(`/api/segments?domain_name=${encodeURIComponent(selectedDomainName)}`);
@@ -537,18 +520,26 @@ async function onSegmentChange() {
         }
 
         // Update segment info
-        document.getElementById('segment-info-title').textContent = `Variables for "${selectedSegment.name}"`;
-        document.getElementById('segment-info-details').innerHTML = `
-            <div class="segment-detail-item">
-                <strong>Segment ID:</strong> ${selectedSegment.id}
-            </div>
-            <div class="segment-detail-item">
-                <strong>Domain:</strong> ${selectedDomainName}
-            </div>
-            <div class="segment-detail-item">
-                <strong>Template:</strong> ${selectedSegment.segment_template?.name || 'Unknown'}
-            </div>
-        `;
+        const segmentInfoTitle = document.getElementById('segment-info-title');
+        const segmentInfoDetails = document.getElementById('segment-info-details');
+
+        if (segmentInfoTitle) {
+            segmentInfoTitle.textContent = `Variables for "${selectedSegment.name}"`;
+        }
+
+        if (segmentInfoDetails) {
+            segmentInfoDetails.innerHTML = `
+                <div class="segment-detail-item">
+                    <strong>Segment ID:</strong> ${selectedSegment.id}
+                </div>
+                <div class="segment-detail-item">
+                    <strong>Domain:</strong> ${selectedDomainName}
+                </div>
+                <div class="segment-detail-item">
+                    <strong>Template:</strong> ${selectedSegment.segment_template?.name || 'Unknown'}
+                </div>
+            `;
+        }
 
         // Display segment variables
         displaySegmentVariables(selectedSegment);
@@ -557,19 +548,27 @@ async function onSegmentChange() {
 
     } catch (error) {
         console.error('Error loading segment variables:', error);
-        document.getElementById('variables-container').innerHTML = `
-            <div class="error-message">
-                <h4>Error Loading Variables</h4>
-                <p>${error.message}</p>
-                <button class="btn btn-small btn-primary" onclick="onSegmentChange()">Retry</button>
-            </div>
-        `;
+        const variablesContainer = document.getElementById('variables-container');
+        if (variablesContainer) {
+            variablesContainer.innerHTML = `
+                <div class="error-message">
+                    <h4>Error Loading Variables</h4>
+                    <p>${error.message}</p>
+                    <button class="btn btn-small btn-primary" onclick="onSegmentChange()">Retry</button>
+                </div>
+            `;
+        }
     }
 }
 
 // Display segment variables
 function displaySegmentVariables(segment) {
     const variablesContainer = document.getElementById('variables-container');
+    if (!variablesContainer) {
+        console.error('Variables container not found');
+        return;
+    }
+
     const variables = segment.segment_variables || {};
 
     let variablesHTML = `
@@ -657,17 +656,21 @@ async function preselectSegment(segmentId, domains) {
 
         // Select the domain
         const domainSelect = document.getElementById('domain-select');
-        domainSelect.value = targetDomain.domain_id;
+        if (domainSelect) {
+            domainSelect.value = targetDomain.domain_id;
 
-        // Trigger domain change to load segments
-        await onDomainChange();
+            // Trigger domain change to load segments
+            await onDomainChange();
 
-        // Select the segment
-        const segmentSelect = document.getElementById('segment-select');
-        segmentSelect.value = segmentId;
+            // Select the segment
+            const segmentSelect = document.getElementById('segment-select');
+            if (segmentSelect) {
+                segmentSelect.value = segmentId;
 
-        // Trigger segment change to load variables
-        await onSegmentChange();
+                // Trigger segment change to load variables
+                await onSegmentChange();
+            }
+        }
 
         console.log(`Preselected segment ${targetSegment.name} from domain ${targetDomain.domain_name}`);
 
@@ -724,3 +727,18 @@ async function testAPIConnection() {
         console.log('API connection test failed:', error.message);
     }
 }
+
+// Make functions globally available
+window.showSection = showSection;
+window.toggleDomainExpansion = toggleDomainExpansion;
+window.viewSegmentDetails = viewSegmentDetails;
+window.editSegment = editSegment;
+window.createSegmentForDomain = createSegmentForDomain;
+window.showAddDomainForm = showAddDomainForm;
+window.loadSegmentViewData = loadSegmentViewData;
+window.loadSegmentUpdateData = loadSegmentUpdateData;
+window.onDomainChange = onDomainChange;
+window.onSegmentChange = onSegmentChange;
+window.addNewVariable = addNewVariable;
+window.editVariable = editVariable;
+window.deleteVariable = deleteVariable;
