@@ -1403,7 +1403,7 @@ function populateNewSegmentPanel(segment) {
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Variable Name</label>
-                                <input type="text" class="variable-name-input" value="${key}" onchange="updateVariablePreview(${variableIndex})">
+                                <input type="text" class="variable-name-input" value="${key}">
                             </div>
                             <div class="form-group">
                                 <label>Data Type</label>
@@ -1528,7 +1528,7 @@ function addNewSegmentVariable() {
                 <div class="form-row">
                     <div class="form-group">
                         <label>Variable Name</label>
-                        <input type="text" class="variable-name-input" value="new_variable_${index}" onchange="updateVariablePreview(${index})">
+                        <input type="text" class="variable-name-input" value="new_variable_${index}">
                     </div>
                     <div class="form-group">
                         <label>Data Type</label>
