@@ -10,6 +10,21 @@ document.addEventListener('DOMContentLoaded', () => {
     testAPIConnection();
 });
 
+// Make showSection globally available
+window.showSection = showSection;
+
+// Make other functions globally available
+window.toggleDomainExpansion = toggleDomainExpansion;
+window.viewSegmentDetails = viewSegmentDetails;
+window.editSegment = editSegment;
+window.createSegmentForDomain = createSegmentForDomain;
+window.showAddDomainForm = showAddDomainForm;
+window.onDomainChange = onDomainChange;
+window.onSegmentChange = onSegmentChange;
+window.addNewVariable = addNewVariable;
+window.editVariable = editVariable;
+window.deleteVariable = deleteVariable;
+
 // Navigation functionality
 function initializeNavigation() {
     const navLinks = document.querySelectorAll('.nav-link[data-section]');
@@ -71,6 +86,27 @@ function showSection(sectionId) {
     if (targetSection) {
         targetSection.classList.add('active');
         console.log(`Switched to ${sectionId} section`);
+
+        // Update navigation state based on section
+        updateNavigationState(sectionId);
+
+        // Load section data
+        loadSectionData(sectionId);
+    }
+}
+
+// Update navigation state based on current section
+function updateNavigationState(sectionId) {
+    // Clear all active states
+    document.querySelectorAll('.nav-link').forEach(nav => nav.classList.remove('active'));
+
+    // Determine parent section and highlight it
+    if (sectionId.startsWith('domain-') || sectionId === 'domains') {
+        document.querySelector('.nav-link[data-section="domains"]').classList.add('active');
+    } else if (sectionId.startsWith('segment-') || sectionId === 'segments') {
+        document.querySelector('.nav-link[data-section="segments"]').classList.add('active');
+    } else if (sectionId.startsWith('experiment-') || sectionId === 'experiments') {
+        document.querySelector('.nav-link[data-section="experiments"]').classList.add('active');
     }
 }
 
