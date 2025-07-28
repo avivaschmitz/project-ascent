@@ -707,8 +707,7 @@ function addNewVariable(segmentId) {
 
 // Show edit variable modal
 function editVariable(segmentId, variableName) {
-    // First, find the current value
-    const variableRow = document.querySelector(`tr.variable-row td.variable-name:contains('${variableName}')`);
+    // Find the current value by searching through the table rows
     let currentValue = '';
     let currentType = 'string';
 
@@ -716,11 +715,11 @@ function editVariable(segmentId, variableName) {
     const allRows = document.querySelectorAll('tr.variable-row');
     for (let row of allRows) {
         const nameCell = row.querySelector('.variable-name');
-        if (nameCell && nameCell.textContent === variableName) {
+        if (nameCell && nameCell.textContent.trim() === variableName) {
             const valueCell = row.querySelector('.variable-value code');
             const typeCell = row.querySelector('.variable-type .type-badge');
-            if (valueCell) currentValue = valueCell.textContent;
-            if (typeCell) currentType = typeCell.textContent;
+            if (valueCell) currentValue = valueCell.textContent.trim();
+            if (typeCell) currentType = typeCell.textContent.trim();
             break;
         }
     }
@@ -765,8 +764,10 @@ function editVariable(segmentId, variableName) {
     document.body.insertAdjacentHTML('beforeend', modalHTML);
 
     // Focus on the input
-    const input = document.getElementById('variable-value-input') || document.getElementById('variable-value-checkbox');
-    if (input) input.focus();
+    setTimeout(() => {
+        const input = document.getElementById('variable-value-input') || document.getElementById('variable-value-checkbox');
+        if (input) input.focus();
+    }, 100);
 }
 
 // Generate appropriate input based on data type
