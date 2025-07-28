@@ -312,6 +312,71 @@ app.get('/api/segments', async (req, res) => {
   }
 });
 
+// Update a segment variable
+app.put('/api/segments/:segmentId/variables/:variableName', async (req, res) => {
+  const { segmentId, variableName } = req.params;
+  const { variable_value } = req.body;
+
+  // Validate required fields
+  if (!segmentId || !variableName || variable_value === undefined) {
+    return res.status(400).json({ error: 'segmentId, variableName, and variable_value are required' });
+  }
+
+  try {
+    // Check if the segment exists
+    const segmentCheck = await db.query(
+      'SELECT segment_id FROM segments WHERE segment_id = $1',
+      [segmentId]
+    );
+
+    if (segmentCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Segment not found' });
+    }
+
+    // Check if the variable exists
+    const variableCheck = await db.query(
+      'SELECT variable_id FROM segment_variables WHERE segment_id = $1 AND variable_name = $2',
+      [segmentId, variableName]
+    );
+
+    let result;
+    if (variableCheck.rows.length === 0) {
+      // Create new variable
+      result = await db.query(
+        'INSERT INTO segment_variables (variable_name, variable_value, segment_id) VALUES ($1, $2, $3) RETURNING *',
+        [variableName, String(variable_value), segmentId]
+      );
+      console.log(`Created new variable ${variableName} for segment ${segmentId}`);
+    } else {
+      // Update existing variable
+      result = await db.query(
+        'UPDATE segment_variables SET variable_value = $1 WHERE segment_id = $2 AND variable_name = $3 RETURNING *',
+        [String(variable_value), segmentId, variableName]
+      );
+      console.log(`Updated variable ${variableName} for segment ${segmentId}`);
+    }
+
+    const updatedVariable = result.rows[0];
+
+    res.json({
+      message: 'Variable updated successfully',
+      variable: {
+        id: updatedVariable.variable_id,
+        name: updatedVariable.variable_name,
+        value: updatedVariable.variable_value,
+        segment_id: updatedVariable.segment_id
+      }
+    });
+
+  } catch (error) {
+    console.error('Error updating segment variable:', error);
+    res.status(500).json({
+      error: 'An error occurred while updating the segment variable',
+      details: error.message
+    });
+  }
+});
+
 // Create a new segment with existing template
 app.post('/api/segments', async (req, res) => {
   const { segment_name, domain_id, segment_template_id, segment_variables } = req.body;

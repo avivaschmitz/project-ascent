@@ -103,63 +103,84 @@ async function loadSegmentViewData() {
         // Fetch domains from API
         const domains = await apiCall('/api/domains');
 
-        // Generate domains table HTML
-        let domainsHTML = `
-            <div class="data-header">
-                <h3>All Domains & Segments (${domains.length})</h3>
-                <button class="btn btn-primary" onclick="showAddDomainForm()">Add New Domain</button>
+        // Generate segment view HTML with domain search
+        let segmentViewHTML = `
+            <div class="segment-view-controls">
+                <div class="form-group">
+                    <label for="view-domain-select">Filter by Domain</label>
+                    <select id="view-domain-select" onchange="onViewDomainChange()">
+                        <option value="">All domains</option>
+        `;
+
+        domains.forEach(domain => {
+            segmentViewHTML += `<option value="${domain.domain_id}" data-domain-name="${domain.domain_name}">${domain.domain_name}</option>`;
+        });
+
+        segmentViewHTML += `
+                    </select>
+                </div>
+                <div class="view-actions">
+                    <button class="btn btn-primary" onclick="showAddDomainForm()">Add New Domain</button>
+                </div>
             </div>
-            <div class="data-table">
-                <table class="domains-table">
-                    <thead>
-                        <tr>
-                            <th width="50">Expand</th>
-                            <th>Domain ID</th>
-                            <th>Domain Name</th>
-                            <th>Segments</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+
+            <div id="domains-table-container">
+        `;
+
+        // Generate domains table HTML
+        segmentViewHTML += `
+                <div class="data-table">
+                    <table class="domains-table">
+                        <thead>
+                            <tr>
+                                <th width="50">Expand</th>
+                                <th>Domain ID</th>
+                                <th>Domain Name</th>
+                                <th>Segments</th>
+                            </tr>
+                        </thead>
+                        <tbody>
         `;
 
         if (domains.length === 0) {
-            domainsHTML += `
-                        <tr>
-                            <td colspan="4" class="no-data">No domains found</td>
-                        </tr>
+            segmentViewHTML += `
+                            <tr>
+                                <td colspan="4" class="no-data">No domains found</td>
+                            </tr>
             `;
         } else {
             domains.forEach(domain => {
-                domainsHTML += `
-                        <tr class="domain-row" data-domain-id="${domain.domain_id}" data-domain-name="${domain.domain_name}">
-                            <td class="expand-cell">
-                                <button class="expand-btn" onclick="toggleDomainExpansion(${domain.domain_id}, '${domain.domain_name}')">
-                                    <span class="expand-icon">▶</span>
-                                </button>
-                            </td>
-                            <td class="domain-id">${domain.domain_id}</td>
-                            <td class="domain-name">${domain.domain_name}</td>
-                            <td class="segment-count">
-                                <span class="loading-segments">Loading...</span>
-                            </td>
-                        </tr>
-                        <tr class="segments-row" id="segments-row-${domain.domain_id}" style="display: none;">
-                            <td colspan="4" class="segments-container">
-                                <div class="segments-loading">Loading segments...</div>
-                            </td>
-                        </tr>
+                segmentViewHTML += `
+                            <tr class="domain-row" data-domain-id="${domain.domain_id}" data-domain-name="${domain.domain_name}">
+                                <td class="expand-cell">
+                                    <button class="expand-btn" onclick="toggleDomainExpansion(${domain.domain_id}, '${domain.domain_name}')">
+                                        <span class="expand-icon">▶</span>
+                                    </button>
+                                </td>
+                                <td class="domain-id">${domain.domain_id}</td>
+                                <td class="domain-name">${domain.domain_name}</td>
+                                <td class="segment-count">
+                                    <span class="loading-segments">Loading...</span>
+                                </td>
+                            </tr>
+                            <tr class="segments-row" id="segments-row-${domain.domain_id}" style="display: none;">
+                                <td colspan="4" class="segments-container">
+                                    <div class="segments-loading">Loading segments...</div>
+                                </td>
+                            </tr>
                 `;
             });
         }
 
-        domainsHTML += `
-                    </tbody>
-                </table>
+        segmentViewHTML += `
+                        </tbody>
+                    </table>
+                </div>
             </div>
         `;
 
         // Update the content area
-        contentArea.innerHTML = domainsHTML;
+        contentArea.innerHTML = segmentViewHTML;
 
         console.log(`Loaded ${domains.length} domains`);
 
@@ -684,13 +705,324 @@ function addNewVariable(segmentId) {
     alert(`Add new variable to segment ${segmentId} (functionality to be implemented)`);
 }
 
+// Show edit variable modal
 function editVariable(segmentId, variableName) {
-    alert(`Edit variable "${variableName}" in segment ${segmentId} (functionality to be implemented)`);
+    // First, find the current value
+    const variableRow = document.querySelector(`tr.variable-row td.variable-name:contains('${variableName}')`);
+    let currentValue = '';
+    let currentType = 'string';
+
+    // Try to find the current value from the table
+    const allRows = document.querySelectorAll('tr.variable-row');
+    for (let row of allRows) {
+        const nameCell = row.querySelector('.variable-name');
+        if (nameCell && nameCell.textContent === variableName) {
+            const valueCell = row.querySelector('.variable-value code');
+            const typeCell = row.querySelector('.variable-type .type-badge');
+            if (valueCell) currentValue = valueCell.textContent;
+            if (typeCell) currentType = typeCell.textContent;
+            break;
+        }
+    }
+
+    // Create modal HTML
+    const modalHTML = `
+        <div id="edit-variable-modal" class="modal-overlay" onclick="closeEditVariableModal(event)">
+            <div class="modal-content" onclick="event.stopPropagation()">
+                <div class="modal-header">
+                    <h3>Edit Variable: ${variableName}</h3>
+                    <button class="modal-close" onclick="closeEditVariableModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="edit-variable-form" onsubmit="saveVariableEdit(event, ${segmentId}, '${variableName}')">
+                        <div class="form-group">
+                            <label for="variable-name-display">Variable Name</label>
+                            <input type="text" id="variable-name-display" value="${variableName}" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="variable-type-select">Data Type</label>
+                            <select id="variable-type-select" onchange="onVariableTypeChange()">
+                                <option value="string" ${currentType === 'string' ? 'selected' : ''}>String</option>
+                                <option value="number" ${currentType === 'number' ? 'selected' : ''}>Number</option>
+                                <option value="boolean" ${currentType === 'boolean' ? 'selected' : ''}>Boolean</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="variable-value-group">
+                            <label for="variable-value-input">Variable Value</label>
+                            ${generateValueInput(currentType, currentValue)}
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Save</button>
+                            <button type="button" class="btn btn-secondary" onclick="closeEditVariableModal()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+    // Focus on the input
+    const input = document.getElementById('variable-value-input') || document.getElementById('variable-value-checkbox');
+    if (input) input.focus();
+}
+
+// Generate appropriate input based on data type
+function generateValueInput(type, currentValue) {
+    switch (type) {
+        case 'boolean':
+            const isChecked = currentValue === 'true' || currentValue === true;
+            return `
+                <label class="checkbox-wrapper">
+                    <input type="checkbox" id="variable-value-checkbox" ${isChecked ? 'checked' : ''}>
+                    <span class="checkbox-label">${isChecked ? 'True' : 'False'}</span>
+                </label>
+            `;
+        case 'number':
+            return `<input type="number" id="variable-value-input" value="${currentValue}" step="any" required>`;
+        default: // string
+            return `<input type="text" id="variable-value-input" value="${currentValue}" required>`;
+    }
+}
+
+// Handle variable type change in modal
+function onVariableTypeChange() {
+    const typeSelect = document.getElementById('variable-type-select');
+    const valueGroup = document.getElementById('variable-value-group');
+
+    if (!typeSelect || !valueGroup) return;
+
+    const selectedType = typeSelect.value;
+    const currentValue = getCurrentModalValue();
+
+    valueGroup.innerHTML = `
+        <label for="variable-value-input">Variable Value</label>
+        ${generateValueInput(selectedType, currentValue)}
+    `;
+
+    // Update checkbox label behavior for boolean type
+    if (selectedType === 'boolean') {
+        const checkbox = document.getElementById('variable-value-checkbox');
+        const label = document.querySelector('.checkbox-label');
+        if (checkbox && label) {
+            checkbox.addEventListener('change', function() {
+                label.textContent = this.checked ? 'True' : 'False';
+            });
+        }
+    }
+}
+
+// Get current value from modal inputs
+function getCurrentModalValue() {
+    const textInput = document.getElementById('variable-value-input');
+    const checkbox = document.getElementById('variable-value-checkbox');
+
+    if (textInput) return textInput.value;
+    if (checkbox) return checkbox.checked;
+    return '';
+}
+
+// Save variable edit
+async function saveVariableEdit(event, segmentId, variableName) {
+    event.preventDefault();
+
+    const typeSelect = document.getElementById('variable-type-select');
+    const textInput = document.getElementById('variable-value-input');
+    const checkbox = document.getElementById('variable-value-checkbox');
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+
+    if (!typeSelect) {
+        alert('Error: Could not find form elements');
+        return;
+    }
+
+    let variableValue;
+    const variableType = typeSelect.value;
+
+    // Get value based on type
+    switch (variableType) {
+        case 'boolean':
+            variableValue = checkbox ? checkbox.checked : false;
+            break;
+        case 'number':
+            variableValue = textInput ? parseFloat(textInput.value) : 0;
+            if (isNaN(variableValue)) {
+                alert('Please enter a valid number');
+                return;
+            }
+            break;
+        default: // string
+            variableValue = textInput ? textInput.value : '';
+            break;
+    }
+
+    try {
+        // Show loading state
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = 'Saving...';
+        submitBtn.disabled = true;
+
+        // Make API call to update variable
+        const response = await apiCall(`/api/segments/${segmentId}/variables/${encodeURIComponent(variableName)}`, {
+            method: 'PUT',
+            body: JSON.stringify({
+                variable_value: variableValue
+            })
+        });
+
+        console.log('Variable updated successfully:', response);
+
+        // Close modal
+        closeEditVariableModal();
+
+        // Refresh the variables display
+        await refreshCurrentSegmentVariables();
+
+        // Show success message
+        showSuccessMessage(`Variable "${variableName}" updated successfully!`);
+
+    } catch (error) {
+        console.error('Error updating variable:', error);
+        alert(`Error updating variable: ${error.message}`);
+
+        // Reset button state
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+    }
+}
+
+// Close edit variable modal
+function closeEditVariableModal(event) {
+    if (event && event.target !== event.currentTarget) {
+        return; // Only close if clicking overlay, not modal content
+    }
+
+    const modal = document.getElementById('edit-variable-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// Refresh current segment variables display
+async function refreshCurrentSegmentVariables() {
+    const segmentSelect = document.getElementById('segment-select');
+    if (segmentSelect && segmentSelect.value) {
+        await onSegmentChange();
+    }
+}
+
+// Show success message
+function showSuccessMessage(message) {
+    // Create success message element
+    const successDiv = document.createElement('div');
+    successDiv.className = 'success-message';
+    successDiv.textContent = message;
+    successDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #d4edda;
+        color: #155724;
+        padding: 1rem 1.5rem;
+        border: 1px solid #c3e6cb;
+        border-radius: 4px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        z-index: 1001;
+        font-weight: 500;
+    `;
+
+    document.body.appendChild(successDiv);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+        if (successDiv.parentNode) {
+            successDiv.parentNode.removeChild(successDiv);
+        }
+    }, 3000);
 }
 
 function deleteVariable(segmentId, variableName) {
     if (confirm(`Are you sure you want to delete the variable "${variableName}"?`)) {
         alert(`Delete variable "${variableName}" from segment ${segmentId} (functionality to be implemented)`);
+    }
+}
+
+// Handle domain filter change in view segments
+async function onViewDomainChange() {
+    const domainSelect = document.getElementById('view-domain-select');
+    const domainsTableContainer = document.getElementById('domains-table-container');
+
+    if (!domainSelect || !domainsTableContainer) {
+        console.error('Required elements not found');
+        return;
+    }
+
+    const selectedDomainId = domainSelect.value;
+    const selectedOption = domainSelect.options[domainSelect.selectedIndex];
+    const selectedDomainName = selectedOption.dataset.domainName;
+
+    try {
+        // Show loading state
+        domainsTableContainer.innerHTML = '<div class="loading">Loading filtered results...</div>';
+
+        if (!selectedDomainId) {
+            // Show all domains
+            await loadSegmentViewData();
+            return;
+        }
+
+        // Show only selected domain
+        const segments = await apiCall(`/api/segments?domain_name=${encodeURIComponent(selectedDomainName)}`);
+
+        let filteredHTML = `
+            <div class="data-table">
+                <table class="domains-table">
+                    <thead>
+                        <tr>
+                            <th width="50">Expand</th>
+                            <th>Domain ID</th>
+                            <th>Domain Name</th>
+                            <th>Segments</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="domain-row" data-domain-id="${selectedDomainId}" data-domain-name="${selectedDomainName}">
+                            <td class="expand-cell">
+                                <button class="expand-btn" onclick="toggleDomainExpansion(${selectedDomainId}, '${selectedDomainName}')">
+                                    <span class="expand-icon">▶</span>
+                                </button>
+                            </td>
+                            <td class="domain-id">${selectedDomainId}</td>
+                            <td class="domain-name">${selectedDomainName}</td>
+                            <td class="segment-count">
+                                <span class="segment-count-badge">${segments.length}</span>
+                            </td>
+                        </tr>
+                        <tr class="segments-row" id="segments-row-${selectedDomainId}" style="display: none;">
+                            <td colspan="4" class="segments-container">
+                                <div class="segments-loading">Loading segments...</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        `;
+
+        domainsTableContainer.innerHTML = filteredHTML;
+
+        console.log(`Filtered to show domain ${selectedDomainName} with ${segments.length} segments`);
+
+    } catch (error) {
+        console.error('Error filtering domains:', error);
+        domainsTableContainer.innerHTML = `
+            <div class="error-message">
+                <h4>Error Loading Filtered Results</h4>
+                <p>${error.message}</p>
+                <button class="btn btn-small btn-primary" onclick="onViewDomainChange()">Retry</button>
+            </div>
+        `;
     }
 }
 
@@ -739,6 +1071,10 @@ window.loadSegmentViewData = loadSegmentViewData;
 window.loadSegmentUpdateData = loadSegmentUpdateData;
 window.onDomainChange = onDomainChange;
 window.onSegmentChange = onSegmentChange;
+window.onViewDomainChange = onViewDomainChange;
 window.addNewVariable = addNewVariable;
 window.editVariable = editVariable;
 window.deleteVariable = deleteVariable;
+window.closeEditVariableModal = closeEditVariableModal;
+window.saveVariableEdit = saveVariableEdit;
+window.onVariableTypeChange = onVariableTypeChange;
