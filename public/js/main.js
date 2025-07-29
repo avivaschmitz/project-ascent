@@ -1,4 +1,423 @@
-// Project Ascent - Navigation and Section Management
+// Hide dropdown when clicking outside
+document.addEventListener('click', function(event) {
+    const searchInput = document.getElementById('model-segment-search');
+    const dropdown = document.getElementById('model-segment-dropdown');
+
+    if (searchInput && dropdown &&
+        !searchInput.contains(event.target) &&
+        !dropdown.contains(event.target)) {
+        dropdown.style.display = 'none';
+    }
+
+    // Also handle provision domain dropdown
+    const provisionSearchInput = document.getElementById('provision-domain-search');
+    const provisionDropdown = document.getElementById('provision-domain-dropdown');
+
+    if (provisionSearchInput && provisionDropdown &&
+        !provisionSearchInput.contains(event.target) &&
+        !provisionDropdown.contains(event.target)) {
+        provisionDropdown.style.display = 'none';
+    }
+});
+
+// DOMAIN PROVISION FUNCTIONS
+async function loadDomainProvisionData() {
+    console.log('Loading domain provision data...');
+
+    try {
+        const contentArea = document.querySelector('#domain-provision-section .content-area');
+        if (!contentArea) {
+            console.error('Content area not found for domain-provision-section');
+            return;
+        }
+
+        // Show loading state
+        const provisionInterface = contentArea.querySelector('.domain-provision-interface');
+        if (provisionInterface) {
+            const provisionControls = provisionInterface.querySelector('.provision-controls');
+            if (provisionControls) {
+                provisionControls.innerHTML = '<div class="provision-loading">Loading purchased domains...</div>';
+            }
+        }
+
+        // Load domains with "purchased" status
+        const domains = await apiCall('/api/domains');
+        const purchasedDomains = domains.filter(domain =>
+            domain.status.toLowerCase() === 'purchased'
+        );
+
+        console.log('Loaded purchased domains:', purchasedDomains);
+
+        // Restore the provision controls
+        if (provisionInterface) {
+            loadProvisionInterface(purchasedDomains);
+        }
+
+        // Store purchased domains globally
+        window.purchasedDomains = purchasedDomains;
+
+        console.log('Domain provision interface loaded successfully');
+
+    } catch (error) {
+        console.error('Error loading domain provision data:', error);
+        const contentArea = document.querySelector('#domain-provision-section .content-area');
+        if (contentArea) {
+            contentArea.innerHTML = `
+                <div class="error-message">
+                    <h3>Error Loading Domain Provision</h3>
+                    <p>${error.message}</p>
+                    <button class="btn btn-primary" onclick="loadDomainProvisionData()">Retry</button>
+                </div>
+            `;
+        }
+    }
+}
+
+function loadProvisionInterface(purchasedDomains) {
+    const provisionControls = document.querySelector('.provision-controls');
+    if (!provisionControls) return;
+
+    if (purchasedDomains.length === 0) {
+        provisionControls.innerHTML = `
+            <div class="no-data">
+                <h3>No Purchased Domains</h3>
+                <p>No domains with "purchased" status are available for provisioning.</p>
+                <button class="btn btn-primary" onclick="showSection('domain-purchase')">Purchase Domain</button>
+            </div>
+        `;
+        return;
+    }
+
+    provisionControls.innerHTML = `
+        <div class="form-group">
+            <label for="provision-domain-search">Select Domain to Provision *</label>
+            <div class="searchable-dropdown">
+                <input type="text"
+                       id="provision-domain-search"
+                       placeholder="Search for a purchased domain..."
+                       onkeyup="filterProvisionDomains()"
+                       onclick="showProvisionDomainDropdown()"
+                       autocomplete="off"
+                       required>
+                <div id="provision-domain-dropdown" class="dropdown-list" style="display: none;">
+                </div>
+            </div>
+            <span class="form-help">Only domains with "purchased" status are available for provisioning</span>
+        </div>
+    `;
+
+    // Populate the dropdown
+    populateProvisionDomainDropdown(purchasedDomains);
+}
+
+function populateProvisionDomainDropdown(domains) {
+    const dropdown = document.getElementById('provision-domain-dropdown');
+    if (!dropdown) return;
+
+    if (domains.length === 0) {
+        dropdown.innerHTML = '<div class="dropdown-item no-results">No purchased domains available</div>';
+        return;
+    }
+
+    let dropdownHTML = '';
+    domains.forEach(domain => {
+        dropdownHTML += `
+            <div class="dropdown-item" onclick="selectProvisionDomain(${domain.domain_id}, '${domain.domain_name}')" data-domain-id="${domain.domain_id}">
+                <div class="provision-domain-item">
+                    <span class="provision-domain-name">${domain.domain_name}</span>
+                    <span class="provision-domain-status">${domain.status}</span>
+                </div>
+            </div>
+        `;
+    });
+
+    dropdown.innerHTML = dropdownHTML;
+}
+
+function filterProvisionDomains() {
+    const searchInput = document.getElementById('provision-domain-search');
+    const dropdown = document.getElementById('provision-domain-dropdown');
+
+    if (!searchInput || !dropdown || !window.purchasedDomains) return;
+
+    const searchTerm = searchInput.value.toLowerCase();
+
+    if (searchTerm.length > 0) {
+        dropdown.style.display = 'block';
+    }
+
+    const filteredDomains = window.purchasedDomains.filter(domain => {
+        return domain.domain_name.toLowerCase().includes(searchTerm);
+    });
+
+    populateProvisionDomainDropdown(filteredDomains);
+
+    if (filteredDomains.length === 0 && searchTerm.length > 0) {
+        dropdown.innerHTML = '<div class="dropdown-item no-results">No domains match your search</div>';
+    }
+}
+
+function showProvisionDomainDropdown() {
+    const dropdown = document.getElementById('provision-domain-dropdown');
+    if (dropdown) {
+        dropdown.style.display = 'block';
+    }
+}
+
+function selectProvisionDomain(domainId, domainName) {
+    console.log('Selected domain for provision:', { domainId, domainName });
+
+    const searchInput = document.getElementById('provision-domain-search');
+    const dropdown = document.getElementById('provision-domain-dropdown');
+    const formContainer = document.getElementById('domain-provision-form-container');
+    const selectedDomainSpan = document.getElementById('selected-domain-name');
+
+    if (searchInput) {
+        searchInput.value = domainName;
+    }
+
+    if (dropdown) {
+        dropdown.style.display = 'none';
+    }
+
+    if (selectedDomainSpan) {
+        selectedDomainSpan.textContent = domainName;
+    }
+
+    if (formContainer) {
+        formContainer.style.display = 'block';
+    }
+
+    // Store selected domain for form submission
+    window.selectedProvisionDomain = {
+        id: domainId,
+        name: domainName
+    };
+
+    // Clear any existing form data
+    clearProvisionForm();
+
+    console.log('Domain provision form displayed for:', domainName);
+}
+
+async function provisionDomain(event) {
+    event.preventDefault();
+
+    if (!window.selectedProvisionDomain) {
+        showProvisionStatus('Please select a domain first', 'error');
+        return;
+    }
+
+    const submitBtn = document.getElementById('provision-submit-btn');
+    const statusMessage = document.getElementById('provision-status-message');
+
+    try {
+        // Update UI to show loading state
+        if (submitBtn) {
+            submitBtn.textContent = 'Provisioning...';
+            submitBtn.disabled = true;
+        }
+
+        showProvisionStatus('Processing domain provision...', 'loading');
+
+        console.log('Provisioning domain:', window.selectedProvisionDomain);
+
+        // Get form data (even though we're not processing it)
+        const formData = {
+            contentSubdomain: document.getElementById('content-subdomain')?.value || '',
+            searchSubdomain: document.getElementById('search-subdomain')?.value || '',
+            theme: document.getElementById('theme-input')?.value || '',
+            logoFile: document.getElementById('logo-upload')?.files[0] || null,
+            faviconFile: document.getElementById('favicon-upload')?.files[0] || null,
+            adsTxtFile: document.getElementById('ads-txt-upload')?.files[0] || null
+        };
+
+        console.log('Form data collected (not processed):', {
+            contentSubdomain: formData.contentSubdomain,
+            searchSubdomain: formData.searchSubdomain,
+            theme: formData.theme,
+            hasLogo: !!formData.logoFile,
+            hasFavicon: !!formData.faviconFile,
+            hasAdsTxt: !!formData.adsTxtFile
+        });
+
+        // Update domain status to "pending DNS setup"
+        const response = await apiCall(`/api/domains/${window.selectedProvisionDomain.id}/status`, {
+            method: 'PUT',
+            body: JSON.stringify({ status: 'pending DNS setup' })
+        });
+
+        console.log('Domain status updated to pending DNS setup:', response);
+
+        // Show success message
+        showProvisionStatus(
+            `Domain "${window.selectedProvisionDomain.name}" has been successfully provisioned! Status updated to "pending DNS setup".`,
+            'success'
+        );
+
+        // Clear form and reset selection after a delay
+        setTimeout(() => {
+            resetDomainSelection();
+            showSection('domain-status'); // Redirect to domain status to see the update
+        }, 3000);
+
+    } catch (error) {
+        console.error('Error provisioning domain:', error);
+        showProvisionStatus(`Error provisioning domain: ${error.message}`, 'error');
+    } finally {
+        // Reset button state
+        if (submitBtn) {
+            submitBtn.textContent = 'Provision Domain';
+            submitBtn.disabled = false;
+        }
+    }
+}
+
+function showProvisionStatus(message, type) {
+    const statusMessage = document.getElementById('provision-status-message');
+    if (!statusMessage) return;
+
+    statusMessage.textContent = message;
+    statusMessage.className = `status-message ${type}`;
+    statusMessage.style.display = 'block';
+
+    // Auto-hide success and loading messages after 5 seconds
+    if (type === 'success' || type === 'loading') {
+        setTimeout(() => {
+            statusMessage.style.display = 'none';
+        }, 5000);
+    }
+}
+
+function clearProvisionForm() {
+    // Clear text inputs
+    const textInputs = [
+        'content-subdomain',
+        'search-subdomain',
+        'theme-input'
+    ];
+
+    textInputs.forEach(id => {
+        const input = document.getElementById(id);
+        if (input) input.value = '';
+    });
+
+    // Clear file inputs and previews
+    const fileInputs = [
+        { id: 'logo-upload', preview: 'logo-preview' },
+        { id: 'favicon-upload', preview: 'favicon-preview' },
+        { id: 'ads-txt-upload', preview: 'ads-txt-preview' }
+    ];
+
+    fileInputs.forEach(({ id, preview }) => {
+        const input = document.getElementById(id);
+        const previewDiv = document.getElementById(preview);
+        const uploadDisplay = input?.closest('.file-upload-wrapper')?.querySelector('.file-upload-display');
+        const uploadText = uploadDisplay?.querySelector('.file-upload-text');
+
+        if (input) input.value = '';
+        if (previewDiv) {
+            previewDiv.innerHTML = '';
+            previewDiv.classList.remove('show');
+        }
+        if (uploadDisplay) {
+            uploadDisplay.classList.remove('has-file');
+        }
+        if (uploadText) {
+            if (id === 'logo-upload') uploadText.textContent = 'Choose logo image...';
+            else if (id === 'favicon-upload') uploadText.textContent = 'Choose favicon image...';
+            else if (id === 'ads-txt-upload') uploadText.textContent = 'Choose ads.txt file...';
+        }
+    });
+
+    // Clear status message
+    const statusMessage = document.getElementById('provision-status-message');
+    if (statusMessage) {
+        statusMessage.style.display = 'none';
+    }
+
+    console.log('Provision form cleared');
+}
+
+function resetDomainSelection() {
+    const searchInput = document.getElementById('provision-domain-search');
+    const formContainer = document.getElementById('domain-provision-form-container');
+
+    if (searchInput) {
+        searchInput.value = '';
+    }
+
+    if (formContainer) {
+        formContainer.style.display = 'none';
+    }
+
+    // Clear form
+    clearProvisionForm();
+
+    // Clear selected domain
+    window.selectedProvisionDomain = null;
+
+    console.log('Domain selection reset');
+}
+
+function handleFileSelect(input, previewId) {
+    const file = input.files[0];
+    const previewDiv = document.getElementById(previewId);
+    const uploadDisplay = input.closest('.file-upload-wrapper').querySelector('.file-upload-display');
+    const uploadText = uploadDisplay.querySelector('.file-upload-text');
+
+    if (!file) {
+        previewDiv.innerHTML = '';
+        previewDiv.classList.remove('show');
+        uploadDisplay.classList.remove('has-file');
+        return;
+    }
+
+    // Update upload display
+    uploadDisplay.classList.add('has-file');
+    uploadText.textContent = file.name;
+
+    // Create preview content
+    let previewContent = '';
+
+    if (file.type.startsWith('image/')) {
+        // Create image preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewContent = `
+                <img src="${e.target.result}" alt="Preview">
+                <div class="file-info">
+                    <div class="file-name">${file.name}</div>
+                    <div class="file-size">${formatFileSize(file.size)}</div>
+                </div>
+            `;
+            previewDiv.innerHTML = previewContent;
+            previewDiv.classList.add('show');
+        };
+        reader.readAsDataURL(file);
+    } else {
+        // Text file or other
+        previewContent = `
+            <div class="file-info">
+                <div class="file-name">${file.name}</div>
+                <div class="file-size">${formatFileSize(file.size)}</div>
+                <div class="file-type">${file.type || 'Unknown type'}</div>
+            </div>
+        `;
+        previewDiv.innerHTML = previewContent;
+        previewDiv.classList.add('show');
+    }
+
+    console.log('File selected:', file.name, file.size, file.type);
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}// Project Ascent - Navigation and Section Management
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Project Ascent - Navigation ready!');
@@ -84,6 +503,9 @@ function loadSectionData(sectionId) {
     switch(sectionId) {
         case 'domain-status':
             loadDomainStatusData();
+            break;
+        case 'domain-provision':
+            loadDomainProvisionData();
             break;
         case 'segment-view':
             loadSegmentViewData();
@@ -1681,6 +2103,14 @@ window.loadDomainStatusData = loadDomainStatusData;
 window.viewDomainSegments = viewDomainSegments;
 window.updateDomainStatus = updateDomainStatus;
 window.refreshDomainStatus = refreshDomainStatus;
+window.loadDomainProvisionData = loadDomainProvisionData;
+window.filterProvisionDomains = filterProvisionDomains;
+window.showProvisionDomainDropdown = showProvisionDomainDropdown;
+window.selectProvisionDomain = selectProvisionDomain;
+window.provisionDomain = provisionDomain;
+window.clearProvisionForm = clearProvisionForm;
+window.resetDomainSelection = resetDomainSelection;
+window.handleFileSelect = handleFileSelect;
 window.loadSegmentViewData = loadSegmentViewData;
 window.filterSegmentsByDomain = filterSegmentsByDomain;
 window.refreshSegmentView = refreshSegmentView;

@@ -320,6 +320,300 @@ body {
     min-width: 150px;
 }
 
+/* Domain Provision Interface Styles */
+.domain-provision-interface {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.provision-controls {
+    margin-bottom: 2rem;
+    padding: 2rem;
+    background: var(--background);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+}
+
+.provision-controls .form-group {
+    margin-bottom: 0;
+}
+
+.provision-controls label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.provision-controls input[type="text"] {
+    width: 100%;
+    padding: 1rem;
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 1.1rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.provision-controls input[type="text"]:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.domain-provision-form-container {
+    background: var(--white);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    overflow: hidden;
+}
+
+.provision-form-header {
+    background: var(--primary-light);
+    padding: 2rem;
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+}
+
+.provision-form-header h3 {
+    margin: 0 0 0.5rem 0;
+    color: var(--primary-dark);
+    font-size: 1.5rem;
+}
+
+.provision-form-header p {
+    margin: 0;
+    color: var(--text-light);
+    font-size: 1.1rem;
+}
+
+.provision-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+}
+
+.form-section {
+    padding: 2rem;
+    border-right: 1px solid var(--border);
+}
+
+.form-section:last-child {
+    border-right: none;
+}
+
+.form-section h4 {
+    margin: 0 0 1.5rem 0;
+    color: var(--primary-color);
+    font-size: 1.2rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.form-section .form-group {
+    margin-bottom: 2rem;
+}
+
+.form-section .form-group:last-child {
+    margin-bottom: 0;
+}
+
+.form-section label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+    font-weight: 600;
+}
+
+.form-section input[type="text"] {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-section input[type="text"]:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+/* File Upload Styles */
+.file-upload-wrapper {
+    position: relative;
+}
+
+.file-upload-wrapper input[type="file"] {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.file-upload-display {
+    padding: 1rem;
+    border: 2px dashed var(--border);
+    border-radius: 4px;
+    text-align: center;
+    background: var(--background);
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+.file-upload-wrapper:hover .file-upload-display {
+    border-color: var(--primary-color);
+    background: var(--primary-light);
+}
+
+.file-upload-display.has-file {
+    border-color: var(--primary-color);
+    background: var(--primary-light);
+    border-style: solid;
+}
+
+.file-upload-text {
+    color: var(--text-light);
+    font-style: italic;
+}
+
+.file-upload-display.has-file .file-upload-text {
+    color: var(--primary-dark);
+    font-style: normal;
+    font-weight: 500;
+}
+
+.file-preview {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    display: none;
+}
+
+.file-preview.show {
+    display: block;
+}
+
+.file-preview img {
+    max-width: 100px;
+    max-height: 100px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+}
+
+.file-info {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--text-light);
+}
+
+.file-info .file-name {
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.file-info .file-size {
+    color: var(--text-light);
+}
+
+/* Form Actions */
+#domain-provision-form .form-actions {
+    grid-column: 1 / -1;
+    padding: 2rem;
+    border-top: 1px solid var(--border);
+    background: var(--background);
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+#domain-provision-form .btn {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    min-width: 160px;
+}
+
+/* Provision Domain Dropdown Styles */
+.provision-controls .dropdown-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    box-shadow: var(--shadow);
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+.provision-controls .dropdown-item {
+    padding: 1rem;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    transition: background-color 0.2s ease;
+}
+
+.provision-controls .dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.provision-controls .dropdown-item:hover {
+    background-color: var(--primary-light);
+}
+
+.provision-controls .dropdown-item.no-results {
+    cursor: default;
+    color: var(--text-light);
+    text-align: center;
+    font-style: italic;
+}
+
+.provision-controls .dropdown-item.no-results:hover {
+    background-color: transparent;
+}
+
+.provision-domain-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.provision-domain-name {
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.provision-domain-status {
+    background: #e8f5e8;
+    color: #388e3c;
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+/* Status Messages for Provision */
+#provision-status-message {
+    margin: 2rem;
+    margin-bottom: 0;
+}
+
+/* Loading State */
+.provision-loading {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-light);
+}
+
 /* Status Messages */
 .status-message {
     margin-top: 2rem;
@@ -1491,6 +1785,19 @@ body {
         gap: 1rem;
         padding: 1.5rem;
     }
+
+    .provision-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-section {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .form-section:last-child {
+        border-bottom: none;
+    }
 }
 
 @media (max-width: 768px) {
@@ -1563,6 +1870,37 @@ body {
 
     .domain-purchase-form .btn {
         width: 100%;
+    }
+
+    /* Mobile adjustments for domain provision form */
+    .domain-provision-interface {
+        max-width: 100%;
+    }
+
+    .provision-controls {
+        padding: 1rem;
+    }
+
+    .provision-form-header {
+        padding: 1.5rem;
+    }
+
+    .form-section {
+        padding: 1.5rem;
+    }
+
+    #domain-provision-form .form-actions {
+        flex-direction: column;
+        padding: 1.5rem;
+    }
+
+    #domain-provision-form .btn {
+        width: 100%;
+        min-width: auto;
+    }
+
+    .provision-form-header h3 {
+        font-size: 1.25rem;
     }
 
     /* Mobile Table Adjustments */
