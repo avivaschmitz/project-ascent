@@ -36,6 +36,7 @@ function initializeNavigation() {
 
 // Show specific section
 function showSection(sectionId) {
+    console.log('showSection called with:', sectionId);
     const contentSections = document.querySelectorAll('.content-section');
 
     // Hide all sections
@@ -54,6 +55,8 @@ function showSection(sectionId) {
 
         // Load section data
         loadSectionData(sectionId);
+    } else {
+        console.error(`Section not found: ${sectionId}-section`);
     }
 }
 
@@ -77,6 +80,7 @@ function updateNavigationState(sectionId) {
 
 // Load data based on section
 function loadSectionData(sectionId) {
+    console.log('loadSectionData called with:', sectionId);
     switch(sectionId) {
         case 'segment-view':
             loadSegmentViewData();
@@ -88,17 +92,531 @@ function loadSectionData(sectionId) {
             loadSegmentCreateData();
             break;
         default:
+            console.log('No specific data loading required for section:', sectionId);
             break;
     }
 }
 
-// Basic placeholder functions
-function loadSegmentViewData() {
+// SEGMENT VIEW FUNCTIONS
+async function loadSegmentViewData() {
     console.log('Loading segment view data...');
+
+    try {
+        const contentArea = document.querySelector('#segment-view-section .content-area');
+        if (!contentArea) {
+            console.error('Content area not found for segment-view-section');
+            return;
+        }
+
+        contentArea.innerHTML = '<div class="loading">Loading domains and segments...</div>';
+
+        // Load domains first
+        const domains = await apiCall('/api/domains');
+        console.log('Loaded domains:', domains);
+
+        if (!domains || domains.length === 0) {
+            contentArea.innerHTML = `
+                <div class="no-data">
+                    <h3>No Domains Found</h3>
+                    <p>No domains are available. Please add domains first.</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Build the segment view interface
+        let segmentViewHTML = `
+            <div class="segment-view-controls">
+                <div class="form-group">
+                    <label for="view-domain-select">Select Domain to View Segments</label>
+                    <select id="view-domain-select" onchange="loadSegmentsForDomain()">
+                        <option value="">Choose a domain...</option>
+        `;
+
+        domains.forEach(domain => {
+            segmentViewHTML += `<option value="${domain.domain_name}" data-domain-id="${domain.domain_id}">${domain.domain_name} (Status: ${domain.status || 'Unknown'})</option>`;
+        });
+
+        segmentViewHTML += `
+                    </select>
+                </div>
+                <div class="view-actions">
+                    <button class="btn btn-secondary" onclick="refreshSegmentView()">Refresh</button>
+                </div>
+            </div>
+
+            <div id="segments-display-area">
+                <div class="placeholder-card">
+                    <h3>Select a Domain</h3>
+                    <p>Choose a domain from the dropdown above to view its segments.</p>
+                </div>
+            </div>
+        `;
+
+        contentArea.innerHTML = segmentViewHTML;
+        console.log('Segment view interface loaded successfully');
+
+    } catch (error) {
+        console.error('Error loading segment view data:', error);
+        const contentArea = document.querySelector('#segment-view-section .content-area');
+        if (contentArea) {
+            contentArea.innerHTML = `
+                <div class="error-message">
+                    <h3>Error Loading Segment View</h3>
+                    <p>${error.message}</p>
+                    <button class="btn btn-primary" onclick="loadSegmentViewData()">Retry</button>
+                </div>
+            `;
+        }
+    }
 }
 
-function loadSegmentUpdateData() {
+async function loadSegmentsForDomain() {
+    console.log('loadSegmentsForDomain called');
+
+    const domainSelect = document.getElementById('view-domain-select');
+    const displayArea = document.getElementById('segments-display-area');
+
+    if (!domainSelect || !displayArea) {
+        console.error('Required elements not found');
+        return;
+    }
+
+    const selectedDomain = domainSelect.value;
+    console.log('Selected domain:', selectedDomain);
+
+    if (!selectedDomain) {
+        displayArea.innerHTML = `
+            <div class="placeholder-card">
+                <h3>Select a Domain</h3>
+                <p>Choose a domain from the dropdown above to view its segments.</p>
+            </div>
+        `;
+        return;
+    }
+
+    try {
+        displayArea.innerHTML = '<div class="loading">Loading segments...</div>';
+
+        console.log('Fetching segments for domain:', selectedDomain);
+        const segments = await apiCall(`/api/segments?domain_name=${encodeURIComponent(selectedDomain)}`);
+        console.log('Received segments:', segments);
+
+        if (!segments || segments.length === 0) {
+            displayArea.innerHTML = `
+                <div class="no-data">
+                    <h3>No Segments Found</h3>
+                    <p>Domain "${selectedDomain}" has no segments configured.</p>
+                    <button class="btn btn-primary" onclick="showSection('segment-create')">Create First Segment</button>
+                </div>
+            `;
+            return;
+        }
+
+        // Build segments table
+        let segmentsHTML = `
+            <div class="data-header">
+                <h3>Segments for ${selectedDomain}</h3>
+                <div class="view-actions">
+                    <span class="segment-count-badge">${segments.length} segment${segments.length !== 1 ? 's' : ''}</span>
+                    <button class="btn btn-primary btn-small" onclick="showSection('segment-create')">Create New</button>
+                </div>
+            </div>
+
+            <div class="data-table">
+                <table class="segments-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Segment Name</th>
+                            <th>Template</th>
+                            <th>Variables</th>
+                            <th>Selectors</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        segments.forEach(segment => {
+            const variableCount = Object.keys(segment.segment_variables || {}).length;
+            const selectorCount = segment.selector_set?.selectors?.length || 0;
+            const templateName = segment.segment_template?.name || 'Unknown';
+
+            segmentsHTML += `
+                <tr>
+                    <td class="segment-id">${segment.id}</td>
+                    <td class="segment-name">${segment.name}</td>
+                    <td class="segment-template">${templateName}</td>
+                    <td class="segment-variables">
+                        <span class="count-badge">${variableCount}</span>
+                    </td>
+                    <td class="segment-selectors">
+                        <span class="count-badge">${selectorCount}</span>
+                    </td>
+                    <td class="segment-actions">
+                        <button class="btn btn-small btn-secondary" onclick="viewSegmentDetails(${segment.id})">Details</button>
+                        <button class="btn btn-small btn-primary" onclick="editSegmentVariables(${segment.id})">Edit</button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        segmentsHTML += `
+                    </tbody>
+                </table>
+            </div>
+        `;
+
+        displayArea.innerHTML = segmentsHTML;
+
+        // Store segments for other functions
+        window.currentDomainSegments = segments;
+        console.log('Segments display completed successfully');
+
+    } catch (error) {
+        console.error('Error loading segments for domain:', error);
+        displayArea.innerHTML = `
+            <div class="error-message">
+                <h3>Error Loading Segments</h3>
+                <p>${error.message}</p>
+                <button class="btn btn-primary" onclick="loadSegmentsForDomain()">Retry</button>
+            </div>
+        `;
+    }
+}
+
+function refreshSegmentView() {
+    console.log('Refreshing segment view');
+    loadSegmentViewData();
+}
+
+function viewSegmentDetails(segmentId) {
+    console.log('Viewing details for segment:', segmentId);
+
+    if (!window.currentDomainSegments) {
+        console.error('No segments data available');
+        return;
+    }
+
+    const segment = window.currentDomainSegments.find(s => s.id === segmentId);
+    if (!segment) {
+        console.error('Segment not found:', segmentId);
+        return;
+    }
+
+    // Build segment details modal or display
+    const details = `
+        Segment: ${segment.name}
+        ID: ${segment.id}
+        Template: ${segment.segment_template?.name || 'Unknown'}
+        Variables: ${JSON.stringify(segment.segment_variables, null, 2)}
+        Selectors: ${segment.selector_set?.selectors?.length || 0}
+    `;
+
+    alert(`Segment Details:\n\n${details}`);
+}
+
+function editSegmentVariables(segmentId) {
+    console.log('Editing variables for segment:', segmentId);
+    // This would redirect to segment-update with the specific segment
+    showSection('segment-update');
+}
+
+// SEGMENT UPDATE FUNCTIONS
+async function loadSegmentUpdateData() {
     console.log('Loading segment update data...');
+
+    try {
+        const contentArea = document.querySelector('#segment-update-section .content-area');
+        if (!contentArea) {
+            console.error('Content area not found for segment-update-section');
+            return;
+        }
+
+        contentArea.innerHTML = '<div class="loading">Loading segment update interface...</div>';
+
+        // Load domains first
+        const domains = await apiCall('/api/domains');
+        console.log('Loaded domains for update:', domains);
+
+        if (!domains || domains.length === 0) {
+            contentArea.innerHTML = `
+                <div class="no-data">
+                    <h3>No Domains Found</h3>
+                    <p>No domains are available.</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Build the segment update interface
+        let updateHTML = `
+            <div class="segment-variables-controls">
+                <div class="form-group">
+                    <label for="update-domain-select">Select Domain</label>
+                    <select id="update-domain-select" onchange="loadDomainSegmentsForUpdate()">
+                        <option value="">Choose a domain...</option>
+        `;
+
+        domains.forEach(domain => {
+            updateHTML += `<option value="${domain.domain_name}" data-domain-id="${domain.domain_id}">${domain.domain_name}</option>`;
+        });
+
+        updateHTML += `
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="update-segment-select">Select Segment</label>
+                    <select id="update-segment-select" onchange="loadSegmentVariables()" disabled>
+                        <option value="">Choose a segment...</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="segment-variables-display">
+                <div class="placeholder-card">
+                    <h3>Select Domain and Segment</h3>
+                    <p>Choose a domain and segment from the dropdowns above to edit variables.</p>
+                </div>
+            </div>
+        `;
+
+        contentArea.innerHTML = updateHTML;
+        console.log('Segment update interface loaded successfully');
+
+    } catch (error) {
+        console.error('Error loading segment update data:', error);
+        const contentArea = document.querySelector('#segment-update-section .content-area');
+        if (contentArea) {
+            contentArea.innerHTML = `
+                <div class="error-message">
+                    <h3>Error Loading Segment Update</h3>
+                    <p>${error.message}</p>
+                    <button class="btn btn-primary" onclick="loadSegmentUpdateData()">Retry</button>
+                </div>
+            `;
+        }
+    }
+}
+
+async function loadDomainSegmentsForUpdate() {
+    console.log('loadDomainSegmentsForUpdate called');
+
+    const domainSelect = document.getElementById('update-domain-select');
+    const segmentSelect = document.getElementById('update-segment-select');
+    const displayArea = document.getElementById('segment-variables-display');
+
+    if (!domainSelect || !segmentSelect) {
+        console.error('Required select elements not found');
+        return;
+    }
+
+    const selectedDomain = domainSelect.value;
+    console.log('Selected domain for update:', selectedDomain);
+
+    // Reset segment dropdown
+    segmentSelect.innerHTML = '<option value="">Choose a segment...</option>';
+    segmentSelect.disabled = true;
+
+    if (displayArea) {
+        displayArea.innerHTML = `
+            <div class="placeholder-card">
+                <h3>Select Domain and Segment</h3>
+                <p>Choose a domain and segment from the dropdowns above to edit variables.</p>
+            </div>
+        `;
+    }
+
+    if (!selectedDomain) {
+        return;
+    }
+
+    try {
+        console.log('Fetching segments for domain update:', selectedDomain);
+        const segments = await apiCall(`/api/segments?domain_name=${encodeURIComponent(selectedDomain)}`);
+        console.log('Received segments for update:', segments);
+
+        if (!segments || segments.length === 0) {
+            segmentSelect.innerHTML = '<option value="">No segments found</option>';
+            return;
+        }
+
+        // Populate segment dropdown
+        let segmentOptions = '<option value="">Choose a segment...</option>';
+        segments.forEach(segment => {
+            segmentOptions += `<option value="${segment.id}" data-segment='${JSON.stringify(segment).replace(/'/g, "&apos;")}'>${segment.name}</option>`;
+        });
+
+        segmentSelect.innerHTML = segmentOptions;
+        segmentSelect.disabled = false;
+
+        console.log('Segment dropdown populated for update');
+
+    } catch (error) {
+        console.error('Error loading segments for domain update:', error);
+        segmentSelect.innerHTML = '<option value="">Error loading segments</option>';
+    }
+}
+
+function loadSegmentVariables() {
+    console.log('loadSegmentVariables called');
+
+    const segmentSelect = document.getElementById('update-segment-select');
+    const displayArea = document.getElementById('segment-variables-display');
+
+    if (!segmentSelect || !displayArea) {
+        console.error('Required elements not found for loading variables');
+        return;
+    }
+
+    const selectedOption = segmentSelect.options[segmentSelect.selectedIndex];
+    if (!selectedOption || !selectedOption.value) {
+        displayArea.innerHTML = `
+            <div class="placeholder-card">
+                <h3>Select Domain and Segment</h3>
+                <p>Choose a domain and segment from the dropdowns above to edit variables.</p>
+            </div>
+        `;
+        return;
+    }
+
+    try {
+        const segmentData = JSON.parse(selectedOption.getAttribute('data-segment'));
+        console.log('Loading variables for segment:', segmentData);
+
+        displaySegmentVariables(segmentData);
+
+    } catch (error) {
+        console.error('Error loading segment variables:', error);
+        displayArea.innerHTML = `
+            <div class="error-message">
+                <h3>Error Loading Variables</h3>
+                <p>${error.message}</p>
+            </div>
+        `;
+    }
+}
+
+function displaySegmentVariables(segment) {
+    console.log('Displaying variables for segment:', segment);
+
+    const displayArea = document.getElementById('segment-variables-display');
+    if (!displayArea) {
+        console.error('Display area not found');
+        return;
+    }
+
+    const variables = segment.segment_variables || {};
+    const variableCount = Object.keys(variables).length;
+
+    let variablesHTML = `
+        <div class="segment-info">
+            <h3>Segment: ${segment.name}</h3>
+            <div class="segment-detail-item"><strong>ID:</strong> ${segment.id}</div>
+            <div class="segment-detail-item"><strong>Template:</strong> ${segment.segment_template?.name || 'Unknown'}</div>
+            <div class="segment-detail-item"><strong>Variables:</strong> ${variableCount}</div>
+        </div>
+
+        <div class="variables-container">
+            <div class="variables-header">
+                <h4>Segment Variables</h4>
+                <button class="btn btn-small btn-secondary" onclick="addVariableModal(${segment.id})">Add Variable</button>
+            </div>
+    `;
+
+    if (variableCount === 0) {
+        variablesHTML += `
+            <div class="no-variables">
+                <p>No variables defined for this segment.</p>
+                <button class="btn btn-primary" onclick="addVariableModal(${segment.id})">Add First Variable</button>
+            </div>
+        `;
+    } else {
+        variablesHTML += `
+            <div class="variables-table-container">
+                <table class="variables-table">
+                    <thead>
+                        <tr>
+                            <th>Variable Name</th>
+                            <th>Value</th>
+                            <th>Type</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        Object.entries(variables).forEach(([key, value]) => {
+            const displayValue = typeof value === 'object' ? JSON.stringify(value) : String(value);
+            const dataType = typeof value;
+
+            variablesHTML += `
+                <tr>
+                    <td class="variable-name">${key}</td>
+                    <td class="variable-value"><code>${displayValue}</code></td>
+                    <td class="variable-type">
+                        <span class="type-badge type-${dataType}">${dataType}</span>
+                    </td>
+                    <td class="variable-actions">
+                        <button class="btn btn-small btn-secondary" onclick="editVariableModal(${segment.id}, '${key}', '${displayValue.replace(/'/g, "\\'")}', '${dataType}')">Edit</button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        variablesHTML += `
+                    </tbody>
+                </table>
+            </div>
+        `;
+    }
+
+    variablesHTML += '</div>';
+
+    displayArea.innerHTML = variablesHTML;
+    window.currentEditingSegment = segment;
+    console.log('Variables displayed successfully');
+}
+
+function addVariableModal(segmentId) {
+    console.log('Add variable modal for segment:', segmentId);
+    const variableName = prompt('Enter variable name:');
+    if (variableName) {
+        const variableValue = prompt('Enter variable value:');
+        if (variableValue !== null) {
+            updateSegmentVariable(segmentId, variableName, variableValue);
+        }
+    }
+}
+
+function editVariableModal(segmentId, variableName, currentValue, dataType) {
+    console.log('Edit variable modal:', { segmentId, variableName, currentValue, dataType });
+    const newValue = prompt(`Edit variable "${variableName}":`, currentValue);
+    if (newValue !== null && newValue !== currentValue) {
+        updateSegmentVariable(segmentId, variableName, newValue);
+    }
+}
+
+async function updateSegmentVariable(segmentId, variableName, variableValue) {
+    console.log('Updating segment variable:', { segmentId, variableName, variableValue });
+
+    try {
+        const response = await apiCall(`/api/segments/${segmentId}/variables/${encodeURIComponent(variableName)}`, {
+            method: 'PUT',
+            body: JSON.stringify({ variable_value: variableValue })
+        });
+
+        console.log('Variable updated successfully:', response);
+        alert(`Variable "${variableName}" updated successfully!`);
+
+        // Reload the variables display
+        loadSegmentVariables();
+
+    } catch (error) {
+        console.error('Error updating variable:', error);
+        alert(`Error updating variable: ${error.message}`);
+    }
 }
 
 // SEGMENT CREATION FUNCTIONS
@@ -759,6 +1277,8 @@ document.addEventListener('click', function(event) {
 // API utility function
 async function apiCall(endpoint, options = {}) {
     try {
+        console.log('API Call:', endpoint, options);
+
         const response = await fetch(endpoint, {
             headers: {
                 'Content-Type': 'application/json',
@@ -767,12 +1287,16 @@ async function apiCall(endpoint, options = {}) {
             ...options
         });
 
+        console.log('API Response status:', response.status);
+
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
             throw new Error(`API Error: ${response.status} - ${errorData.error || 'Unknown error'}`);
         }
 
-        return await response.json();
+        const data = await response.json();
+        console.log('API Response data:', data);
+        return data;
     } catch (error) {
         console.error('API call failed:', error);
         throw error;
@@ -791,6 +1315,17 @@ async function testAPIConnection() {
 
 // Make functions globally available
 window.showSection = showSection;
+window.loadSegmentViewData = loadSegmentViewData;
+window.loadSegmentsForDomain = loadSegmentsForDomain;
+window.refreshSegmentView = refreshSegmentView;
+window.viewSegmentDetails = viewSegmentDetails;
+window.editSegmentVariables = editSegmentVariables;
+window.loadSegmentUpdateData = loadSegmentUpdateData;
+window.loadDomainSegmentsForUpdate = loadDomainSegmentsForUpdate;
+window.loadSegmentVariables = loadSegmentVariables;
+window.addVariableModal = addVariableModal;
+window.editVariableModal = editVariableModal;
+window.updateSegmentVariable = updateSegmentVariable;
 window.loadSegmentCreateData = loadSegmentCreateData;
 window.filterModelSegments = filterModelSegments;
 window.showModelSegmentDropdown = showModelSegmentDropdown;
