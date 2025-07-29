@@ -172,10 +172,6 @@ async function loadDomainStatusData() {
                                 ${segmentCount === 0 ? 'disabled' : ''}>
                             View Segments
                         </button>
-                        <button class="btn btn-small btn-secondary"
-                                onclick="updateDomainStatus(${domain.domain_id}, '${domain.domain_name}', '${domain.status}')">
-                            Update Status
-                        </button>
                     </td>
                 </tr>
             `;
