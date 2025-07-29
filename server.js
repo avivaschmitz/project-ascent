@@ -13,13 +13,25 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Initialize database tables if they don't exist (run once on startup)
 async function initializeDatabase() {
   try {
-    // Create domains table
+    // Create domains table with status column
     await db.query(`
       CREATE TABLE IF NOT EXISTS domains (
         domain_id SERIAL PRIMARY KEY,
-        domain_name VARCHAR(255) NOT NULL UNIQUE
+        domain_name VARCHAR(255) NOT NULL UNIQUE,
+        status VARCHAR(50) NOT NULL DEFAULT 'DNS Pending'
       )
     `);
+
+    // Add status column to existing domains table if it doesn't exist
+    try {
+      await db.query(`
+        ALTER TABLE domains
+        ADD COLUMN IF NOT EXISTS status VARCHAR(50) NOT NULL DEFAULT 'DNS Pending'
+      `);
+    } catch (error) {
+      // Column might already exist, that's okay
+      console.log('Status column may already exist:', error.message);
+    }
 
     // Create selector_sets table
     await db.query(`
@@ -97,12 +109,15 @@ app.get('/api/domains', async (req, res) => {
 
 // Create a new domain
 app.post('/api/domains', async (req, res) => {
-  const { domain_name } = req.body;
+  const { domain_name, status } = req.body;
 
   // Validate required field
   if (!domain_name) {
     return res.status(400).json({ error: 'domain_name is required' });
   }
+
+  // Set default status if not provided
+  const domainStatus = status || 'DNS Pending';
 
   try {
     // Check if domain already exists
@@ -120,13 +135,13 @@ app.post('/api/domains', async (req, res) => {
 
     // Insert the new domain
     const result = await db.query(
-      'INSERT INTO domains (domain_name) VALUES ($1) RETURNING domain_id, domain_name',
-      [domain_name]
+      'INSERT INTO domains (domain_name, status) VALUES ($1, $2) RETURNING domain_id, domain_name, status',
+      [domain_name, domainStatus]
     );
 
     const newDomain = result.rows[0];
 
-    console.log(`Created new domain: ${newDomain.domain_name} (ID: ${newDomain.domain_id})`);
+    console.log(`Created new domain: ${newDomain.domain_name} (ID: ${newDomain.domain_id}) with status: ${newDomain.status}`);
 
     // Return the created domain
     res.status(201).json({
@@ -144,6 +159,51 @@ app.post('/api/domains', async (req, res) => {
 
     res.status(500).json({
       error: 'An error occurred while creating the domain',
+      details: error.message
+    });
+  }
+});
+
+// Update domain status
+app.put('/api/domains/:domainId/status', async (req, res) => {
+  const { domainId } = req.params;
+  const { status } = req.body;
+
+  // Validate required fields
+  if (!domainId || !status) {
+    return res.status(400).json({ error: 'domainId and status are required' });
+  }
+
+  try {
+    // Check if the domain exists
+    const domainCheck = await db.query(
+      'SELECT domain_id, domain_name FROM domains WHERE domain_id = $1',
+      [domainId]
+    );
+
+    if (domainCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Domain not found' });
+    }
+
+    // Update the domain status
+    const result = await db.query(
+      'UPDATE domains SET status = $1 WHERE domain_id = $2 RETURNING *',
+      [status, domainId]
+    );
+
+    const updatedDomain = result.rows[0];
+
+    console.log(`Updated domain ${updatedDomain.domain_name} status to: ${updatedDomain.status}`);
+
+    res.json({
+      message: 'Domain status updated successfully',
+      domain: updatedDomain
+    });
+
+  } catch (error) {
+    console.error('Error updating domain status:', error);
+    res.status(500).json({
+      error: 'An error occurred while updating the domain status',
       details: error.message
     });
   }
