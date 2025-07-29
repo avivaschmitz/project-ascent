@@ -100,6 +100,129 @@ function loadSectionData(sectionId) {
     }
 }
 
+// DOMAIN PURCHASE FUNCTIONS
+async function purchaseDomain(event) {
+    event.preventDefault();
+
+    const domainInput = document.getElementById('domain-name-input');
+    const submitBtn = document.getElementById('purchase-submit-btn');
+    const statusMessage = document.getElementById('purchase-status-message');
+
+    if (!domainInput || !submitBtn || !statusMessage) {
+        console.error('Required elements not found for domain purchase');
+        return;
+    }
+
+    const domainName = domainInput.value.trim();
+
+    if (!domainName) {
+        showPurchaseStatus('Please enter a domain name', 'error');
+        return;
+    }
+
+    // Basic domain validation
+    if (!isValidDomainName(domainName)) {
+        showPurchaseStatus('Please enter a valid domain name (e.g., example.com)', 'error');
+        return;
+    }
+
+    try {
+        // Update UI to show loading state
+        submitBtn.textContent = 'Purchasing...';
+        submitBtn.disabled = true;
+        showPurchaseStatus('Processing domain purchase...', 'loading');
+
+        console.log('Purchasing domain:', domainName);
+
+        // Make API call to create the domain
+        const response = await apiCall('/api/domains', {
+            method: 'POST',
+            body: JSON.stringify({
+                domain_name: domainName,
+                status: 'DNS Pending'
+            })
+        });
+
+        console.log('Domain purchase response:', response);
+
+        // Show success message
+        showPurchaseStatus(`Domain "${domainName}" has been successfully added to your account!`, 'success');
+
+        // Clear the form
+        clearPurchaseForm();
+
+        // Redirect to domain status page after a short delay
+        setTimeout(() => {
+            console.log('Redirecting to domain status page');
+            showSection('domain-status');
+        }, 2000);
+
+    } catch (error) {
+        console.error('Error purchasing domain:', error);
+
+        let errorMessage = 'An error occurred while purchasing the domain.';
+
+        // Handle specific error cases
+        if (error.message.includes('Domain already exists')) {
+            errorMessage = `Domain "${domainName}" already exists in your account.`;
+        } else if (error.message.includes('409')) {
+            errorMessage = `Domain "${domainName}" is already registered.`;
+        } else {
+            errorMessage = `Error: ${error.message}`;
+        }
+
+        showPurchaseStatus(errorMessage, 'error');
+
+    } finally {
+        // Reset button state
+        submitBtn.textContent = 'Purchase Domain';
+        submitBtn.disabled = false;
+    }
+}
+
+function showPurchaseStatus(message, type) {
+    const statusMessage = document.getElementById('purchase-status-message');
+    if (!statusMessage) return;
+
+    statusMessage.textContent = message;
+    statusMessage.className = `status-message ${type}`;
+    statusMessage.style.display = 'block';
+
+    // Auto-hide success and loading messages after 5 seconds
+    if (type === 'success' || type === 'loading') {
+        setTimeout(() => {
+            statusMessage.style.display = 'none';
+        }, 5000);
+    }
+}
+
+function clearPurchaseForm() {
+    const domainInput = document.getElementById('domain-name-input');
+    const statusMessage = document.getElementById('purchase-status-message');
+
+    if (domainInput) {
+        domainInput.value = '';
+    }
+
+    if (statusMessage) {
+        statusMessage.style.display = 'none';
+    }
+
+    console.log('Purchase form cleared');
+}
+
+function isValidDomainName(domain) {
+    // Basic domain validation regex
+    const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]?\.([a-zA-Z]{2,}|[a-zA-Z]{2,}\.[a-zA-Z]{2,})$/;
+
+    // Additional checks
+    if (domain.length > 253) return false;
+    if (domain.startsWith('-') || domain.endsWith('-')) return false;
+    if (domain.includes('..')) return false;
+
+    return domainRegex.test(domain);
+}
+
 // DOMAIN STATUS FUNCTIONS
 async function loadDomainStatusData() {
     console.log('Loading domain status data...');
@@ -1550,6 +1673,10 @@ async function testAPIConnection() {
 
 // Make functions globally available
 window.showSection = showSection;
+window.purchaseDomain = purchaseDomain;
+window.clearPurchaseForm = clearPurchaseForm;
+window.showPurchaseStatus = showPurchaseStatus;
+window.isValidDomainName = isValidDomainName;
 window.loadDomainStatusData = loadDomainStatusData;
 window.viewDomainSegments = viewDomainSegments;
 window.updateDomainStatus = updateDomainStatus;

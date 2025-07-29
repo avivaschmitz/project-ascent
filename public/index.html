@@ -66,14 +66,32 @@
                     <p>Purchase new domains for your projects</p>
                 </div>
                 <div class="content-area">
-                    <div class="placeholder-card">
-                        <h3>Domain Purchase</h3>
-                        <p>Domain purchasing features will be implemented here.</p>
-                        <div class="api-reference">
-                            <strong>Future Features:</strong><br>
-                            - Domain availability checking<br>
-                            - Domain registration<br>
-                            - Payment processing
+                    <div class="domain-purchase-form">
+                        <h3>Purchase New Domain</h3>
+                        <p>Enter the domain name you would like to purchase. The domain will be added to your account and you can track its status.</p>
+
+                        <form id="domain-purchase-form" onsubmit="purchaseDomain(event)">
+                            <div class="form-group">
+                                <label for="domain-name-input">Domain Name *</label>
+                                <input type="text"
+                                       id="domain-name-input"
+                                       placeholder="Enter domain name (e.g., example.com)"
+                                       required
+                                       autocomplete="off">
+                                <span class="form-help">Enter the full domain name including the extension (.com, .org, etc.)</span>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary" id="purchase-submit-btn">
+                                    Purchase Domain
+                                </button>
+                                <button type="button" class="btn btn-secondary" onclick="clearPurchaseForm()">
+                                    Clear
+                                </button>
+                            </div>
+                        </form>
+
+                        <div id="purchase-status-message" class="status-message" style="display: none;">
                         </div>
                     </div>
                 </div>
