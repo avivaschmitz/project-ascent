@@ -82,6 +82,9 @@ function updateNavigationState(sectionId) {
 function loadSectionData(sectionId) {
     console.log('loadSectionData called with:', sectionId);
     switch(sectionId) {
+        case 'domain-status':
+            loadDomainStatusData();
+            break;
         case 'segment-view':
             loadSegmentViewData();
             break;
@@ -95,6 +98,180 @@ function loadSectionData(sectionId) {
             console.log('No specific data loading required for section:', sectionId);
             break;
     }
+}
+
+// DOMAIN STATUS FUNCTIONS
+async function loadDomainStatusData() {
+    console.log('Loading domain status data...');
+
+    try {
+        const contentArea = document.querySelector('#domain-status-section .content-area');
+        if (!contentArea) {
+            console.error('Content area not found for domain-status-section');
+            return;
+        }
+
+        contentArea.innerHTML = '<div class="loading">Loading domain status...</div>';
+
+        // Load domains with their status
+        const domains = await apiCall('/api/domains');
+        console.log('Loaded domains for status view:', domains);
+
+        if (!domains || domains.length === 0) {
+            contentArea.innerHTML = `
+                <div class="no-data">
+                    <h3>No Domains Found</h3>
+                    <p>No domains are available in the system.</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Build the domain status interface
+        let statusHTML = `
+            <div class="data-header">
+                <h3>Domain Status Overview</h3>
+                <div class="view-actions">
+                    <span class="segment-count-badge">${domains.length} domain${domains.length !== 1 ? 's' : ''}</span>
+                    <button class="btn btn-secondary btn-small" onclick="refreshDomainStatus()">Refresh</button>
+                </div>
+            </div>
+
+            <div class="data-table">
+                <table class="domains-table">
+                    <thead>
+                        <tr>
+                            <th>Domain ID</th>
+                            <th>Domain Name</th>
+                            <th>Status</th>
+                            <th>Segments</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="domains-status-tbody">
+        `;
+
+        // Process each domain and get segment counts
+        for (const domain of domains) {
+            const segmentCount = await getDomainSegmentCount(domain.domain_name);
+            const statusClass = getStatusClass(domain.status);
+
+            statusHTML += `
+                <tr>
+                    <td class="domain-id">${domain.domain_id}</td>
+                    <td class="domain-name">${domain.domain_name}</td>
+                    <td class="domain-status">
+                        <span class="status-badge ${statusClass}">${domain.status}</span>
+                    </td>
+                    <td class="segment-count">
+                        <span class="segment-count-badge">${segmentCount}</span>
+                    </td>
+                    <td class="domain-actions">
+                        <button class="btn btn-small btn-primary"
+                                onclick="viewDomainSegments('${domain.domain_name}')"
+                                ${segmentCount === 0 ? 'disabled' : ''}>
+                            View Segments
+                        </button>
+                        <button class="btn btn-small btn-secondary"
+                                onclick="updateDomainStatus(${domain.domain_id}, '${domain.domain_name}', '${domain.status}')">
+                            Update Status
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }
+
+        statusHTML += `
+                    </tbody>
+                </table>
+            </div>
+        `;
+
+        contentArea.innerHTML = statusHTML;
+        console.log('Domain status interface loaded successfully');
+
+    } catch (error) {
+        console.error('Error loading domain status data:', error);
+        const contentArea = document.querySelector('#domain-status-section .content-area');
+        if (contentArea) {
+            contentArea.innerHTML = `
+                <div class="error-message">
+                    <h3>Error Loading Domain Status</h3>
+                    <p>${error.message}</p>
+                    <button class="btn btn-primary" onclick="loadDomainStatusData()">Retry</button>
+                </div>
+            `;
+        }
+    }
+}
+
+async function getDomainSegmentCount(domainName) {
+    try {
+        const segments = await apiCall(`/api/segments?domain_name=${encodeURIComponent(domainName)}`);
+        return segments ? segments.length : 0;
+    } catch (error) {
+        console.warn(`Could not get segment count for domain ${domainName}:`, error);
+        return 0;
+    }
+}
+
+function getStatusClass(status) {
+    const statusLower = status.toLowerCase();
+    if (statusLower.includes('active') || statusLower.includes('live')) {
+        return 'status-active';
+    } else if (statusLower.includes('pending') || statusLower.includes('dns')) {
+        return 'status-pending';
+    } else if (statusLower.includes('error') || statusLower.includes('failed')) {
+        return 'status-error';
+    } else {
+        return 'status-default';
+    }
+}
+
+function viewDomainSegments(domainName) {
+    console.log('Viewing segments for domain:', domainName);
+
+    // Store the domain to pre-select in the segments view
+    window.preselectedDomain = domainName;
+
+    // Navigate to segment view
+    showSection('segment-view');
+}
+
+function updateDomainStatus(domainId, domainName, currentStatus) {
+    console.log('Updating status for domain:', { domainId, domainName, currentStatus });
+
+    const newStatus = prompt(`Update status for domain "${domainName}":\n\nCurrent status: ${currentStatus}\n\nEnter new status:`, currentStatus);
+
+    if (newStatus !== null && newStatus.trim() !== '' && newStatus !== currentStatus) {
+        updateDomainStatusAPI(domainId, newStatus.trim());
+    }
+}
+
+async function updateDomainStatusAPI(domainId, newStatus) {
+    try {
+        console.log('Updating domain status via API:', { domainId, newStatus });
+
+        const response = await apiCall(`/api/domains/${domainId}/status`, {
+            method: 'PUT',
+            body: JSON.stringify({ status: newStatus })
+        });
+
+        console.log('Domain status updated successfully:', response);
+        alert(`Domain status updated to "${newStatus}" successfully!`);
+
+        // Refresh the domain status view
+        loadDomainStatusData();
+
+    } catch (error) {
+        console.error('Error updating domain status:', error);
+        alert(`Error updating domain status: ${error.message}`);
+    }
+}
+
+function refreshDomainStatus() {
+    console.log('Refreshing domain status');
+    loadDomainStatusData();
 }
 
 // SEGMENT VIEW FUNCTIONS
@@ -139,7 +316,9 @@ async function loadSegmentViewData() {
         `;
 
         domains.forEach(domain => {
-            segmentViewHTML += `<option value="${domain.domain_name}" data-domain-id="${domain.domain_id}">${domain.domain_name}</option>`;
+            // Check if this domain should be pre-selected
+            const selected = window.preselectedDomain === domain.domain_name ? ' selected' : '';
+            segmentViewHTML += `<option value="${domain.domain_name}" data-domain-id="${domain.domain_id}"${selected}>${domain.domain_name}</option>`;
         });
 
         segmentViewHTML += `
@@ -159,8 +338,13 @@ async function loadSegmentViewData() {
         // Store all segments globally for filtering
         window.allSegments = allSegments;
 
-        // Display all segments by default
-        displaySegments(allSegments);
+        // Apply pre-selection filter if available
+        if (window.preselectedDomain) {
+            filterSegmentsByDomain();
+            window.preselectedDomain = null; // Clear after use
+        } else {
+            displaySegments(allSegments);
+        }
 
         console.log('Segment view interface loaded successfully');
 
@@ -908,7 +1092,6 @@ async function selectModelSegment(segmentId) {
 
     } catch (error) {
         console.error('Error in selectModelSegment:', error);
-        // Remove the alert and just log the error
         console.error(`Error selecting segment: ${error.message}`);
     }
 }
@@ -1371,6 +1554,10 @@ async function testAPIConnection() {
 
 // Make functions globally available
 window.showSection = showSection;
+window.loadDomainStatusData = loadDomainStatusData;
+window.viewDomainSegments = viewDomainSegments;
+window.updateDomainStatus = updateDomainStatus;
+window.refreshDomainStatus = refreshDomainStatus;
 window.loadSegmentViewData = loadSegmentViewData;
 window.filterSegmentsByDomain = filterSegmentsByDomain;
 window.refreshSegmentView = refreshSegmentView;

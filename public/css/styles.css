@@ -348,6 +348,79 @@ body {
     padding: 2rem;
 }
 
+/* Status Badge Styles */
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-active {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.status-pending {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.status-error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.status-default {
+    background: #e9ecef;
+    color: #495057;
+    border: 1px solid #ced4da;
+}
+
+/* Domain Status Table Enhancements */
+.domain-status {
+    text-align: center;
+}
+
+.domains-table .domain-actions {
+    text-align: center;
+    white-space: nowrap;
+}
+
+.domains-table .domain-actions .btn {
+    margin: 0 0.25rem;
+}
+
+.domains-table .domain-actions .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.domains-table .domain-actions .btn:disabled:hover {
+    background: var(--text-light);
+}
+
+/* Enhanced segment count display */
+.segment-count {
+    text-align: center;
+}
+
+.segment-count-badge {
+    background: var(--primary-color);
+    color: var(--white);
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    min-width: 30px;
+    display: inline-block;
+}
+
 /* Expand Button Styles */
 .expand-cell {
     width: 50px;
@@ -385,20 +458,6 @@ body {
 
 .expand-btn.expanded .expand-icon {
     transform: rotate(90deg);
-}
-
-/* Segment Count Styles */
-.segment-count {
-    text-align: center;
-}
-
-.segment-count-badge {
-    background: var(--primary-color);
-    color: var(--white);
-    padding: 0.25rem 0.5rem;
-    border-radius: 12px;
-    font-size: 0.8rem;
-    font-weight: 500;
 }
 
 .segment-count-error {
@@ -1390,6 +1449,20 @@ body {
     .domains-table th,
     .domains-table td {
         padding: 0.5rem;
+    }
+
+    /* Responsive adjustments for domain status table */
+    .domains-table .domain-actions .btn {
+        display: block;
+        margin: 0.25rem 0;
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    .domains-table th,
+    .domains-table td {
+        padding: 0.5rem 0.25rem;
+        font-size: 0.85rem;
     }
 
     .segments-container {

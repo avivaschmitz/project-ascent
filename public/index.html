@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project Ascent</title>
+    <title>Project Ascent - Self-Service Segment Management</title>
     <link rel="stylesheet" href="css/normalize.css">
     <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -11,8 +11,8 @@
     <header class="app-header">
         <div class="container">
             <h1>Project Ascent</h1>
-            <p>Domain, Segment & Experiment Management</p>
-            <p class ="disclaimer">Disclaimer: Nothing about this UI is real. This is Aviva's playground, using mock data in databases that exist outside of the System1 codebase. Nothing you do here will matter.</p>
+            <p>Self-Service Segment, Experiment and Site Creation & Management</p>
+            <p class="disclaimer">Development Environment - Not for Production Use</p>
         </div>
     </header>
 
@@ -20,26 +20,25 @@
         <div class="container">
             <ul class="nav-list">
                 <li class="nav-item has-submenu">
-                    <a href="#" class="nav-link active" data-section="domains">Domains</a>
+                    <a href="#" class="nav-link" data-section="domains">Domains</a>
                     <ul class="submenu">
-                        <li><a href="#" class="submenu-link" data-section="domain-purchase">Purchase</a></li>
-                        <li><a href="#" class="submenu-link" data-section="domain-provision">Provision</a></li>
                         <li><a href="#" class="submenu-link" data-section="domain-status">View Status</a></li>
+                        <li><a href="#" class="submenu-link" data-section="domain-management">Management</a></li>
                     </ul>
                 </li>
                 <li class="nav-item has-submenu">
                     <a href="#" class="nav-link" data-section="segments">Segments</a>
                     <ul class="submenu">
-                        <li><a href="#" class="submenu-link" data-section="segment-create">Create</a></li>
                         <li><a href="#" class="submenu-link" data-section="segment-view">View</a></li>
-                        <li><a href="#" class="submenu-link" data-section="segment-update">Update</a></li>
+                        <li><a href="#" class="submenu-link" data-section="segment-update">Update Variables</a></li>
+                        <li><a href="#" class="submenu-link" data-section="segment-create">Create</a></li>
                     </ul>
                 </li>
                 <li class="nav-item has-submenu">
                     <a href="#" class="nav-link" data-section="experiments">Experiments</a>
                     <ul class="submenu">
+                        <li><a href="#" class="submenu-link" data-section="experiment-view">View</a></li>
                         <li><a href="#" class="submenu-link" data-section="experiment-create">Create</a></li>
-                        <li><a href="#" class="submenu-link" data-section="experiment-manage">Manage</a></li>
                     </ul>
                 </li>
             </ul>
@@ -48,107 +47,61 @@
 
     <main class="main-content">
         <div class="container">
-            <!-- Domains Section -->
-            <section id="domains-section" class="content-section active">
-                <div class="section-header">
-                    <h2>Domains</h2>
-                    <p>Manage your domain lifecycle from purchase to provisioning</p>
-                </div>
-                <div class="content-area">
-                    <div class="feature-grid">
-                        <div class="feature-card">
-                            <h4>Purchase</h4>
-                            <p>Purchase new RSoC domains and add them to your inventory</p>
-                            <button class="btn" onclick="window.showSection('domain-purchase')">Purchase Domains</button>
-                        </div>
-                        <div class="feature-card">
-                            <h4>Provision</h4>
-                            <p>Set up new RSoC sites including content sites and SERP sites</p>
-                            <button class="btn" onclick="window.showSection('domain-provision')">Provision Sites</button>
-                        </div>
-                        <div class="feature-card">
-                            <h4>View Status</h4>
-                            <p>Monitor the status and health of your existing sites</p>
-                            <button class="btn" onclick="window.showSection('domain-status')">View Status</button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Domain Purchase Section -->
-            <section id="domain-purchase-section" class="content-section">
-                <div class="section-header">
-                    <h2>Purchase Domains</h2>
-                    <p>Purchase new RSoC domains for your portfolio</p>
-                </div>
-                <div class="content-area">
-                    <div class="placeholder-card">
-                        <h3>Domain Purchase</h3>
-                        <p>This section will handle purchasing new RSoC domains.</p>
-                        <div class="api-reference">
-                            <strong>Note:</strong> Domain purchase APIs to be implemented
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Domain Provision Section -->
-            <section id="domain-provision-section" class="content-section">
-                <div class="section-header">
-                    <h2>Provision Sites</h2>
-                    <p>Set up new RSoC sites (content site and SERP site)</p>
-                </div>
-                <div class="content-area">
-                    <div class="placeholder-card">
-                        <h3>Site Provisioning</h3>
-                        <p>This section will handle setting up new RSoC sites including content sites and SERP sites.</p>
-                        <div class="api-reference">
-                            <strong>Note:</strong> Site provisioning APIs to be implemented
-                        </div>
-                    </div>
-                </div>
-            </section>
-
             <!-- Domain Status Section -->
             <section id="domain-status-section" class="content-section">
                 <div class="section-header">
                     <h2>Domain Status</h2>
-                    <p>View the status and health of your existing sites</p>
+                    <p>View all domains and their current status</p>
+                </div>
+                <div class="content-area">
+                    <div class="loading">Loading domain status...</div>
+                </div>
+            </section>
+
+            <!-- Domain Management Section -->
+            <section id="domain-management-section" class="content-section">
+                <div class="section-header">
+                    <h2>Domain Management</h2>
+                    <p>Create and manage domains</p>
                 </div>
                 <div class="content-area">
                     <div class="placeholder-card">
-                        <h3>Site Status Monitoring</h3>
-                        <p>This section will display the status and health metrics of your existing sites.</p>
+                        <h3>Domain Management</h3>
+                        <p>Domain creation and management features will be implemented here.</p>
                         <div class="api-reference">
-                            <strong>Note:</strong> Status monitoring APIs to be implemented
+                            <strong>API Reference:</strong><br>
+                            GET /api/domains - List all domains<br>
+                            POST /api/domains - Create new domain<br>
+                            PUT /api/domains/:id/status - Update domain status
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- Segments Section -->
-            <section id="segments-section" class="content-section">
+            <!-- Segment View Section -->
+            <section id="segment-view-section" class="content-section">
                 <div class="section-header">
-                    <h2>Segments</h2>
-                    <p>Create and manage segments for your applications</p>
+                    <h2>View Segments</h2>
+                    <p>Browse and manage all segments</p>
                 </div>
                 <div class="content-area">
-                    <div class="feature-grid">
-                        <div class="feature-card">
-                            <h4>Create</h4>
-                            <p>Create new paid segments for existing sites</p>
-                            <button class="btn" onclick="window.showSection('segment-create')">Create Segments</button>
-                        </div>
-                        <div class="feature-card">
-                            <h4>View</h4>
-                            <p>View existing segments, their data and status</p>
-                            <button class="btn" onclick="window.showSection('segment-view')">View Segments</button>
-                        </div>
-                        <div class="feature-card">
-                            <h4>Update</h4>
-                            <p>Update and modify existing segment configurations</p>
-                            <button class="btn" onclick="window.showSection('segment-update')">Update Segments</button>
-                        </div>
+                    <div class="placeholder-card">
+                        <h3>Select Domain and Segment</h3>
+                        <p>Choose a domain and segment from the dropdowns above to view details.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Segment Update Section -->
+            <section id="segment-update-section" class="content-section">
+                <div class="section-header">
+                    <h2>Update Segment Variables</h2>
+                    <p>Modify segment variables and settings</p>
+                </div>
+                <div class="content-area">
+                    <div class="placeholder-card">
+                        <h3>Select Domain and Segment</h3>
+                        <p>Choose a domain and segment from the dropdowns above to edit variables.</p>
                     </div>
                 </div>
             </section>
@@ -156,61 +109,31 @@
             <!-- Segment Create Section -->
             <section id="segment-create-section" class="content-section">
                 <div class="section-header">
-                    <h2>Create Segments</h2>
-                    <p>Create new paid segments for existing sites</p>
+                    <h2>Create New Segment</h2>
+                    <p>Create new segments based on existing templates</p>
                 </div>
                 <div class="content-area">
                     <div class="placeholder-card">
                         <h3>Segment Creation</h3>
-                        <p>This section will handle creating new paid segments for your sites.</p>
-                        <div class="api-reference">
-                            <strong>APIs:</strong>
-                            <code>POST /api/segments</code>
-                            <code>POST /api/segments/with-template</code>
-                        </div>
+                        <p>Segment creation interface will be loaded here.</p>
                     </div>
                 </div>
             </section>
 
-            <!-- Segment View Section (migrated from old domains functionality) -->
-            <section id="segment-view-section" class="content-section">
+            <!-- Experiment View Section -->
+            <section id="experiment-view-section" class="content-section">
                 <div class="section-header">
-                    <h2>View Segments</h2>
-                    <p>View existing segments, their data and status</p>
+                    <h2>View Experiments</h2>
+                    <p>Browse and manage experiments</p>
                 </div>
                 <div class="content-area">
-                    <!-- Content will be dynamically loaded here -->
-                </div>
-            </section>
-
-            <!-- Segment Update Section (migrated from segment variables functionality) -->
-            <section id="segment-update-section" class="content-section">
-                <div class="section-header">
-                    <h2>Update Segments</h2>
-                    <p>Update and modify existing segment configurations</p>
-                </div>
-                <div class="content-area">
-                    <!-- Content will be dynamically loaded here -->
-                </div>
-            </section>
-
-            <!-- Experiments Section -->
-            <section id="experiments-section" class="content-section">
-                <div class="section-header">
-                    <h2>Experiments</h2>
-                    <p>Design and run experiments across your segments</p>
-                </div>
-                <div class="content-area">
-                    <div class="feature-grid">
-                        <div class="feature-card">
-                            <h4>Create</h4>
-                            <p>Design and create new experiments</p>
-                            <button class="btn" onclick="window.showSection('experiment-create')">Create Experiments</button>
-                        </div>
-                        <div class="feature-card">
-                            <h4>Manage</h4>
-                            <p>Manage and analyze your existing experiments</p>
-                            <button class="btn" onclick="window.showSection('experiment-manage')">Manage Experiments</button>
+                    <div class="placeholder-card">
+                        <h3>Experiments</h3>
+                        <p>Experiment viewing features will be implemented here.</p>
+                        <div class="api-reference">
+                            <strong>Future API:</strong><br>
+                            GET /api/experiments - List experiments<br>
+                            POST /api/experiments - Create experiment
                         </div>
                     </div>
                 </div>
@@ -219,32 +142,18 @@
             <!-- Experiment Create Section -->
             <section id="experiment-create-section" class="content-section">
                 <div class="section-header">
-                    <h2>Create Experiments</h2>
-                    <p>Design and create new experiments</p>
+                    <h2>Create Experiment</h2>
+                    <p>Design and launch new experiments</p>
                 </div>
                 <div class="content-area">
                     <div class="placeholder-card">
                         <h3>Experiment Creation</h3>
-                        <p>This section will handle creating new experiments across your segments.</p>
+                        <p>Experiment creation features will be implemented here.</p>
                         <div class="api-reference">
-                            <strong>Note:</strong> Experiment creation APIs to be implemented
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Experiment Manage Section -->
-            <section id="experiment-manage-section" class="content-section">
-                <div class="section-header">
-                    <h2>Manage Experiments</h2>
-                    <p>Manage and analyze your existing experiments</p>
-                </div>
-                <div class="content-area">
-                    <div class="placeholder-card">
-                        <h3>Experiment Management</h3>
-                        <p>This section will handle managing and analyzing existing experiments.</p>
-                        <div class="api-reference">
-                            <strong>Note:</strong> Experiment management APIs to be implemented
+                            <strong>Future Features:</strong><br>
+                            - A/B Test Configuration<br>
+                            - Multi-variate Testing<br>
+                            - Statistical Analysis
                         </div>
                     </div>
                 </div>
