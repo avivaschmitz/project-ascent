@@ -15,6 +15,15 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// Domain routes
+app.get('/domains/view', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'view-domains.html'));
+});
+
+app.get('/domains/create', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'create-domain.html'));
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', message: 'Server is running' });
