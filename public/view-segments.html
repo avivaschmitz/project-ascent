@@ -141,17 +141,67 @@
             margin-bottom: 20px;
         }
 
+        .search-fields {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .search-field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .search-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-color);
+            margin-bottom: 8px;
+        }
+
         .search-input {
             width: 100%;
-            padding: 12px 20px;
+            padding: 12px 16px;
             border: 1px solid var(--border-color);
             border-radius: 5px;
             font-size: 1rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
         }
 
         .search-input:focus {
             outline: none;
             border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(103, 98, 166, 0.1);
+        }
+
+        .search-results-count {
+            margin-top: 8px;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: none;
+        }
+
+        .search-results-count.show {
+            display: block;
+        }
+
+        .search-results-count.active {
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .highlight {
+            background-color: #fff59d;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .search-fields {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -166,7 +216,17 @@
         </div>
 
         <div class="search-bar">
-            <input type="text" id="searchInput" class="search-input" placeholder="Search segments...">
+            <div class="search-fields">
+                <div class="search-field">
+                    <label for="segmentNameSearch" class="search-label">Segment Name</label>
+                    <input type="text" id="segmentNameSearch" class="search-input" placeholder="Search by segment name...">
+                </div>
+                <div class="search-field">
+                    <label for="domainSearch" class="search-label">Domain</label>
+                    <input type="text" id="domainSearch" class="search-input" placeholder="Search by domain...">
+                </div>
+            </div>
+            <div id="searchResults" class="search-results-count"></div>
         </div>
 
         <div id="segmentsContent">
@@ -236,11 +296,19 @@
                 `;
             }
 
-            function renderSegments(segments) {
+            function renderSegments(segments, searchTerm = '') {
                 if (!segments || segments.length === 0) {
                     showEmptyState();
                     return;
                 }
+
+                const highlightText = (text, search) => {
+                    if (!search) return escapeHtml(text);
+
+                    const escapedText = escapeHtml(text);
+                    const regex = new RegExp(`(${search})`, 'gi');
+                    return escapedText.replace(regex, '<span class="highlight">$1</span>');
+                };
 
                 const segmentsHTML = `
                     <div class="segments-table-container">
@@ -257,8 +325,8 @@
                                 ${segments.map(segment => `
                                     <tr>
                                         <td>${segment.segment_id}</td>
-                                        <td class="segment-name-cell">${escapeHtml(segment.segment_name)}</td>
-                                        <td>${escapeHtml(allDomains[segment.domain_id] || 'Unknown')}</td>
+                                        <td class="segment-name-cell">${highlightText(segment.segment_name, searchTerm)}</td>
+                                        <td>${highlightText(allDomains[segment.domain_id] || 'Unknown', searchTerm)}</td>
                                         <td>
                                             <div class="segment-actions">
                                                 <button class="btn-small btn-edit" onclick="editSegment(${segment.segment_id}, '${escapeHtml(segment.segment_name)}')">
@@ -280,19 +348,45 @@
             }
 
             // Search functionality
-            searchInput.addEventListener('input', (e) => {
-                const searchTerm = e.target.value.toLowerCase();
+            const segmentNameSearch = document.getElementById('segmentNameSearch');
+            const domainSearch = document.getElementById('domainSearch');
+            const searchResults = document.getElementById('searchResults');
 
-                if (searchTerm === '') {
+            function performSearch() {
+                const segmentTerm = segmentNameSearch.value.toLowerCase().trim();
+                const domainTerm = domainSearch.value.toLowerCase().trim();
+
+                if (segmentTerm === '' && domainTerm === '') {
                     renderSegments(allSegments);
+                    searchResults.classList.remove('show', 'active');
                 } else {
-                    const filtered = allSegments.filter(segment =>
-                        segment.segment_name.toLowerCase().includes(searchTerm) ||
-                        (allDomains[segment.domain_id] && allDomains[segment.domain_id].toLowerCase().includes(searchTerm))
-                    );
-                    renderSegments(filtered);
+                    const filtered = allSegments.filter(segment => {
+                        const segmentMatch = segmentTerm === '' || segment.segment_name.toLowerCase().includes(segmentTerm);
+                        const domainMatch = domainTerm === '' || (allDomains[segment.domain_id] && allDomains[segment.domain_id].toLowerCase().includes(domainTerm));
+                        return segmentMatch && domainMatch;
+                    });
+
+                    // Determine which term to highlight
+                    const highlightTerm = segmentTerm || domainTerm;
+                    renderSegments(filtered, highlightTerm);
+
+                    // Show results count
+                    let searchDescription = '';
+                    if (segmentTerm && domainTerm) {
+                        searchDescription = `segment name "${segmentTerm}" and domain "${domainTerm}"`;
+                    } else if (segmentTerm) {
+                        searchDescription = `segment name "${segmentTerm}"`;
+                    } else {
+                        searchDescription = `domain "${domainTerm}"`;
+                    }
+
+                    searchResults.textContent = `Found ${filtered.length} segment${filtered.length !== 1 ? 's' : ''} matching ${searchDescription}`;
+                    searchResults.classList.add('show', 'active');
                 }
-            });
+            }
+
+            segmentNameSearch.addEventListener('input', performSearch);
+            domainSearch.addEventListener('input', performSearch);
         });
 
         function escapeHtml(text) {
