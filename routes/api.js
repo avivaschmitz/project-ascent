@@ -296,4 +296,152 @@ router.delete('/domains/:domainId/variables/:variableId', async (req, res) => {
   }
 });
 
+// ==================== SEGMENTS ENDPOINTS ====================
+
+// GET all segments
+router.get('/segments', async (req, res) => {
+  try {
+    const result = await db.query('SELECT * FROM segments ORDER BY segment_id DESC');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching segments:', error);
+    res.status(500).json({ error: 'Failed to fetch segments' });
+  }
+});
+
+// GET single segment by ID
+router.get('/segments/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await db.query('SELECT * FROM segments WHERE segment_id = $1', [id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Segment not found' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error fetching segment:', error);
+    res.status(500).json({ error: 'Failed to fetch segment' });
+  }
+});
+
+// POST create new segment
+router.post('/segments', async (req, res) => {
+  try {
+    const { domain_id, segment_name } = req.body;
+
+    // Validation
+    if (!segment_name || segment_name.trim() === '') {
+      return res.status(400).json({ error: 'Segment name is required' });
+    }
+
+    if (!domain_id) {
+      return res.status(400).json({ error: 'Domain ID is required' });
+    }
+
+    // Check if domain exists
+    const domainCheck = await db.query(
+      'SELECT * FROM domains WHERE domain_id = $1',
+      [domain_id]
+    );
+
+    if (domainCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Domain not found' });
+    }
+
+    // Check for duplicate segment name within the same domain
+    const existingSegment = await db.query(
+      'SELECT * FROM segments WHERE domain_id = $1 AND segment_name = $2',
+      [domain_id, segment_name]
+    );
+
+    if (existingSegment.rows.length > 0) {
+      return res.status(409).json({ error: 'Segment name already exists for this domain' });
+    }
+
+    // Insert new segment
+    const result = await db.query(
+      'INSERT INTO segments (domain_id, segment_name) VALUES ($1, $2) RETURNING *',
+      [domain_id, segment_name]
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error('Error creating segment:', error);
+    res.status(500).json({ error: 'Failed to create segment' });
+  }
+});
+
+// PUT update segment
+router.put('/segments/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { segment_name } = req.body;
+
+    // Validation
+    if (!segment_name || segment_name.trim() === '') {
+      return res.status(400).json({ error: 'Segment name is required' });
+    }
+
+    // Check if segment exists
+    const existingSegment = await db.query(
+      'SELECT * FROM segments WHERE segment_id = $1',
+      [id]
+    );
+
+    if (existingSegment.rows.length === 0) {
+      return res.status(404).json({ error: 'Segment not found' });
+    }
+
+    const domainId = existingSegment.rows[0].domain_id;
+
+    // Check for duplicate segment name (excluding current segment)
+    const duplicateSegment = await db.query(
+      'SELECT * FROM segments WHERE domain_id = $1 AND segment_name = $2 AND segment_id != $3',
+      [domainId, segment_name, id]
+    );
+
+    if (duplicateSegment.rows.length > 0) {
+      return res.status(409).json({ error: 'Segment name already exists for this domain' });
+    }
+
+    // Update segment
+    const result = await db.query(
+      'UPDATE segments SET segment_name = $1 WHERE segment_id = $2 RETURNING *',
+      [segment_name, id]
+    );
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error updating segment:', error);
+    res.status(500).json({ error: 'Failed to update segment' });
+  }
+});
+
+// DELETE segment
+router.delete('/segments/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if segment exists
+    const existingSegment = await db.query(
+      'SELECT * FROM segments WHERE segment_id = $1',
+      [id]
+    );
+
+    if (existingSegment.rows.length === 0) {
+      return res.status(404).json({ error: 'Segment not found' });
+    }
+
+    // Delete segment
+    await db.query('DELETE FROM segments WHERE segment_id = $1', [id]);
+
+    res.json({ message: 'Segment deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting segment:', error);
+    res.status(500).json({ error: 'Failed to delete segment' });
+  }
+});
+
 module.exports = router;

@@ -24,6 +24,15 @@ app.get('/domains/create', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'create-domain.html'));
 });
 
+// Segment routes
+app.get('/segments/view', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'view-segments.html'));
+});
+
+app.get('/segments/create', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'create-segment.html'));
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', message: 'Server is running' });

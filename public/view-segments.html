@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View & Edit Segments - Config Manager</title>
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        .segments-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .page-header h1 {
+            color: var(--primary-color);
+            font-size: 2rem;
+        }
+
+        .back-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .segments-table-container {
+            background: var(--card-background);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .segments-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .segments-table thead {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .segments-table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .segments-table tbody tr {
+            border-bottom: 1px solid var(--border-color);
+            transition: background 0.2s;
+        }
+
+        .segments-table tbody tr:hover {
+            background: #f9f9f9;
+        }
+
+        .segments-table td {
+            padding: 15px;
+        }
+
+        .segment-name-cell {
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .segment-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-edit {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: var(--secondary-color);
+        }
+
+        .btn-delete {
+            background: var(--error-color);
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #d32f2f;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-light);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: var(--card-background);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .empty-state h2 {
+            color: var(--text-light);
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+
+        .search-bar {
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="segments-container">
+        <div class="page-header">
+            <div>
+                <a href="/" class="back-link">← Back to Home</a>
+                <h1>View & Edit Segments</h1>
+            </div>
+            <a href="/segments/create" class="btn">+ Create New Segment</a>
+        </div>
+
+        <div class="search-bar">
+            <input type="text" id="searchInput" class="search-input" placeholder="Search segments...">
+        </div>
+
+        <div id="segmentsContent">
+            <div class="loading">
+                <p>Loading segments...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const segmentsContent = document.getElementById('segmentsContent');
+            const searchInput = document.getElementById('searchInput');
+            let allSegments = [];
+            let allDomains = {};
+
+            // Fetch segments and domains from API
+            fetchData();
+
+            async function fetchData() {
+                try {
+                    // Fetch domains first to get domain names
+                    const domainsResponse = await fetch('/api/domains');
+                    if (!domainsResponse.ok) {
+                        throw new Error('Failed to fetch domains');
+                    }
+                    const domains = await domainsResponse.json();
+
+                    // Create a map of domain_id to domain_name
+                    domains.forEach(domain => {
+                        allDomains[domain.domain_id] = domain.domain_name;
+                    });
+
+                    // Fetch segments
+                    const segmentsResponse = await fetch('/api/segments');
+                    if (!segmentsResponse.ok) {
+                        throw new Error('Failed to fetch segments');
+                    }
+
+                    const segments = await segmentsResponse.json();
+                    allSegments = segments;
+
+                    if (segments.length === 0) {
+                        showEmptyState();
+                    } else {
+                        renderSegments(segments);
+                    }
+                } catch (error) {
+                    console.error('Error fetching data:', error);
+                    segmentsContent.innerHTML = `
+                        <div class="empty-state">
+                            <h2>Error loading segments</h2>
+                            <p>${error.message}</p>
+                            <button class="btn" onclick="location.reload()">Retry</button>
+                        </div>
+                    `;
+                }
+            }
+
+            function showEmptyState() {
+                segmentsContent.innerHTML = `
+                    <div class="empty-state">
+                        <h2>No segments found</h2>
+                        <p>Get started by creating your first segment.</p>
+                        <a href="/segments/create" class="btn">Create Segment</a>
+                    </div>
+                `;
+            }
+
+            function renderSegments(segments) {
+                if (!segments || segments.length === 0) {
+                    showEmptyState();
+                    return;
+                }
+
+                const segmentsHTML = `
+                    <div class="segments-table-container">
+                        <table class="segments-table">
+                            <thead>
+                                <tr>
+                                    <th>Segment ID</th>
+                                    <th>Segment Name</th>
+                                    <th>Domain</th>
+                                    <th style="width: 200px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${segments.map(segment => `
+                                    <tr>
+                                        <td>${segment.segment_id}</td>
+                                        <td class="segment-name-cell">${escapeHtml(segment.segment_name)}</td>
+                                        <td>${escapeHtml(allDomains[segment.domain_id] || 'Unknown')}</td>
+                                        <td>
+                                            <div class="segment-actions">
+                                                <button class="btn-small btn-edit" onclick="editSegment(${segment.segment_id}, '${escapeHtml(segment.segment_name)}')">
+                                                    Edit
+                                                </button>
+                                                <button class="btn-small btn-delete" onclick="deleteSegment(${segment.segment_id}, '${escapeHtml(segment.segment_name)}')">
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+
+                segmentsContent.innerHTML = segmentsHTML;
+            }
+
+            // Search functionality
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+
+                if (searchTerm === '') {
+                    renderSegments(allSegments);
+                } else {
+                    const filtered = allSegments.filter(segment =>
+                        segment.segment_name.toLowerCase().includes(searchTerm) ||
+                        (allDomains[segment.domain_id] && allDomains[segment.domain_id].toLowerCase().includes(searchTerm))
+                    );
+                    renderSegments(filtered);
+                }
+            });
+        });
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function editSegment(id, currentName) {
+            const newName = prompt('Edit segment name:', currentName);
+
+            if (newName && newName !== currentName) {
+                updateSegment(id, newName);
+            }
+        }
+
+        async function updateSegment(id, segmentName) {
+            try {
+                const response = await fetch(`/api/segments/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ segment_name: segmentName })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to update segment');
+                }
+
+                // Reload the page to show updated data
+                location.reload();
+            } catch (error) {
+                console.error('Error updating segment:', error);
+                alert('Error: ' + error.message);
+            }
+        }
+
+        async function deleteSegment(id, name) {
+            if (confirm(`Are you sure you want to delete "${name}"?`)) {
+                try {
+                    const response = await fetch(`/api/segments/${id}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || 'Failed to delete segment');
+                    }
+
+                    // Reload the page to show updated data
+                    location.reload();
+                } catch (error) {
+                    console.error('Error deleting segment:', error);
+                    alert('Error: ' + error.message);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
