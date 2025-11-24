@@ -516,6 +516,7 @@
         .segment-name {
             font-weight: 500;
             color: var(--text-color);
+            flex: 1;
         }
 
         .no-segments-message {
@@ -555,6 +556,10 @@
             color: #1565c0;
         }
 
+        .info-message .staged-changes-link {
+            display: block;
+        }
+
         .staged-changes-link {
             color: var(--primary-color);
             text-decoration: none;
@@ -562,7 +567,8 @@
             display: inline-flex;
             align-items: center;
             gap: 5px;
-            margin-top: 10px;
+            font-size: 0.9rem;
+            white-space: nowrap;
         }
 
         .staged-changes-link:hover {
@@ -727,8 +733,7 @@
                 <div id="createStep3" class="modal-step">
                     <div class="info-message">
                         <strong>📋 Changes Staged</strong><br>
-                        Your changes have been staged for the following segments:
-                        <a href="#" class="staged-changes-link" onclick="return false;">View staged changes →</a>
+                        Your changes have been staged for the following segments.
                     </div>
 
                     <div id="createSegmentsListStaged" class="segments-list">
@@ -852,8 +857,7 @@
                 <div id="editStep3" class="modal-step">
                     <div class="info-message">
                         <strong>📋 Changes Staged</strong><br>
-                        Your changes have been staged for the following segments:
-                        <a href="#" class="staged-changes-link" onclick="return false;">View staged changes →</a>
+                        Your changes have been staged for the following segments.
                     </div>
 
                     <div id="editSegmentsListStaged" class="segments-list">
@@ -1242,10 +1246,14 @@
                 return;
             }
 
+            // Check if this is for the staged changes step
+            const isStaged = containerId.includes('Staged');
+
             const html = segments.map(segment => `
                 <div class="segment-item">
                     <div class="segment-icon"></div>
                     <div class="segment-name">${escapeHtml(segment.segment_name)}</div>
+                    ${isStaged ? '<a href="#" class="staged-changes-link" onclick="return false;">View staged changes →</a>' : ''}
                 </div>
             `).join('');
 
