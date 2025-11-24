@@ -402,6 +402,191 @@
             display: block;
         }
 
+        /* Multi-step Modal Styles */
+        .modal-step {
+            display: none;
+        }
+
+        .modal-step.active {
+            display: block;
+        }
+
+        .modal-progress {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 25px;
+            background: #f9f9f9;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .progress-step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+            padding: 10px;
+        }
+
+        .progress-step::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--border-color);
+            z-index: 0;
+        }
+
+        .progress-step:first-child::before {
+            left: 50%;
+        }
+
+        .progress-step:last-child::before {
+            right: 50%;
+        }
+
+        .progress-number {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid var(--border-color);
+            color: var(--text-light);
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+            margin-bottom: 5px;
+        }
+
+        .progress-step.completed .progress-number {
+            background: var(--success-color);
+            border-color: var(--success-color);
+            color: white;
+        }
+
+        .progress-step.active .progress-number {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+
+        .progress-label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-light);
+            margin-top: 5px;
+        }
+
+        .progress-step.active .progress-label {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .segments-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background: #f9f9f9;
+        }
+
+        .segment-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .segment-item:last-child {
+            border-bottom: none;
+        }
+
+        .segment-icon {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            flex-shrink: 0;
+        }
+
+        .segment-name {
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .no-segments-message {
+            padding: 30px;
+            text-align: center;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .warning-message {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            color: #856404;
+        }
+
+        .success-message {
+            background: #e8f5e9;
+            border: 1px solid var(--success-color);
+            border-left: 4px solid var(--success-color);
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            color: var(--success-color);
+        }
+
+        .info-message {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            color: #1565c0;
+        }
+
+        .staged-changes-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .staged-changes-link:hover {
+            text-decoration: underline;
+        }
+
+        .segment-item.success {
+            background: #e8f5e9;
+        }
+
+        .segment-item.success .segment-icon {
+            background: var(--success-color);
+        }
+
+        .segment-status {
+            margin-left: auto;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            background: var(--success-color);
+            color: white;
+        }
+
         .loading {
             text-align: center;
             padding: 60px 20px;
@@ -469,45 +654,122 @@
     <div id="variableModal" class="modal-overlay">
         <div class="modal">
             <div class="modal-header">
-                <h3>Add Variable</h3>
+                <h3 id="createModalTitle">Add Variable</h3>
                 <button class="modal-close" onclick="closeVariableModal()">&times;</button>
             </div>
+
+            <!-- Progress Indicator -->
+            <div class="modal-progress" id="createProgressBar">
+                <div class="progress-step active" data-step="1">
+                    <span class="progress-number">1</span>
+                    <span class="progress-label">Variable Info</span>
+                </div>
+                <div class="progress-step" data-step="2">
+                    <span class="progress-number">2</span>
+                    <span class="progress-label">Confirm Impact</span>
+                </div>
+                <div class="progress-step" data-step="3">
+                    <span class="progress-number">3</span>
+                    <span class="progress-label">Stage Changes</span>
+                </div>
+                <div class="progress-step" data-step="4">
+                    <span class="progress-number">4</span>
+                    <span class="progress-label">Complete</span>
+                </div>
+            </div>
+
             <div class="modal-body">
                 <div id="modalError" class="modal-error"></div>
 
-                <div class="modal-domain-info">
-                    <div class="modal-domain-label">Creating variable for domain:</div>
-                    <div class="modal-domain-name" id="modalDomainName"></div>
+                <!-- Step 1: Variable Info -->
+                <div id="createStep1" class="modal-step active">
+                    <div class="modal-domain-info">
+                        <div class="modal-domain-label">Creating variable for domain:</div>
+                        <div class="modal-domain-name" id="modalDomainName"></div>
+                    </div>
+
+                    <form id="variableForm">
+                        <div class="modal-form-group">
+                            <label for="variableName" class="modal-label required">Variable Name</label>
+                            <input
+                                type="text"
+                                id="variableName"
+                                class="modal-input"
+                                placeholder="e.g., API_KEY"
+                                required
+                            >
+                        </div>
+
+                        <div class="modal-form-group">
+                            <label for="variableValue" class="modal-label">Variable Value</label>
+                            <textarea
+                                id="variableValue"
+                                class="modal-textarea"
+                                placeholder="Enter the value for this variable (optional)"
+                            ></textarea>
+                        </div>
+                    </form>
                 </div>
 
-                <form id="variableForm" onsubmit="submitVariable(event)">
-                    <div class="modal-form-group">
-                        <label for="variableName" class="modal-label required">Variable Name</label>
-                        <input
-                            type="text"
-                            id="variableName"
-                            class="modal-input"
-                            placeholder="e.g., API_KEY"
-                            required
-                        >
+                <!-- Step 2: Confirm Impact -->
+                <div id="createStep2" class="modal-step">
+                    <div class="warning-message">
+                        <strong>⚠️ Impact Warning</strong><br>
+                        Your change will impact all of the below segments. Are you sure you want to proceed?
                     </div>
 
-                    <div class="modal-form-group">
-                        <label for="variableValue" class="modal-label">Variable Value</label>
-                        <textarea
-                            id="variableValue"
-                            class="modal-textarea"
-                            placeholder="Enter the value for this variable (optional)"
-                        ></textarea>
+                    <div id="createSegmentsList" class="segments-list">
+                        <div class="no-segments-message">Loading segments...</div>
                     </div>
-                </form>
+                </div>
+
+                <!-- Step 3: Stage Changes -->
+                <div id="createStep3" class="modal-step">
+                    <div class="info-message">
+                        <strong>📋 Changes Staged</strong><br>
+                        Your changes have been staged for the following segments:
+                        <a href="#" class="staged-changes-link" onclick="return false;">View staged changes →</a>
+                    </div>
+
+                    <div id="createSegmentsListStaged" class="segments-list">
+                        <div class="no-segments-message">Loading segments...</div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Success -->
+                <div id="createStep4" class="modal-step">
+                    <div class="success-message">
+                        <strong>✓ Success!</strong><br>
+                        Your variable has been successfully promoted to production for the following segments:
+                    </div>
+
+                    <div id="createSegmentsListSuccess" class="segments-list">
+                        <div class="no-segments-message">Loading segments...</div>
+                    </div>
+                </div>
             </div>
+
             <div class="modal-footer">
-                <button type="button" class="modal-btn modal-btn-cancel" onclick="closeVariableModal()">
+                <button type="button" class="modal-btn modal-btn-cancel" id="createCancelBtn" onclick="closeVariableModal()">
                     Cancel
                 </button>
-                <button type="submit" form="variableForm" class="modal-btn modal-btn-submit" id="modalSubmitBtn">
-                    Create Variable
+                <button type="button" class="modal-btn modal-btn-secondary" id="createBackBtn" onclick="goBackCreateStep()" style="display: none;">
+                    Back
+                </button>
+                <button type="button" class="modal-btn modal-btn-secondary" id="createNoBtn" onclick="cancelCreateVariable()" style="display: none;">
+                    No
+                </button>
+                <button type="button" class="modal-btn modal-btn-submit" id="createNextBtn" onclick="nextCreateStep()">
+                    Next
+                </button>
+                <button type="button" class="modal-btn modal-btn-submit" id="createYesBtn" onclick="confirmCreateVariable()" style="display: none;">
+                    Yes
+                </button>
+                <button type="button" class="modal-btn modal-btn-submit" id="createPromoteBtn" onclick="promoteCreateVariable()" style="display: none;">
+                    Promote to Production
+                </button>
+                <button type="button" class="modal-btn modal-btn-submit" id="createDoneBtn" onclick="closeVariableModal()" style="display: none;">
+                    Done
                 </button>
             </div>
         </div>
@@ -517,45 +779,122 @@
     <div id="editVariableModal" class="modal-overlay">
         <div class="modal">
             <div class="modal-header">
-                <h3>Edit Variable</h3>
+                <h3 id="editModalTitle">Edit Variable</h3>
                 <button class="modal-close" onclick="closeEditVariableModal()">&times;</button>
             </div>
+
+            <!-- Progress Indicator -->
+            <div class="modal-progress" id="editProgressBar">
+                <div class="progress-step active" data-step="1">
+                    <span class="progress-number">1</span>
+                    <span class="progress-label">Variable Info</span>
+                </div>
+                <div class="progress-step" data-step="2">
+                    <span class="progress-number">2</span>
+                    <span class="progress-label">Confirm Impact</span>
+                </div>
+                <div class="progress-step" data-step="3">
+                    <span class="progress-number">3</span>
+                    <span class="progress-label">Stage Changes</span>
+                </div>
+                <div class="progress-step" data-step="4">
+                    <span class="progress-number">4</span>
+                    <span class="progress-label">Complete</span>
+                </div>
+            </div>
+
             <div class="modal-body">
                 <div id="editModalError" class="modal-error"></div>
 
-                <div class="modal-domain-info">
-                    <div class="modal-domain-label">Editing variable for domain:</div>
-                    <div class="modal-domain-name" id="editModalDomainName"></div>
+                <!-- Step 1: Variable Info -->
+                <div id="editStep1" class="modal-step active">
+                    <div class="modal-domain-info">
+                        <div class="modal-domain-label">Editing variable for domain:</div>
+                        <div class="modal-domain-name" id="editModalDomainName"></div>
+                    </div>
+
+                    <form id="editVariableForm">
+                        <div class="modal-form-group">
+                            <label for="editVariableName" class="modal-label required">Variable Name</label>
+                            <input
+                                type="text"
+                                id="editVariableName"
+                                class="modal-input"
+                                placeholder="e.g., API_KEY"
+                                required
+                            >
+                        </div>
+
+                        <div class="modal-form-group">
+                            <label for="editVariableValue" class="modal-label">Variable Value</label>
+                            <textarea
+                                id="editVariableValue"
+                                class="modal-textarea"
+                                placeholder="Enter the value for this variable (optional)"
+                            ></textarea>
+                        </div>
+                    </form>
                 </div>
 
-                <form id="editVariableForm" onsubmit="submitEditVariable(event)">
-                    <div class="modal-form-group">
-                        <label for="editVariableName" class="modal-label required">Variable Name</label>
-                        <input
-                            type="text"
-                            id="editVariableName"
-                            class="modal-input"
-                            placeholder="e.g., API_KEY"
-                            required
-                        >
+                <!-- Step 2: Confirm Impact -->
+                <div id="editStep2" class="modal-step">
+                    <div class="warning-message">
+                        <strong>⚠️ Impact Warning</strong><br>
+                        Your change will impact all of the below segments. Are you sure you want to proceed?
                     </div>
 
-                    <div class="modal-form-group">
-                        <label for="editVariableValue" class="modal-label">Variable Value</label>
-                        <textarea
-                            id="editVariableValue"
-                            class="modal-textarea"
-                            placeholder="Enter the value for this variable (optional)"
-                        ></textarea>
+                    <div id="editSegmentsList" class="segments-list">
+                        <div class="no-segments-message">Loading segments...</div>
                     </div>
-                </form>
+                </div>
+
+                <!-- Step 3: Stage Changes -->
+                <div id="editStep3" class="modal-step">
+                    <div class="info-message">
+                        <strong>📋 Changes Staged</strong><br>
+                        Your changes have been staged for the following segments:
+                        <a href="#" class="staged-changes-link" onclick="return false;">View staged changes →</a>
+                    </div>
+
+                    <div id="editSegmentsListStaged" class="segments-list">
+                        <div class="no-segments-message">Loading segments...</div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Success -->
+                <div id="editStep4" class="modal-step">
+                    <div class="success-message">
+                        <strong>✓ Success!</strong><br>
+                        Your variable has been successfully promoted to production for the following segments:
+                    </div>
+
+                    <div id="editSegmentsListSuccess" class="segments-list">
+                        <div class="no-segments-message">Loading segments...</div>
+                    </div>
+                </div>
             </div>
+
             <div class="modal-footer">
-                <button type="button" class="modal-btn modal-btn-cancel" onclick="closeEditVariableModal()">
+                <button type="button" class="modal-btn modal-btn-cancel" id="editCancelBtn" onclick="closeEditVariableModal()">
                     Cancel
                 </button>
-                <button type="submit" form="editVariableForm" class="modal-btn modal-btn-submit" id="editModalSubmitBtn">
-                    Update Variable
+                <button type="button" class="modal-btn modal-btn-secondary" id="editBackBtn" onclick="goBackEditStep()" style="display: none;">
+                    Back
+                </button>
+                <button type="button" class="modal-btn modal-btn-secondary" id="editNoBtn" onclick="cancelEditVariable()" style="display: none;">
+                    No
+                </button>
+                <button type="button" class="modal-btn modal-btn-submit" id="editNextBtn" onclick="nextEditStep()">
+                    Next
+                </button>
+                <button type="button" class="modal-btn modal-btn-submit" id="editYesBtn" onclick="confirmEditVariable()" style="display: none;">
+                    Yes
+                </button>
+                <button type="button" class="modal-btn modal-btn-submit" id="editPromoteBtn" onclick="promoteEditVariable()" style="display: none;">
+                    Promote to Production
+                </button>
+                <button type="button" class="modal-btn modal-btn-submit" id="editDoneBtn" onclick="closeEditVariableModal()" style="display: none;">
+                    Done
                 </button>
             </div>
         </div>
@@ -780,6 +1119,7 @@
         function addVariable(domainId) {
             // Store the current domain ID and name for the modal
             window.currentDomainId = domainId;
+            window.currentCreateStep = 1;
 
             // Find the domain name from the table
             const domainRow = document.querySelector(`button[onclick*="toggleVariables(${domainId}"]`);
@@ -792,6 +1132,9 @@
             // Clear previous form data and errors
             document.getElementById('variableForm').reset();
             document.getElementById('modalError').classList.remove('show');
+
+            // Reset to step 1
+            showCreateStep(1);
 
             // Show the modal
             document.getElementById('variableModal').classList.add('active');
@@ -806,25 +1149,142 @@
             document.getElementById('variableModal').classList.remove('active');
             document.getElementById('variableForm').reset();
             document.getElementById('modalError').classList.remove('show');
+            window.currentCreateStep = 1;
+            showCreateStep(1);
         }
 
-        function showModalError(message) {
-            const errorDiv = document.getElementById('modalError');
-            errorDiv.textContent = message;
-            errorDiv.classList.add('show');
+        function showCreateStep(step) {
+            // Hide all steps
+            document.querySelectorAll('#variableModal .modal-step').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            // Show current step
+            document.getElementById(`createStep${step}`).classList.add('active');
+
+            // Update progress bar
+            document.querySelectorAll('#createProgressBar .progress-step').forEach((el, index) => {
+                el.classList.remove('active', 'completed');
+                if (index + 1 < step) {
+                    el.classList.add('completed');
+                } else if (index + 1 === step) {
+                    el.classList.add('active');
+                }
+            });
+
+            // Update buttons
+            const cancelBtn = document.getElementById('createCancelBtn');
+            const backBtn = document.getElementById('createBackBtn');
+            const noBtn = document.getElementById('createNoBtn');
+            const nextBtn = document.getElementById('createNextBtn');
+            const yesBtn = document.getElementById('createYesBtn');
+            const promoteBtn = document.getElementById('createPromoteBtn');
+            const doneBtn = document.getElementById('createDoneBtn');
+
+            // Hide all buttons first
+            [backBtn, noBtn, nextBtn, yesBtn, promoteBtn, doneBtn].forEach(btn => btn.style.display = 'none');
+
+            if (step === 1) {
+                cancelBtn.style.display = 'inline-block';
+                nextBtn.style.display = 'inline-block';
+            } else if (step === 2) {
+                cancelBtn.style.display = 'none';
+                noBtn.style.display = 'inline-block';
+                yesBtn.style.display = 'inline-block';
+            } else if (step === 3) {
+                cancelBtn.style.display = 'none';
+                promoteBtn.style.display = 'inline-block';
+            } else if (step === 4) {
+                cancelBtn.style.display = 'none';
+                doneBtn.style.display = 'inline-block';
+            }
+
+            window.currentCreateStep = step;
         }
 
-        async function submitVariable(event) {
-            event.preventDefault();
+        async function nextCreateStep() {
+            const variableName = document.getElementById('variableName').value;
 
-            const submitBtn = document.getElementById('modalSubmitBtn');
+            if (!variableName || variableName.trim() === '') {
+                showModalError('Variable name is required');
+                return;
+            }
+
+            // Load segments for step 2
+            await loadCreateSegments();
+            showCreateStep(2);
+        }
+
+        async function loadCreateSegments() {
+            const domainId = window.currentDomainId;
+
+            try {
+                const response = await fetch(`/api/segments?domain_id=${domainId}`);
+                if (!response.ok) throw new Error('Failed to fetch segments');
+
+                const allSegments = await response.json();
+                const domainSegments = allSegments.filter(s => s.domain_id === domainId);
+
+                renderSegmentsList(domainSegments, 'createSegmentsList');
+                window.currentSegments = domainSegments;
+            } catch (error) {
+                console.error('Error loading segments:', error);
+                document.getElementById('createSegmentsList').innerHTML =
+                    '<div class="no-segments-message">Error loading segments</div>';
+            }
+        }
+
+        function renderSegmentsList(segments, containerId) {
+            const container = document.getElementById(containerId);
+
+            if (!segments || segments.length === 0) {
+                container.innerHTML = '<div class="no-segments-message">No segments found for this domain</div>';
+                return;
+            }
+
+            const html = segments.map(segment => `
+                <div class="segment-item">
+                    <div class="segment-icon"></div>
+                    <div class="segment-name">${escapeHtml(segment.segment_name)}</div>
+                </div>
+            `).join('');
+
+            container.innerHTML = html;
+        }
+
+        function renderSegmentsListSuccess(segments, containerId) {
+            const container = document.getElementById(containerId);
+
+            if (!segments || segments.length === 0) {
+                container.innerHTML = '<div class="no-segments-message">No segments found for this domain</div>';
+                return;
+            }
+
+            const html = segments.map(segment => `
+                <div class="segment-item success">
+                    <div class="segment-icon"></div>
+                    <div class="segment-name">${escapeHtml(segment.segment_name)}</div>
+                    <div class="segment-status">Success</div>
+                </div>
+            `).join('');
+
+            container.innerHTML = html;
+        }
+
+        function cancelCreateVariable() {
+            closeVariableModal();
+        }
+
+        function confirmCreateVariable() {
+            // Move to step 3 and show staged changes
+            renderSegmentsList(window.currentSegments, 'createSegmentsListStaged');
+            showCreateStep(3);
+        }
+
+        async function promoteCreateVariable() {
             const variableName = document.getElementById('variableName').value;
             const variableValue = document.getElementById('variableValue').value;
             const domainId = window.currentDomainId;
-
-            // Disable submit button
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Creating...';
 
             try {
                 const response = await fetch(`/api/domains/${domainId}/variables`, {
@@ -843,16 +1303,15 @@
                     throw new Error(errorData.error || 'Failed to create variable');
                 }
 
-                // Close the modal
-                closeVariableModal();
+                // Show success step
+                renderSegmentsListSuccess(window.currentSegments, 'createSegmentsListSuccess');
+                showCreateStep(4);
 
-                // Refresh the variables for this domain
+                // Refresh the variables list in the background
                 await fetchVariables(domainId);
             } catch (error) {
                 console.error('Error creating variable:', error);
                 showModalError(error.message);
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Create Variable';
             }
         }
 
@@ -881,6 +1340,7 @@
             // Store the current variable and domain info for the modal
             window.currentEditVariableId = variableId;
             window.currentEditDomainId = domainId;
+            window.currentEditStep = 1;
 
             // Find the domain name from the table
             const domainRow = document.querySelector(`button[onclick*="toggleVariables(${domainId}"]`);
@@ -897,6 +1357,9 @@
             // Clear any previous errors
             document.getElementById('editModalError').classList.remove('show');
 
+            // Reset to step 1
+            showEditStep(1);
+
             // Show the modal
             document.getElementById('editVariableModal').classList.add('active');
 
@@ -910,6 +1373,8 @@
             document.getElementById('editVariableModal').classList.remove('active');
             document.getElementById('editVariableForm').reset();
             document.getElementById('editModalError').classList.remove('show');
+            window.currentEditStep = 1;
+            showEditStep(1);
         }
 
         function showEditModalError(message) {
@@ -918,18 +1383,102 @@
             errorDiv.classList.add('show');
         }
 
-        async function submitEditVariable(event) {
-            event.preventDefault();
+        function showEditStep(step) {
+            // Hide all steps
+            document.querySelectorAll('#editVariableModal .modal-step').forEach(el => {
+                el.classList.remove('active');
+            });
 
-            const submitBtn = document.getElementById('editModalSubmitBtn');
+            // Show current step
+            document.getElementById(`editStep${step}`).classList.add('active');
+
+            // Update progress bar
+            document.querySelectorAll('#editProgressBar .progress-step').forEach((el, index) => {
+                el.classList.remove('active', 'completed');
+                if (index + 1 < step) {
+                    el.classList.add('completed');
+                } else if (index + 1 === step) {
+                    el.classList.add('active');
+                }
+            });
+
+            // Update buttons
+            const cancelBtn = document.getElementById('editCancelBtn');
+            const backBtn = document.getElementById('editBackBtn');
+            const noBtn = document.getElementById('editNoBtn');
+            const nextBtn = document.getElementById('editNextBtn');
+            const yesBtn = document.getElementById('editYesBtn');
+            const promoteBtn = document.getElementById('editPromoteBtn');
+            const doneBtn = document.getElementById('editDoneBtn');
+
+            // Hide all buttons first
+            [backBtn, noBtn, nextBtn, yesBtn, promoteBtn, doneBtn].forEach(btn => btn.style.display = 'none');
+
+            if (step === 1) {
+                cancelBtn.style.display = 'inline-block';
+                nextBtn.style.display = 'inline-block';
+            } else if (step === 2) {
+                cancelBtn.style.display = 'none';
+                noBtn.style.display = 'inline-block';
+                yesBtn.style.display = 'inline-block';
+            } else if (step === 3) {
+                cancelBtn.style.display = 'none';
+                promoteBtn.style.display = 'inline-block';
+            } else if (step === 4) {
+                cancelBtn.style.display = 'none';
+                doneBtn.style.display = 'inline-block';
+            }
+
+            window.currentEditStep = step;
+        }
+
+        async function nextEditStep() {
+            const variableName = document.getElementById('editVariableName').value;
+
+            if (!variableName || variableName.trim() === '') {
+                showEditModalError('Variable name is required');
+                return;
+            }
+
+            // Load segments for step 2
+            await loadEditSegments();
+            showEditStep(2);
+        }
+
+        async function loadEditSegments() {
+            const domainId = window.currentEditDomainId;
+
+            try {
+                const response = await fetch(`/api/segments?domain_id=${domainId}`);
+                if (!response.ok) throw new Error('Failed to fetch segments');
+
+                const allSegments = await response.json();
+                const domainSegments = allSegments.filter(s => s.domain_id === domainId);
+
+                renderSegmentsList(domainSegments, 'editSegmentsList');
+                window.currentEditSegments = domainSegments;
+            } catch (error) {
+                console.error('Error loading segments:', error);
+                document.getElementById('editSegmentsList').innerHTML =
+                    '<div class="no-segments-message">Error loading segments</div>';
+            }
+        }
+
+        function cancelEditVariable() {
+            closeEditVariableModal();
+        }
+
+        function confirmEditVariable() {
+            // Move to step 3 and show staged changes
+            renderSegmentsList(window.currentEditSegments, 'editSegmentsListStaged');
+            showEditStep(3);
+        }
+
+        async function promoteEditVariable() {
             const variableName = document.getElementById('editVariableName').value;
             const variableValue = document.getElementById('editVariableValue').value;
             const variableId = window.currentEditVariableId;
             const domainId = window.currentEditDomainId;
-
-            // Disable submit button
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Updating...';
 
             try {
                 const response = await fetch(`/api/domains/${domainId}/variables/${variableId}`, {
@@ -948,17 +1497,22 @@
                     throw new Error(errorData.error || 'Failed to update variable');
                 }
 
-                // Close the modal
-                closeEditVariableModal();
+                // Show success step
+                renderSegmentsListSuccess(window.currentEditSegments, 'editSegmentsListSuccess');
+                showEditStep(4);
 
-                // Refresh the variables for this domain
+                // Refresh the variables list in the background
                 await fetchVariables(domainId);
             } catch (error) {
                 console.error('Error updating variable:', error);
                 showEditModalError(error.message);
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Update Variable';
             }
+        }
+
+        function showModalError(message) {
+            const errorDiv = document.getElementById('modalError');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
         }
 
         // Close edit modal when clicking outside of it
