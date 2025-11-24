@@ -132,6 +132,174 @@ router.delete('/domains/:id', async (req, res) => {
   }
 });
 
+// ==================== DOMAIN ALIASES ENDPOINTS ====================
+
+// GET all aliases for a domain
+router.get('/domains/:domainId/aliases', async (req, res) => {
+  try {
+    const { domainId } = req.params;
+
+    // Check if domain exists
+    const domainCheck = await db.query(
+      'SELECT * FROM domains WHERE domain_id = $1',
+      [domainId]
+    );
+
+    if (domainCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Domain not found' });
+    }
+
+    const result = await db.query(
+      'SELECT * FROM domain_aliases WHERE domain_id = $1 ORDER BY alias_id ASC',
+      [domainId]
+    );
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching domain aliases:', error);
+    res.status(500).json({ error: 'Failed to fetch domain aliases' });
+  }
+});
+
+// GET single alias
+router.get('/domains/:domainId/aliases/:aliasId', async (req, res) => {
+  try {
+    const { domainId, aliasId } = req.params;
+
+    const result = await db.query(
+      'SELECT * FROM domain_aliases WHERE alias_id = $1 AND domain_id = $2',
+      [aliasId, domainId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Alias not found' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error fetching alias:', error);
+    res.status(500).json({ error: 'Failed to fetch alias' });
+  }
+});
+
+// POST create new alias for a domain
+router.post('/domains/:domainId/aliases', async (req, res) => {
+  try {
+    const { domainId } = req.params;
+    const { domain_alias } = req.body;
+
+    // Validation
+    if (!domain_alias || domain_alias.trim() === '') {
+      return res.status(400).json({ error: 'Alias is required' });
+    }
+
+    // Check if domain exists
+    const domainCheck = await db.query(
+      'SELECT * FROM domains WHERE domain_id = $1',
+      [domainId]
+    );
+
+    if (domainCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Domain not found' });
+    }
+
+    // Check for duplicate alias within the same domain
+    const existingAlias = await db.query(
+      'SELECT * FROM domain_aliases WHERE domain_id = $1 AND domain_alias = $2',
+      [domainId, domain_alias]
+    );
+
+    if (existingAlias.rows.length > 0) {
+      return res.status(409).json({ error: 'Alias already exists for this domain' });
+    }
+
+    // Insert new alias
+    const result = await db.query(
+      'INSERT INTO domain_aliases (domain_id, domain_alias) VALUES ($1, $2) RETURNING *',
+      [domainId, domain_alias]
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error('Error creating alias:', error);
+    res.status(500).json({ error: 'Failed to create alias' });
+  }
+});
+
+// PUT update alias
+router.put('/domains/:domainId/aliases/:aliasId', async (req, res) => {
+  try {
+    const { domainId, aliasId } = req.params;
+    const { domain_alias } = req.body;
+
+    // Validation
+    if (!domain_alias || domain_alias.trim() === '') {
+      return res.status(400).json({ error: 'Alias is required' });
+    }
+
+    // Check if alias exists
+    const existingAlias = await db.query(
+      'SELECT * FROM domain_aliases WHERE alias_id = $1 AND domain_id = $2',
+      [aliasId, domainId]
+    );
+
+    if (existingAlias.rows.length === 0) {
+      return res.status(404).json({ error: 'Alias not found' });
+    }
+
+    // Check for duplicate alias (excluding current alias)
+    const duplicateAlias = await db.query(
+      'SELECT * FROM domain_aliases WHERE domain_id = $1 AND domain_alias = $2 AND alias_id != $3',
+      [domainId, domain_alias, aliasId]
+    );
+
+    if (duplicateAlias.rows.length > 0) {
+      return res.status(409).json({ error: 'Alias already exists for this domain' });
+    }
+
+    // Update alias
+    const result = await db.query(
+      'UPDATE domain_aliases SET domain_alias = $1 WHERE alias_id = $2 AND domain_id = $3 RETURNING *',
+      [domain_alias, aliasId, domainId]
+    );
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error updating alias:', error);
+    res.status(500).json({ error: 'Failed to update alias' });
+  }
+});
+
+// DELETE alias
+router.delete('/domains/:domainId/aliases/:aliasId', async (req, res) => {
+  try {
+    const { domainId, aliasId } = req.params;
+
+    // Check if alias exists
+    const existingAlias = await db.query(
+      'SELECT * FROM domain_aliases WHERE alias_id = $1 AND domain_id = $2',
+      [aliasId, domainId]
+    );
+
+    if (existingAlias.rows.length === 0) {
+      return res.status(404).json({ error: 'Alias not found' });
+    }
+
+    // Delete alias
+    await db.query(
+      'DELETE FROM domain_aliases WHERE alias_id = $1 AND domain_id = $2',
+      [aliasId, domainId]
+    );
+
+    res.json({ message: 'Alias deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting alias:', error);
+    res.status(500).json({ error: 'Failed to delete alias' });
+  }
+});
+
+// ==================== DOMAIN VARIABLES ENDPOINTS ====================
+
 // GET all variables for a domain
 router.get('/domains/:domainId/variables', async (req, res) => {
   try {

@@ -148,6 +148,42 @@
             border: 2px solid var(--border-color);
         }
 
+        .variables-section {
+            margin-bottom: 30px;
+        }
+
+        .variables-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .domain-variables-section {
+            padding-top: 20px;
+            border-top: 2px solid var(--border-color);
+        }
+
+        .variable-type-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-right: 10px;
+        }
+
+        .alias-badge {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #2e7d32;
+        }
+
+        .domain-badge {
+            background: #e3f2fd;
+            color: #1976d2;
+            border: 1px solid #1976d2;
+        }
+
         .variables-header {
             display: flex;
             justify-content: space-between;
@@ -158,6 +194,10 @@
         .variables-header h4 {
             color: var(--primary-color);
             margin: 0;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 5px;
         }
 
         .variables-table {
@@ -655,6 +695,84 @@
         </div>
     </div>
 
+    <!-- Create Alias Modal -->
+    <div id="aliasModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Add Alias</h3>
+                <button class="modal-close" onclick="closeAliasModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="aliasModalError" class="modal-error"></div>
+
+                <div class="modal-domain-info">
+                    <div class="modal-domain-label">Creating alias for domain:</div>
+                    <div class="modal-domain-name" id="aliasModalDomainName"></div>
+                </div>
+
+                <form id="aliasForm">
+                    <div class="modal-form-group">
+                        <label for="aliasName" class="modal-label required">Domain Alias</label>
+                        <input
+                            type="text"
+                            id="aliasName"
+                            class="modal-input"
+                            placeholder="e.g., www.example.com"
+                            required
+                        >
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="modal-btn modal-btn-cancel" onclick="closeAliasModal()">
+                    Cancel
+                </button>
+                <button type="button" class="modal-btn modal-btn-submit" id="aliasSubmitBtn" onclick="submitAlias()">
+                    Create Alias
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Alias Modal -->
+    <div id="editAliasModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Edit Alias</h3>
+                <button class="modal-close" onclick="closeEditAliasModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="editAliasModalError" class="modal-error"></div>
+
+                <div class="modal-domain-info">
+                    <div class="modal-domain-label">Editing alias for domain:</div>
+                    <div class="modal-domain-name" id="editAliasModalDomainName"></div>
+                </div>
+
+                <form id="editAliasForm">
+                    <div class="modal-form-group">
+                        <label for="editAliasName" class="modal-label required">Domain Alias</label>
+                        <input
+                            type="text"
+                            id="editAliasName"
+                            class="modal-input"
+                            placeholder="e.g., www.example.com"
+                            required
+                        >
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="modal-btn modal-btn-cancel" onclick="closeEditAliasModal()">
+                    Cancel
+                </button>
+                <button type="button" class="modal-btn modal-btn-submit" id="editAliasSubmitBtn" onclick="submitEditAlias()">
+                    Update Alias
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Create Variable Modal -->
     <div id="variableModal" class="modal-overlay">
         <div class="modal">
@@ -1022,15 +1140,39 @@
                                     <tr class="variables-row" id="variables-${domain.domain_id}">
                                         <td colspan="4" class="variables-cell">
                                             <div class="variables-container">
-                                                <div class="variables-header">
-                                                    <h4>Variables for ${escapeHtml(domain.domain_name)}</h4>
-                                                    <button class="btn-add-variable" onclick="addVariable(${domain.domain_id})">
-                                                        + Add Variable
-                                                    </button>
+                                                <!-- Domain Aliases Section -->
+                                                <div class="variables-section">
+                                                    <div class="variables-header">
+                                                        <h4>
+                                                            <span class="variable-type-badge alias-badge">Domain Aliases</span>
+                                                            ${escapeHtml(domain.domain_name)}
+                                                        </h4>
+                                                        <button class="btn-add-variable" onclick="addAlias(${domain.domain_id})">
+                                                            + Add Alias
+                                                        </button>
+                                                    </div>
+                                                    <div id="aliases-content-${domain.domain_id}" class="variables-content">
+                                                        <div class="loading" style="text-align: center; padding: 20px; color: var(--text-light);">
+                                                            Loading aliases...
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div id="variables-content-${domain.domain_id}" class="variables-content">
-                                                    <div class="loading" style="text-align: center; padding: 20px; color: var(--text-light);">
-                                                        Loading variables...
+
+                                                <!-- Domain Variables Section -->
+                                                <div class="variables-section domain-variables-section">
+                                                    <div class="variables-header">
+                                                        <h4>
+                                                            <span class="variable-type-badge domain-badge">Domain Variables</span>
+                                                            ${escapeHtml(domain.domain_name)}
+                                                        </h4>
+                                                        <button class="btn-add-variable" onclick="addVariable(${domain.domain_id})">
+                                                            + Add Variable
+                                                        </button>
+                                                    </div>
+                                                    <div id="variables-content-${domain.domain_id}" class="variables-content">
+                                                        <div class="loading" style="text-align: center; padding: 20px; color: var(--text-light);">
+                                                            Loading variables...
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1074,6 +1216,12 @@
                 variablesRow.classList.add('visible');
                 button.classList.add('expanded');
 
+                // Fetch aliases if not already loaded
+                const aliasesContentDiv = document.getElementById(`aliases-content-${domainId}`);
+                if (aliasesContentDiv.querySelector('.loading')) {
+                    await fetchAliases(domainId);
+                }
+
                 // Fetch variables if not already loaded
                 const contentDiv = document.getElementById(`variables-content-${domainId}`);
                 if (contentDiv.querySelector('.loading')) {
@@ -1081,6 +1229,94 @@
                 }
             }
         }
+
+        async function fetchAliases(domainId) {
+            const contentDiv = document.getElementById(`aliases-content-${domainId}`);
+
+            try {
+                const response = await fetch(`/api/domains/${domainId}/aliases`);
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch aliases');
+                }
+
+                const aliases = await response.json();
+                renderAliases(domainId, aliases);
+            } catch (error) {
+                console.error('Error fetching aliases:', error);
+                contentDiv.innerHTML = `
+                    <div class="no-variables" style="color: var(--error-color);">
+                        Error loading aliases: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function renderAliases(domainId, aliases) {
+            const contentDiv = document.getElementById(`aliases-content-${domainId}`);
+
+            if (!aliases || aliases.length === 0) {
+                contentDiv.innerHTML = '<div class="no-variables">No aliases found for this domain. Click "+ Add Alias" to create one.</div>';
+                return;
+            }
+
+            const aliasesHTML = `
+                <table class="variables-table">
+                    <thead>
+                        <tr>
+                            <th>Alias ID</th>
+                            <th>Domain Alias</th>
+                            <th style="width: 150px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${aliases.map(alias => `
+                            <tr>
+                                <td>${alias.alias_id}</td>
+                                <td>${escapeHtml(alias.domain_alias)}</td>
+                                <td>
+                                    <div style="display: flex; gap: 5px;">
+                                        <button class="btn-small btn-edit" onclick="editAlias(${alias.alias_id}, ${domainId}, '${escapeHtml(alias.domain_alias)}')">
+                                            Edit
+                                        </button>
+                                        <button class="btn-small btn-delete" onclick="deleteAlias(${alias.alias_id}, ${domainId})">
+                                            Delete
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            contentDiv.innerHTML = aliasesHTML;
+        }
+
+        // ==================== DOMAIN ALIAS FUNCTIONS ====================
+
+        async function deleteAlias(aliasId, domainId) {
+            if (confirm('Are you sure you want to delete this alias?')) {
+                try {
+                    const response = await fetch(`/api/domains/${domainId}/aliases/${aliasId}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || 'Failed to delete alias');
+                    }
+
+                    // Refresh the aliases for this domain
+                    await fetchAliases(domainId);
+                } catch (error) {
+                    console.error('Error deleting alias:', error);
+                    alert('Error: ' + error.message);
+                }
+            }
+        }
+
+        // ==================== DOMAIN VARIABLE FUNCTIONS ====================
 
         async function fetchVariables(domainId) {
             const contentDiv = document.getElementById(`variables-content-${domainId}`);
@@ -1350,6 +1586,183 @@
             }
         }
 
+        // ==================== ALIAS MODAL FUNCTIONS ====================
+
+        function addAlias(domainId) {
+            window.currentAliasDomainId = domainId;
+
+            // Find the domain name from the table
+            const domainRow = document.querySelector(`button[onclick*="toggleVariables(${domainId}"]`);
+            const domainNameCell = domainRow.closest('tr').querySelector('.domain-name-cell');
+            const domainName = domainNameCell.textContent;
+
+            // Set the domain name in the modal
+            document.getElementById('aliasModalDomainName').textContent = domainName;
+
+            // Clear previous form data and errors
+            document.getElementById('aliasForm').reset();
+            document.getElementById('aliasModalError').classList.remove('show');
+
+            // Show the modal
+            document.getElementById('aliasModal').classList.add('active');
+
+            // Focus on the first input
+            setTimeout(() => {
+                document.getElementById('aliasName').focus();
+            }, 100);
+        }
+
+        function closeAliasModal() {
+            document.getElementById('aliasModal').classList.remove('active');
+            document.getElementById('aliasForm').reset();
+            document.getElementById('aliasModalError').classList.remove('show');
+        }
+
+        function showAliasModalError(message) {
+            const errorDiv = document.getElementById('aliasModalError');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
+        }
+
+        async function submitAlias() {
+            const submitBtn = document.getElementById('aliasSubmitBtn');
+            const aliasName = document.getElementById('aliasName').value;
+            const domainId = window.currentAliasDomainId;
+
+            if (!aliasName || aliasName.trim() === '') {
+                showAliasModalError('Alias name is required');
+                return;
+            }
+
+            // Disable submit button
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating...';
+
+            try {
+                const response = await fetch(`/api/domains/${domainId}/aliases`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        domain_alias: aliasName
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to create alias');
+                }
+
+                // Close the modal
+                closeAliasModal();
+
+                // Refresh the aliases for this domain
+                await fetchAliases(domainId);
+            } catch (error) {
+                console.error('Error creating alias:', error);
+                showAliasModalError(error.message);
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Create Alias';
+            }
+        }
+
+        function editAlias(aliasId, domainId, currentAlias) {
+            window.currentEditAliasId = aliasId;
+            window.currentEditAliasDomainId = domainId;
+
+            // Find the domain name from the table
+            const domainRow = document.querySelector(`button[onclick*="toggleVariables(${domainId}"]`);
+            const domainNameCell = domainRow.closest('tr').querySelector('.domain-name-cell');
+            const domainName = domainNameCell.textContent;
+
+            // Set the domain name in the modal
+            document.getElementById('editAliasModalDomainName').textContent = domainName;
+
+            // Pre-fill the form with current value
+            document.getElementById('editAliasName').value = currentAlias;
+
+            // Clear any previous errors
+            document.getElementById('editAliasModalError').classList.remove('show');
+
+            // Show the modal
+            document.getElementById('editAliasModal').classList.add('active');
+
+            // Focus on the first input
+            setTimeout(() => {
+                document.getElementById('editAliasName').focus();
+            }, 100);
+        }
+
+        function closeEditAliasModal() {
+            document.getElementById('editAliasModal').classList.remove('active');
+            document.getElementById('editAliasForm').reset();
+            document.getElementById('editAliasModalError').classList.remove('show');
+        }
+
+        function showEditAliasModalError(message) {
+            const errorDiv = document.getElementById('editAliasModalError');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
+        }
+
+        async function submitEditAlias() {
+            const submitBtn = document.getElementById('editAliasSubmitBtn');
+            const aliasName = document.getElementById('editAliasName').value;
+            const aliasId = window.currentEditAliasId;
+            const domainId = window.currentEditAliasDomainId;
+
+            if (!aliasName || aliasName.trim() === '') {
+                showEditAliasModalError('Alias name is required');
+                return;
+            }
+
+            // Disable submit button
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Updating...';
+
+            try {
+                const response = await fetch(`/api/domains/${domainId}/aliases/${aliasId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        domain_alias: aliasName
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to update alias');
+                }
+
+                // Close the modal
+                closeEditAliasModal();
+
+                // Refresh the aliases for this domain
+                await fetchAliases(domainId);
+            } catch (error) {
+                console.error('Error updating alias:', error);
+                showEditAliasModalError(error.message);
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Update Alias';
+            }
+        }
+
+        // Close alias modals when clicking outside
+        document.getElementById('aliasModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeAliasModal();
+            }
+        });
+
+        document.getElementById('editAliasModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeEditAliasModal();
+            }
+        });
+
         // Close modal when clicking outside of it
         document.getElementById('variableModal').addEventListener('click', function(event) {
             if (event.target === this) {
@@ -1362,11 +1775,17 @@
             if (event.key === 'Escape') {
                 const createModal = document.getElementById('variableModal');
                 const editModal = document.getElementById('editVariableModal');
+                const aliasModal = document.getElementById('aliasModal');
+                const editAliasModal = document.getElementById('editAliasModal');
 
                 if (createModal.classList.contains('active')) {
                     closeVariableModal();
                 } else if (editModal.classList.contains('active')) {
                     closeEditVariableModal();
+                } else if (aliasModal.classList.contains('active')) {
+                    closeAliasModal();
+                } else if (editAliasModal.classList.contains('active')) {
+                    closeEditAliasModal();
                 }
             }
         });
