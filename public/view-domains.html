@@ -699,36 +699,109 @@
     <div id="aliasModal" class="modal-overlay">
         <div class="modal">
             <div class="modal-header">
-                <h3>Add Alias</h3>
+                <h3 id="createAliasModalTitle">Add Alias</h3>
                 <button class="modal-close" onclick="closeAliasModal()">&times;</button>
             </div>
+
+            <!-- Progress Indicator -->
+            <div class="modal-progress" id="createAliasProgressBar">
+                <div class="progress-step active" data-step="1">
+                    <span class="progress-number">1</span>
+                    <span class="progress-label">Alias Info</span>
+                </div>
+                <div class="progress-step" data-step="2">
+                    <span class="progress-number">2</span>
+                    <span class="progress-label">Confirm Impact</span>
+                </div>
+                <div class="progress-step" data-step="3">
+                    <span class="progress-number">3</span>
+                    <span class="progress-label">Stage Changes</span>
+                </div>
+                <div class="progress-step" data-step="4">
+                    <span class="progress-number">4</span>
+                    <span class="progress-label">Complete</span>
+                </div>
+            </div>
+
             <div class="modal-body">
                 <div id="aliasModalError" class="modal-error"></div>
 
-                <div class="modal-domain-info">
-                    <div class="modal-domain-label">Creating alias for domain:</div>
-                    <div class="modal-domain-name" id="aliasModalDomainName"></div>
+                <!-- Step 1: Alias Info -->
+                <div id="createAliasStep1" class="modal-step active">
+                    <div class="modal-domain-info">
+                        <div class="modal-domain-label">Creating alias for domain:</div>
+                        <div class="modal-domain-name" id="aliasModalDomainName"></div>
+                    </div>
+
+                    <form id="aliasForm">
+                        <div class="modal-form-group">
+                            <label for="aliasName" class="modal-label required">Domain Alias</label>
+                            <input
+                                type="text"
+                                id="aliasName"
+                                class="modal-input"
+                                placeholder="e.g., www.example.com"
+                                required
+                            >
+                        </div>
+                    </form>
                 </div>
 
-                <form id="aliasForm">
-                    <div class="modal-form-group">
-                        <label for="aliasName" class="modal-label required">Domain Alias</label>
-                        <input
-                            type="text"
-                            id="aliasName"
-                            class="modal-input"
-                            placeholder="e.g., www.example.com"
-                            required
-                        >
+                <!-- Step 2: Confirm Impact -->
+                <div id="createAliasStep2" class="modal-step">
+                    <div class="warning-message">
+                        <strong>⚠️ Impact Warning</strong><br>
+                        Your change will impact all of the below segments. Are you sure you want to proceed?
                     </div>
-                </form>
+
+                    <div id="createAliasSegmentsList" class="segments-list">
+                        <div class="no-segments-message">Loading segments...</div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Stage Changes -->
+                <div id="createAliasStep3" class="modal-step">
+                    <div class="info-message">
+                        <strong>📋 Changes Staged</strong><br>
+                        Your changes have been staged for the following segments.
+                    </div>
+
+                    <div id="createAliasSegmentsListStaged" class="segments-list">
+                        <div class="no-segments-message">Loading segments...</div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Success -->
+                <div id="createAliasStep4" class="modal-step">
+                    <div class="success-message">
+                        <strong>✓ Success!</strong><br>
+                        Your alias has been successfully promoted to production for the following segments:
+                    </div>
+
+                    <div id="createAliasSegmentsListSuccess" class="segments-list">
+                        <div class="no-segments-message">Loading segments...</div>
+                    </div>
+                </div>
             </div>
+
             <div class="modal-footer">
-                <button type="button" class="modal-btn modal-btn-cancel" onclick="closeAliasModal()">
+                <button type="button" class="modal-btn modal-btn-cancel" id="createAliasCancelBtn" onclick="closeAliasModal()">
                     Cancel
                 </button>
-                <button type="button" class="modal-btn modal-btn-submit" id="aliasSubmitBtn" onclick="submitAlias()">
-                    Create Alias
+                <button type="button" class="modal-btn modal-btn-secondary" id="createAliasNoBtn" onclick="cancelCreateAlias()" style="display: none;">
+                    No
+                </button>
+                <button type="button" class="modal-btn modal-btn-submit" id="createAliasNextBtn" onclick="nextCreateAliasStep()">
+                    Next
+                </button>
+                <button type="button" class="modal-btn modal-btn-submit" id="createAliasYesBtn" onclick="confirmCreateAlias()" style="display: none;">
+                    Yes
+                </button>
+                <button type="button" class="modal-btn modal-btn-submit" id="createAliasPromoteBtn" onclick="promoteCreateAlias()" style="display: none;">
+                    Promote to Production
+                </button>
+                <button type="button" class="modal-btn modal-btn-submit" id="createAliasDoneBtn" onclick="closeAliasModal()" style="display: none;">
+                    Done
                 </button>
             </div>
         </div>
@@ -738,36 +811,109 @@
     <div id="editAliasModal" class="modal-overlay">
         <div class="modal">
             <div class="modal-header">
-                <h3>Edit Alias</h3>
+                <h3 id="editAliasModalTitle">Edit Alias</h3>
                 <button class="modal-close" onclick="closeEditAliasModal()">&times;</button>
             </div>
+
+            <!-- Progress Indicator -->
+            <div class="modal-progress" id="editAliasProgressBar">
+                <div class="progress-step active" data-step="1">
+                    <span class="progress-number">1</span>
+                    <span class="progress-label">Alias Info</span>
+                </div>
+                <div class="progress-step" data-step="2">
+                    <span class="progress-number">2</span>
+                    <span class="progress-label">Confirm Impact</span>
+                </div>
+                <div class="progress-step" data-step="3">
+                    <span class="progress-number">3</span>
+                    <span class="progress-label">Stage Changes</span>
+                </div>
+                <div class="progress-step" data-step="4">
+                    <span class="progress-number">4</span>
+                    <span class="progress-label">Complete</span>
+                </div>
+            </div>
+
             <div class="modal-body">
                 <div id="editAliasModalError" class="modal-error"></div>
 
-                <div class="modal-domain-info">
-                    <div class="modal-domain-label">Editing alias for domain:</div>
-                    <div class="modal-domain-name" id="editAliasModalDomainName"></div>
+                <!-- Step 1: Alias Info -->
+                <div id="editAliasStep1" class="modal-step active">
+                    <div class="modal-domain-info">
+                        <div class="modal-domain-label">Editing alias for domain:</div>
+                        <div class="modal-domain-name" id="editAliasModalDomainName"></div>
+                    </div>
+
+                    <form id="editAliasForm">
+                        <div class="modal-form-group">
+                            <label for="editAliasName" class="modal-label required">Domain Alias</label>
+                            <input
+                                type="text"
+                                id="editAliasName"
+                                class="modal-input"
+                                placeholder="e.g., www.example.com"
+                                required
+                            >
+                        </div>
+                    </form>
                 </div>
 
-                <form id="editAliasForm">
-                    <div class="modal-form-group">
-                        <label for="editAliasName" class="modal-label required">Domain Alias</label>
-                        <input
-                            type="text"
-                            id="editAliasName"
-                            class="modal-input"
-                            placeholder="e.g., www.example.com"
-                            required
-                        >
+                <!-- Step 2: Confirm Impact -->
+                <div id="editAliasStep2" class="modal-step">
+                    <div class="warning-message">
+                        <strong>⚠️ Impact Warning</strong><br>
+                        Your change will impact all of the below segments. Are you sure you want to proceed?
                     </div>
-                </form>
+
+                    <div id="editAliasSegmentsList" class="segments-list">
+                        <div class="no-segments-message">Loading segments...</div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Stage Changes -->
+                <div id="editAliasStep3" class="modal-step">
+                    <div class="info-message">
+                        <strong>📋 Changes Staged</strong><br>
+                        Your changes have been staged for the following segments.
+                    </div>
+
+                    <div id="editAliasSegmentsListStaged" class="segments-list">
+                        <div class="no-segments-message">Loading segments...</div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Success -->
+                <div id="editAliasStep4" class="modal-step">
+                    <div class="success-message">
+                        <strong>✓ Success!</strong><br>
+                        Your alias has been successfully promoted to production for the following segments:
+                    </div>
+
+                    <div id="editAliasSegmentsListSuccess" class="segments-list">
+                        <div class="no-segments-message">Loading segments...</div>
+                    </div>
+                </div>
             </div>
+
             <div class="modal-footer">
-                <button type="button" class="modal-btn modal-btn-cancel" onclick="closeEditAliasModal()">
+                <button type="button" class="modal-btn modal-btn-cancel" id="editAliasCancelBtn" onclick="closeEditAliasModal()">
                     Cancel
                 </button>
-                <button type="button" class="modal-btn modal-btn-submit" id="editAliasSubmitBtn" onclick="submitEditAlias()">
-                    Update Alias
+                <button type="button" class="modal-btn modal-btn-secondary" id="editAliasNoBtn" onclick="cancelEditAlias()" style="display: none;">
+                    No
+                </button>
+                <button type="button" class="modal-btn modal-btn-submit" id="editAliasNextBtn" onclick="nextEditAliasStep()">
+                    Next
+                </button>
+                <button type="button" class="modal-btn modal-btn-submit" id="editAliasYesBtn" onclick="confirmEditAlias()" style="display: none;">
+                    Yes
+                </button>
+                <button type="button" class="modal-btn modal-btn-submit" id="editAliasPromoteBtn" onclick="promoteEditAlias()" style="display: none;">
+                    Promote to Production
+                </button>
+                <button type="button" class="modal-btn modal-btn-submit" id="editAliasDoneBtn" onclick="closeEditAliasModal()" style="display: none;">
+                    Done
                 </button>
             </div>
         </div>
@@ -1590,6 +1736,7 @@
 
         function addAlias(domainId) {
             window.currentAliasDomainId = domainId;
+            window.currentCreateAliasStep = 1;
 
             // Find the domain name from the table
             const domainRow = document.querySelector(`button[onclick*="toggleVariables(${domainId}"]`);
@@ -1602,6 +1749,9 @@
             // Clear previous form data and errors
             document.getElementById('aliasForm').reset();
             document.getElementById('aliasModalError').classList.remove('show');
+
+            // Reset to step 1
+            showCreateAliasStep(1);
 
             // Show the modal
             document.getElementById('aliasModal').classList.add('active');
@@ -1616,6 +1766,8 @@
             document.getElementById('aliasModal').classList.remove('active');
             document.getElementById('aliasForm').reset();
             document.getElementById('aliasModalError').classList.remove('show');
+            window.currentCreateAliasStep = 1;
+            showCreateAliasStep(1);
         }
 
         function showAliasModalError(message) {
@@ -1624,19 +1776,99 @@
             errorDiv.classList.add('show');
         }
 
-        async function submitAlias() {
-            const submitBtn = document.getElementById('aliasSubmitBtn');
+        function showCreateAliasStep(step) {
+            // Hide all steps
+            document.querySelectorAll('#aliasModal .modal-step').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            // Show current step
+            document.getElementById(`createAliasStep${step}`).classList.add('active');
+
+            // Update progress bar
+            document.querySelectorAll('#createAliasProgressBar .progress-step').forEach((el, index) => {
+                el.classList.remove('active', 'completed');
+                if (index + 1 < step) {
+                    el.classList.add('completed');
+                } else if (index + 1 === step) {
+                    el.classList.add('active');
+                }
+            });
+
+            // Update buttons
+            const cancelBtn = document.getElementById('createAliasCancelBtn');
+            const noBtn = document.getElementById('createAliasNoBtn');
+            const nextBtn = document.getElementById('createAliasNextBtn');
+            const yesBtn = document.getElementById('createAliasYesBtn');
+            const promoteBtn = document.getElementById('createAliasPromoteBtn');
+            const doneBtn = document.getElementById('createAliasDoneBtn');
+
+            // Hide all buttons first
+            [noBtn, nextBtn, yesBtn, promoteBtn, doneBtn].forEach(btn => btn.style.display = 'none');
+
+            if (step === 1) {
+                cancelBtn.style.display = 'inline-block';
+                nextBtn.style.display = 'inline-block';
+            } else if (step === 2) {
+                cancelBtn.style.display = 'none';
+                noBtn.style.display = 'inline-block';
+                yesBtn.style.display = 'inline-block';
+            } else if (step === 3) {
+                cancelBtn.style.display = 'none';
+                promoteBtn.style.display = 'inline-block';
+            } else if (step === 4) {
+                cancelBtn.style.display = 'none';
+                doneBtn.style.display = 'inline-block';
+            }
+
+            window.currentCreateAliasStep = step;
+        }
+
+        async function nextCreateAliasStep() {
             const aliasName = document.getElementById('aliasName').value;
-            const domainId = window.currentAliasDomainId;
 
             if (!aliasName || aliasName.trim() === '') {
-                showAliasModalError('Alias name is required');
+                showAliasModalError('Alias is required');
                 return;
             }
 
-            // Disable submit button
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Creating...';
+            // Load segments for step 2
+            await loadCreateAliasSegments();
+            showCreateAliasStep(2);
+        }
+
+        async function loadCreateAliasSegments() {
+            const domainId = window.currentAliasDomainId;
+
+            try {
+                const response = await fetch(`/api/segments?domain_id=${domainId}`);
+                if (!response.ok) throw new Error('Failed to fetch segments');
+
+                const allSegments = await response.json();
+                const domainSegments = allSegments.filter(s => s.domain_id === domainId);
+
+                renderSegmentsList(domainSegments, 'createAliasSegmentsList');
+                window.currentAliasSegments = domainSegments;
+            } catch (error) {
+                console.error('Error loading segments:', error);
+                document.getElementById('createAliasSegmentsList').innerHTML =
+                    '<div class="no-segments-message">Error loading segments</div>';
+            }
+        }
+
+        function cancelCreateAlias() {
+            closeAliasModal();
+        }
+
+        function confirmCreateAlias() {
+            // Move to step 3 and show staged changes
+            renderSegmentsList(window.currentAliasSegments, 'createAliasSegmentsListStaged');
+            showCreateAliasStep(3);
+        }
+
+        async function promoteCreateAlias() {
+            const aliasName = document.getElementById('aliasName').value;
+            const domainId = window.currentAliasDomainId;
 
             try {
                 const response = await fetch(`/api/domains/${domainId}/aliases`, {
@@ -1654,22 +1886,22 @@
                     throw new Error(errorData.error || 'Failed to create alias');
                 }
 
-                // Close the modal
-                closeAliasModal();
+                // Show success step
+                renderSegmentsListSuccess(window.currentAliasSegments, 'createAliasSegmentsListSuccess');
+                showCreateAliasStep(4);
 
-                // Refresh the aliases for this domain
+                // Refresh the aliases list in the background
                 await fetchAliases(domainId);
             } catch (error) {
                 console.error('Error creating alias:', error);
                 showAliasModalError(error.message);
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Create Alias';
             }
         }
 
         function editAlias(aliasId, domainId, currentAlias) {
             window.currentEditAliasId = aliasId;
             window.currentEditAliasDomainId = domainId;
+            window.currentEditAliasStep = 1;
 
             // Find the domain name from the table
             const domainRow = document.querySelector(`button[onclick*="toggleVariables(${domainId}"]`);
@@ -1685,6 +1917,9 @@
             // Clear any previous errors
             document.getElementById('editAliasModalError').classList.remove('show');
 
+            // Reset to step 1
+            showEditAliasStep(1);
+
             // Show the modal
             document.getElementById('editAliasModal').classList.add('active');
 
@@ -1698,6 +1933,8 @@
             document.getElementById('editAliasModal').classList.remove('active');
             document.getElementById('editAliasForm').reset();
             document.getElementById('editAliasModalError').classList.remove('show');
+            window.currentEditAliasStep = 1;
+            showEditAliasStep(1);
         }
 
         function showEditAliasModalError(message) {
@@ -1706,20 +1943,100 @@
             errorDiv.classList.add('show');
         }
 
-        async function submitEditAlias() {
-            const submitBtn = document.getElementById('editAliasSubmitBtn');
+        function showEditAliasStep(step) {
+            // Hide all steps
+            document.querySelectorAll('#editAliasModal .modal-step').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            // Show current step
+            document.getElementById(`editAliasStep${step}`).classList.add('active');
+
+            // Update progress bar
+            document.querySelectorAll('#editAliasProgressBar .progress-step').forEach((el, index) => {
+                el.classList.remove('active', 'completed');
+                if (index + 1 < step) {
+                    el.classList.add('completed');
+                } else if (index + 1 === step) {
+                    el.classList.add('active');
+                }
+            });
+
+            // Update buttons
+            const cancelBtn = document.getElementById('editAliasCancelBtn');
+            const noBtn = document.getElementById('editAliasNoBtn');
+            const nextBtn = document.getElementById('editAliasNextBtn');
+            const yesBtn = document.getElementById('editAliasYesBtn');
+            const promoteBtn = document.getElementById('editAliasPromoteBtn');
+            const doneBtn = document.getElementById('editAliasDoneBtn');
+
+            // Hide all buttons first
+            [noBtn, nextBtn, yesBtn, promoteBtn, doneBtn].forEach(btn => btn.style.display = 'none');
+
+            if (step === 1) {
+                cancelBtn.style.display = 'inline-block';
+                nextBtn.style.display = 'inline-block';
+            } else if (step === 2) {
+                cancelBtn.style.display = 'none';
+                noBtn.style.display = 'inline-block';
+                yesBtn.style.display = 'inline-block';
+            } else if (step === 3) {
+                cancelBtn.style.display = 'none';
+                promoteBtn.style.display = 'inline-block';
+            } else if (step === 4) {
+                cancelBtn.style.display = 'none';
+                doneBtn.style.display = 'inline-block';
+            }
+
+            window.currentEditAliasStep = step;
+        }
+
+        async function nextEditAliasStep() {
             const aliasName = document.getElementById('editAliasName').value;
-            const aliasId = window.currentEditAliasId;
-            const domainId = window.currentEditAliasDomainId;
 
             if (!aliasName || aliasName.trim() === '') {
-                showEditAliasModalError('Alias name is required');
+                showEditAliasModalError('Alias is required');
                 return;
             }
 
-            // Disable submit button
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Updating...';
+            // Load segments for step 2
+            await loadEditAliasSegments();
+            showEditAliasStep(2);
+        }
+
+        async function loadEditAliasSegments() {
+            const domainId = window.currentEditAliasDomainId;
+
+            try {
+                const response = await fetch(`/api/segments?domain_id=${domainId}`);
+                if (!response.ok) throw new Error('Failed to fetch segments');
+
+                const allSegments = await response.json();
+                const domainSegments = allSegments.filter(s => s.domain_id === domainId);
+
+                renderSegmentsList(domainSegments, 'editAliasSegmentsList');
+                window.currentEditAliasSegments = domainSegments;
+            } catch (error) {
+                console.error('Error loading segments:', error);
+                document.getElementById('editAliasSegmentsList').innerHTML =
+                    '<div class="no-segments-message">Error loading segments</div>';
+            }
+        }
+
+        function cancelEditAlias() {
+            closeEditAliasModal();
+        }
+
+        function confirmEditAlias() {
+            // Move to step 3 and show staged changes
+            renderSegmentsList(window.currentEditAliasSegments, 'editAliasSegmentsListStaged');
+            showEditAliasStep(3);
+        }
+
+        async function promoteEditAlias() {
+            const aliasName = document.getElementById('editAliasName').value;
+            const aliasId = window.currentEditAliasId;
+            const domainId = window.currentEditAliasDomainId;
 
             try {
                 const response = await fetch(`/api/domains/${domainId}/aliases/${aliasId}`, {
@@ -1737,16 +2054,15 @@
                     throw new Error(errorData.error || 'Failed to update alias');
                 }
 
-                // Close the modal
-                closeEditAliasModal();
+                // Show success step
+                renderSegmentsListSuccess(window.currentEditAliasSegments, 'editAliasSegmentsListSuccess');
+                showEditAliasStep(4);
 
-                // Refresh the aliases for this domain
+                // Refresh the aliases list in the background
                 await fetchAliases(domainId);
             } catch (error) {
                 console.error('Error updating alias:', error);
                 showEditAliasModalError(error.message);
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Update Alias';
             }
         }
 
