@@ -162,6 +162,12 @@
             border-color: var(--primary-color);
         }
 
+        .form-input:disabled {
+            background-color: #f5f5f5;
+            color: #666;
+            cursor: not-allowed;
+        }
+
         .form-help {
             display: block;
             margin-top: 5px;
@@ -533,9 +539,51 @@
                     option.textContent = domain.domain_name;
                     domainSelect.appendChild(option);
                 });
+
+                // Add event listener to check for organic segment when domain is selected
+                domainSelect.addEventListener('change', handleDomainSelection);
             } catch (error) {
                 console.error('Error loading domains:', error);
                 showError('Failed to load domains. Please refresh the page.');
+            }
+        }
+
+        function handleDomainSelection() {
+            const domainId = parseInt(document.getElementById('domainSelect').value);
+            const segmentNameInput = document.getElementById('segmentName');
+            const segmentNameLabel = document.querySelector('label[for="segmentName"]');
+            const segmentNameHelp = segmentNameInput.nextElementSibling;
+
+            if (!domainId) {
+                // Reset if no domain selected
+                segmentNameInput.value = '';
+                segmentNameInput.disabled = false;
+                segmentNameInput.placeholder = 'e.g., Premium Users';
+                segmentNameHelp.textContent = 'Enter a descriptive name for this segment';
+                return;
+            }
+
+            // Check if domain has organic segment
+            const hasOrganic = allSegments.some(segment =>
+                segment.domain_id === domainId &&
+                segment.segment_name.toLowerCase() === 'organic'
+            );
+
+            if (!hasOrganic) {
+                // Domain needs organic segment - lock the name
+                segmentNameInput.value = 'organic';
+                segmentNameInput.disabled = true;
+                segmentNameHelp.textContent = 'This domain requires an "organic" segment. The name is pre-filled and cannot be changed.';
+                segmentNameHelp.style.color = '#856404';
+                segmentNameHelp.style.fontWeight = '500';
+            } else {
+                // Domain has organic segment - allow custom name
+                segmentNameInput.value = '';
+                segmentNameInput.disabled = false;
+                segmentNameInput.placeholder = 'e.g., Premium Users';
+                segmentNameHelp.textContent = 'Enter a descriptive name for this segment';
+                segmentNameHelp.style.color = '';
+                segmentNameHelp.style.fontWeight = '';
             }
         }
 
