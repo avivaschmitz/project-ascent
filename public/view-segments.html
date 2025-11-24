@@ -149,6 +149,42 @@
             border: 2px solid var(--border-color);
         }
 
+        .variables-section {
+            margin-bottom: 30px;
+        }
+
+        .variables-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .domain-variables-section {
+            padding-top: 20px;
+            border-top: 2px solid var(--border-color);
+        }
+
+        .variable-type-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-right: 10px;
+        }
+
+        .segment-badge {
+            background: #e3f2fd;
+            color: #1976d2;
+            border: 1px solid #1976d2;
+        }
+
+        .domain-badge {
+            background: #f3e5f5;
+            color: #7b1fa2;
+            border: 1px solid #7b1fa2;
+        }
+
         .variables-header {
             display: flex;
             justify-content: space-between;
@@ -159,6 +195,10 @@
         .variables-header h4 {
             color: var(--primary-color);
             margin: 0;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 5px;
         }
 
         .variables-table {
@@ -830,15 +870,36 @@
                                     <tr class="variables-row" id="variables-${segment.segment_id}">
                                         <td colspan="5" class="variables-cell">
                                             <div class="variables-container">
-                                                <div class="variables-header">
-                                                    <h4>Variables for ${escapeHtml(segment.segment_name)}</h4>
-                                                    <button class="btn-add-variable" onclick="addVariable(${segment.segment_id})">
-                                                        + Add Variable
-                                                    </button>
+                                                <!-- Segment Variables Section -->
+                                                <div class="variables-section">
+                                                    <div class="variables-header">
+                                                        <h4>
+                                                            <span class="variable-type-badge segment-badge">Segment Variables</span>
+                                                            ${escapeHtml(segment.segment_name)}
+                                                        </h4>
+                                                        <button class="btn-add-variable" onclick="addVariable(${segment.segment_id})">
+                                                            + Add Variable
+                                                        </button>
+                                                    </div>
+                                                    <div id="segment-variables-content-${segment.segment_id}" class="variables-content">
+                                                        <div class="loading" style="text-align: center; padding: 20px; color: var(--text-light);">
+                                                            Loading segment variables...
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div id="variables-content-${segment.segment_id}" class="variables-content">
-                                                    <div class="loading" style="text-align: center; padding: 20px; color: var(--text-light);">
-                                                        Loading variables...
+
+                                                <!-- Domain Variables Section -->
+                                                <div class="variables-section domain-variables-section">
+                                                    <div class="variables-header">
+                                                        <h4>
+                                                            <span class="variable-type-badge domain-badge">Domain Variables</span>
+                                                            ${escapeHtml(allDomains[segment.domain_id] || 'Unknown')}
+                                                        </h4>
+                                                    </div>
+                                                    <div id="domain-variables-content-${segment.segment_id}" class="variables-content">
+                                                        <div class="loading" style="text-align: center; padding: 20px; color: var(--text-light);">
+                                                            Loading domain variables...
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -910,41 +971,79 @@
                 variablesRow.classList.add('visible');
                 button.classList.add('expanded');
 
-                // Fetch variables if not already loaded
-                const contentDiv = document.getElementById(`variables-content-${segmentId}`);
-                if (contentDiv.querySelector('.loading')) {
-                    await fetchVariables(segmentId);
+                // Fetch both segment and domain variables if not already loaded
+                const segmentContentDiv = document.getElementById(`segment-variables-content-${segmentId}`);
+                const domainContentDiv = document.getElementById(`domain-variables-content-${segmentId}`);
+
+                if (segmentContentDiv.querySelector('.loading')) {
+                    await fetchSegmentVariables(segmentId);
+                }
+
+                if (domainContentDiv.querySelector('.loading')) {
+                    await fetchDomainVariables(segmentId);
                 }
             }
         }
 
-        async function fetchVariables(segmentId) {
-            const contentDiv = document.getElementById(`variables-content-${segmentId}`);
+        async function fetchSegmentVariables(segmentId) {
+            const contentDiv = document.getElementById(`segment-variables-content-${segmentId}`);
 
             try {
                 const response = await fetch(`/api/segments/${segmentId}/variables`);
 
                 if (!response.ok) {
-                    throw new Error('Failed to fetch variables');
+                    throw new Error('Failed to fetch segment variables');
                 }
 
                 const variables = await response.json();
-                renderVariables(segmentId, variables);
+                renderSegmentVariables(segmentId, variables);
             } catch (error) {
-                console.error('Error fetching variables:', error);
+                console.error('Error fetching segment variables:', error);
                 contentDiv.innerHTML = `
                     <div class="no-variables" style="color: var(--error-color);">
-                        Error loading variables: ${error.message}
+                        Error loading segment variables: ${error.message}
                     </div>
                 `;
             }
         }
 
-        function renderVariables(segmentId, variables) {
-            const contentDiv = document.getElementById(`variables-content-${segmentId}`);
+        async function fetchDomainVariables(segmentId) {
+            const contentDiv = document.getElementById(`domain-variables-content-${segmentId}`);
+
+            try {
+                // First, get the segment to find its domain_id
+                const segmentResponse = await fetch(`/api/segments/${segmentId}`);
+                if (!segmentResponse.ok) {
+                    throw new Error('Failed to fetch segment');
+                }
+                const segment = await segmentResponse.json();
+
+                // Now fetch domain variables for that domain
+                const domainId = segment.domain_id;
+                window[`segment_${segmentId}_domain_id`] = domainId; // Store for later use
+
+                const variablesResponse = await fetch(`/api/domains/${domainId}/variables`);
+                if (!variablesResponse.ok) {
+                    throw new Error('Failed to fetch domain variables');
+                }
+
+                const variables = await variablesResponse.json();
+                renderDomainVariables(segmentId, domainId, variables);
+            } catch (error) {
+                console.error('Error fetching domain variables:', error);
+                contentDiv.innerHTML = `
+                    <div class="no-variables" style="color: var(--error-color);">
+                        Error loading domain variables: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function renderSegmentVariables(segmentId, variables) {
+            const contentDiv = document.getElementById(`segment-variables-content-${segmentId}`);
 
             if (!variables || variables.length === 0) {
-                contentDiv.innerHTML = '<div class="no-variables">No variables found for this segment.</div>';
+                contentDiv.innerHTML = '<div class="no-variables">No segment variables found. Click "+ Add Variable" to create one.</div>';
                 return;
             }
 
@@ -966,11 +1065,51 @@
                                 <td>${escapeHtml(variable.segment_variable_value || '')}</td>
                                 <td>
                                     <div style="display: flex; gap: 5px;">
-                                        <button class="btn-small btn-edit" onclick="editVariable(${variable.segment_variable_id}, ${segmentId}, '${escapeHtml(variable.segment_variable_name)}', '${escapeHtml(variable.segment_variable_value || '')}')">
+                                        <button class="btn-small btn-edit" onclick="editSegmentVariable(${variable.segment_variable_id}, ${segmentId}, '${escapeHtml(variable.segment_variable_name)}', '${escapeHtml(variable.segment_variable_value || '')}')">
                                             Edit
                                         </button>
-                                        <button class="btn-small btn-delete" onclick="deleteVariable(${variable.segment_variable_id}, ${segmentId})">
+                                        <button class="btn-small btn-delete" onclick="deleteSegmentVariable(${variable.segment_variable_id}, ${segmentId})">
                                             Delete
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            contentDiv.innerHTML = variablesHTML;
+        }
+
+        function renderDomainVariables(segmentId, domainId, variables) {
+            const contentDiv = document.getElementById(`domain-variables-content-${segmentId}`);
+
+            if (!variables || variables.length === 0) {
+                contentDiv.innerHTML = '<div class="no-variables">No domain variables found for this domain.</div>';
+                return;
+            }
+
+            const variablesHTML = `
+                <table class="variables-table">
+                    <thead>
+                        <tr>
+                            <th>Variable ID</th>
+                            <th>Variable Name</th>
+                            <th>Variable Value</th>
+                            <th style="width: 150px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${variables.map(variable => `
+                            <tr>
+                                <td>${variable.domain_variable_id}</td>
+                                <td>${escapeHtml(variable.variable_name)}</td>
+                                <td>${escapeHtml(variable.variable_value || '')}</td>
+                                <td>
+                                    <div style="display: flex; gap: 5px;">
+                                        <button class="btn-small btn-edit" onclick="editDomainVariable(${domainId}, ${variable.domain_variable_id}, '${escapeHtml(variable.variable_name)}', '${escapeHtml(variable.variable_value || '')}')">
+                                            Edit
                                         </button>
                                     </div>
                                 </td>
@@ -990,8 +1129,8 @@
             return div.innerHTML;
         }
 
-        async function deleteVariable(variableId, segmentId) {
-            if (confirm('Are you sure you want to delete this variable?')) {
+        async function deleteSegmentVariable(variableId, segmentId) {
+            if (confirm('Are you sure you want to delete this segment variable?')) {
                 try {
                     const response = await fetch(`/api/segments/${segmentId}/variables/${variableId}`, {
                         method: 'DELETE'
@@ -1002,13 +1141,26 @@
                         throw new Error(errorData.error || 'Failed to delete variable');
                     }
 
-                    // Refresh the variables for this segment
-                    await fetchVariables(segmentId);
+                    // Refresh the segment variables
+                    await fetchSegmentVariables(segmentId);
                 } catch (error) {
-                    console.error('Error deleting variable:', error);
+                    console.error('Error deleting segment variable:', error);
                     alert('Error: ' + error.message);
                 }
             }
+        }
+
+        function editDomainVariable(domainId, variableId, variableName, variableValue) {
+            // Store the edit information in sessionStorage
+            sessionStorage.setItem('editDomainVariable', JSON.stringify({
+                domainId: domainId,
+                variableId: variableId,
+                variableName: variableName,
+                variableValue: variableValue
+            }));
+
+            // Redirect to domains view page
+            window.location.href = '/domains/view';
         }
 
         function editSegment(id, currentName) {
@@ -1234,8 +1386,8 @@
                 // Close the modal
                 closeVariableModal();
 
-                // Refresh the variables for this segment
-                await fetchVariables(segmentId);
+                // Refresh the segment variables
+                await fetchSegmentVariables(segmentId);
             } catch (error) {
                 console.error('Error creating variable:', error);
                 showModalError(error.message);
@@ -1253,7 +1405,7 @@
 
         // ==================== EDIT VARIABLE FUNCTIONS ====================
 
-        function editVariable(variableId, segmentId, currentName, currentValue) {
+        function editSegmentVariable(variableId, segmentId, currentName, currentValue) {
             window.currentEditVariableId = variableId;
             window.currentEditSegmentId = segmentId;
 
@@ -1329,8 +1481,8 @@
                 // Close the modal
                 closeEditVariableModal();
 
-                // Refresh the variables for this segment
-                await fetchVariables(segmentId);
+                // Refresh the segment variables
+                await fetchSegmentVariables(segmentId);
             } catch (error) {
                 console.error('Error updating variable:', error);
                 showEditModalError(error.message);
