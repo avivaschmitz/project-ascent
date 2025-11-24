@@ -172,6 +172,12 @@
             margin-right: 10px;
         }
 
+        .segments-badge {
+            background: #fff3e0;
+            color: #e65100;
+            border: 1px solid #e65100;
+        }
+
         .alias-badge {
             background: #e8f5e9;
             color: #2e7d32;
@@ -233,6 +239,55 @@
             padding: 20px;
             color: var(--text-light);
             font-style: italic;
+        }
+
+        .segment-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border-color);
+            transition: background 0.2s;
+        }
+
+        .segment-link:hover {
+            background: #f9f9f9;
+        }
+
+        .segment-link:last-child {
+            border-bottom: none;
+        }
+
+        .segment-link-icon {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+        .segment-link-icon:hover {
+            transform: translateX(3px);
+        }
+
+        .segment-link-content {
+            flex: 1;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .segment-link-id {
+            color: var(--text-light);
+            font-size: 0.85rem;
+            min-width: 60px;
+        }
+
+        .segment-link-name {
+            color: var(--text-color);
+            font-weight: 500;
         }
 
         .btn-add-variable {
@@ -1306,8 +1361,23 @@
                                     <tr class="variables-row" id="variables-${domain.domain_id}">
                                         <td colspan="4" class="variables-cell">
                                             <div class="variables-container">
-                                                <!-- Domain Aliases Section -->
+                                                <!-- Domain Segments Section -->
                                                 <div class="variables-section">
+                                                    <div class="variables-header">
+                                                        <h4>
+                                                            <span class="variable-type-badge segments-badge">Segments</span>
+                                                            ${escapeHtml(domain.domain_name)}
+                                                        </h4>
+                                                    </div>
+                                                    <div id="segments-content-${domain.domain_id}" class="variables-content">
+                                                        <div class="loading" style="text-align: center; padding: 20px; color: var(--text-light);">
+                                                            Loading segments...
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Domain Aliases Section -->
+                                                <div class="variables-section domain-variables-section">
                                                     <div class="variables-header">
                                                         <h4>
                                                             <span class="variable-type-badge alias-badge">Domain Aliases</span>
@@ -1389,6 +1459,12 @@
                 // Add anchor to URL
                 history.pushState(null, null, `#domain-${domainId}`);
 
+                // Fetch segments if not already loaded
+                const segmentsContentDiv = document.getElementById(`segments-content-${domainId}`);
+                if (segmentsContentDiv.querySelector('.loading')) {
+                    await fetchDomainSegments(domainId);
+                }
+
                 // Fetch aliases if not already loaded
                 const aliasesContentDiv = document.getElementById(`aliases-content-${domainId}`);
                 if (aliasesContentDiv.querySelector('.loading')) {
@@ -1401,6 +1477,52 @@
                     await fetchVariables(domainId);
                 }
             }
+        }
+
+        async function fetchDomainSegments(domainId) {
+            const contentDiv = document.getElementById(`segments-content-${domainId}`);
+
+            try {
+                const response = await fetch(`/api/segments?domain_id=${domainId}`);
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch segments');
+                }
+
+                const allSegments = await response.json();
+                const domainSegments = allSegments.filter(s => s.domain_id === parseInt(domainId));
+                renderDomainSegments(domainId, domainSegments);
+            } catch (error) {
+                console.error('Error fetching segments:', error);
+                contentDiv.innerHTML = `
+                    <div class="no-variables" style="color: var(--error-color);">
+                        Error loading segments: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function renderDomainSegments(domainId, segments) {
+            const contentDiv = document.getElementById(`segments-content-${domainId}`);
+
+            if (!segments || segments.length === 0) {
+                contentDiv.innerHTML = '<div class="no-variables">No segments found for this domain.</div>';
+                return;
+            }
+
+            const segmentsHTML = segments.map(segment => `
+                <div class="segment-link">
+                    <div class="segment-link-content">
+                        <span class="segment-link-id">ID: ${segment.segment_id}</span>
+                        <span class="segment-link-name">${escapeHtml(segment.segment_name)}</span>
+                    </div>
+                    <a href="/segments/view#segment-${segment.segment_id}" class="segment-link-icon" title="View segment">
+                        →
+                    </a>
+                </div>
+            `).join('');
+
+            contentDiv.innerHTML = segmentsHTML;
         }
 
         async function fetchAliases(domainId) {
