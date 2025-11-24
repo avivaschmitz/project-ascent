@@ -210,6 +210,198 @@
             background: var(--secondary-color);
         }
 
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: var(--primary-color);
+            font-size: 1.3rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-light);
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+
+        .modal-close:hover {
+            background: #f0f0f0;
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        .modal-domain-info {
+            background: #f5f5f5;
+            padding: 12px 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .modal-domain-label {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-bottom: 3px;
+        }
+
+        .modal-domain-name {
+            font-weight: 600;
+            color: var(--text-color);
+            font-size: 1.1rem;
+        }
+
+        .modal-form-group {
+            margin-bottom: 20px;
+        }
+
+        .modal-label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-color);
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .modal-label.required::after {
+            content: " *";
+            color: var(--error-color);
+        }
+
+        .modal-input,
+        .modal-textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+
+        .modal-input:focus,
+        .modal-textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .modal-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .modal-footer {
+            padding: 20px 25px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-weight: 500;
+        }
+
+        .modal-btn-cancel {
+            background: white;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+        }
+
+        .modal-btn-cancel:hover {
+            background: #f5f5f5;
+        }
+
+        .modal-btn-submit {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .modal-btn-submit:hover {
+            background: var(--secondary-color);
+        }
+
+        .modal-btn-submit:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .modal-error {
+            background: #ffebee;
+            color: var(--error-color);
+            padding: 12px 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--error-color);
+            display: none;
+        }
+
+        .modal-error.show {
+            display: block;
+        }
+
         .loading {
             text-align: center;
             padding: 60px 20px;
@@ -269,6 +461,54 @@
         <div id="domainsContent">
             <div class="loading">
                 <p>Loading domains...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Variable Modal -->
+    <div id="variableModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Add Variable</h3>
+                <button class="modal-close" onclick="closeVariableModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="modalError" class="modal-error"></div>
+
+                <div class="modal-domain-info">
+                    <div class="modal-domain-label">Creating variable for domain:</div>
+                    <div class="modal-domain-name" id="modalDomainName"></div>
+                </div>
+
+                <form id="variableForm" onsubmit="submitVariable(event)">
+                    <div class="modal-form-group">
+                        <label for="variableName" class="modal-label required">Variable Name</label>
+                        <input
+                            type="text"
+                            id="variableName"
+                            class="modal-input"
+                            placeholder="e.g., API_KEY"
+                            required
+                        >
+                    </div>
+
+                    <div class="modal-form-group">
+                        <label for="variableValue" class="modal-label">Variable Value</label>
+                        <textarea
+                            id="variableValue"
+                            class="modal-textarea"
+                            placeholder="Enter the value for this variable (optional)"
+                        ></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="modal-btn modal-btn-cancel" onclick="closeVariableModal()">
+                    Cancel
+                </button>
+                <button type="submit" form="variableForm" class="modal-btn modal-btn-submit" id="modalSubmitBtn">
+                    Create Variable
+                </button>
             </div>
         </div>
     </div>
@@ -490,16 +730,54 @@
         }
 
         function addVariable(domainId) {
-            const variableName = prompt('Enter variable name:');
-            if (!variableName) return;
+            // Store the current domain ID and name for the modal
+            window.currentDomainId = domainId;
 
-            const variableValue = prompt('Enter variable value:');
-            if (variableValue === null) return; // User clicked cancel
+            // Find the domain name from the table
+            const domainRow = document.querySelector(`button[onclick*="toggleVariables(${domainId}"]`);
+            const domainNameCell = domainRow.closest('tr').querySelector('.domain-name-cell');
+            const domainName = domainNameCell.textContent;
 
-            createVariable(domainId, variableName, variableValue);
+            // Set the domain name in the modal
+            document.getElementById('modalDomainName').textContent = domainName;
+
+            // Clear previous form data and errors
+            document.getElementById('variableForm').reset();
+            document.getElementById('modalError').classList.remove('show');
+
+            // Show the modal
+            document.getElementById('variableModal').classList.add('active');
+
+            // Focus on the first input
+            setTimeout(() => {
+                document.getElementById('variableName').focus();
+            }, 100);
         }
 
-        async function createVariable(domainId, variableName, variableValue) {
+        function closeVariableModal() {
+            document.getElementById('variableModal').classList.remove('active');
+            document.getElementById('variableForm').reset();
+            document.getElementById('modalError').classList.remove('show');
+        }
+
+        function showModalError(message) {
+            const errorDiv = document.getElementById('modalError');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
+        }
+
+        async function submitVariable(event) {
+            event.preventDefault();
+
+            const submitBtn = document.getElementById('modalSubmitBtn');
+            const variableName = document.getElementById('variableName').value;
+            const variableValue = document.getElementById('variableValue').value;
+            const domainId = window.currentDomainId;
+
+            // Disable submit button
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating...';
+
             try {
                 const response = await fetch(`/api/domains/${domainId}/variables`, {
                     method: 'POST',
@@ -517,13 +795,35 @@
                     throw new Error(errorData.error || 'Failed to create variable');
                 }
 
+                // Close the modal
+                closeVariableModal();
+
                 // Refresh the variables for this domain
                 await fetchVariables(domainId);
             } catch (error) {
                 console.error('Error creating variable:', error);
-                alert('Error: ' + error.message);
+                showModalError(error.message);
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Create Variable';
             }
         }
+
+        // Close modal when clicking outside of it
+        document.getElementById('variableModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeVariableModal();
+            }
+        });
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const modal = document.getElementById('variableModal');
+                if (modal.classList.contains('active')) {
+                    closeVariableModal();
+                }
+            }
+        });
 
         function editVariable(variableId, domainId, currentName, currentValue) {
             const newName = prompt('Edit variable name:', currentName);
