@@ -513,6 +513,54 @@
         </div>
     </div>
 
+    <!-- Edit Variable Modal -->
+    <div id="editVariableModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Edit Variable</h3>
+                <button class="modal-close" onclick="closeEditVariableModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="editModalError" class="modal-error"></div>
+
+                <div class="modal-domain-info">
+                    <div class="modal-domain-label">Editing variable for domain:</div>
+                    <div class="modal-domain-name" id="editModalDomainName"></div>
+                </div>
+
+                <form id="editVariableForm" onsubmit="submitEditVariable(event)">
+                    <div class="modal-form-group">
+                        <label for="editVariableName" class="modal-label required">Variable Name</label>
+                        <input
+                            type="text"
+                            id="editVariableName"
+                            class="modal-input"
+                            placeholder="e.g., API_KEY"
+                            required
+                        >
+                    </div>
+
+                    <div class="modal-form-group">
+                        <label for="editVariableValue" class="modal-label">Variable Value</label>
+                        <textarea
+                            id="editVariableValue"
+                            class="modal-textarea"
+                            placeholder="Enter the value for this variable (optional)"
+                        ></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="modal-btn modal-btn-cancel" onclick="closeEditVariableModal()">
+                    Cancel
+                </button>
+                <button type="submit" form="editVariableForm" class="modal-btn modal-btn-submit" id="editModalSubmitBtn">
+                    Update Variable
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // This will be populated when you connect your API
         // For now, it shows a loading state
@@ -818,24 +866,71 @@
         // Close modal on Escape key
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape') {
-                const modal = document.getElementById('variableModal');
-                if (modal.classList.contains('active')) {
+                const createModal = document.getElementById('variableModal');
+                const editModal = document.getElementById('editVariableModal');
+
+                if (createModal.classList.contains('active')) {
                     closeVariableModal();
+                } else if (editModal.classList.contains('active')) {
+                    closeEditVariableModal();
                 }
             }
         });
 
         function editVariable(variableId, domainId, currentName, currentValue) {
-            const newName = prompt('Edit variable name:', currentName);
-            if (!newName) return;
+            // Store the current variable and domain info for the modal
+            window.currentEditVariableId = variableId;
+            window.currentEditDomainId = domainId;
 
-            const newValue = prompt('Edit variable value:', currentValue);
-            if (newValue === null) return; // User clicked cancel
+            // Find the domain name from the table
+            const domainRow = document.querySelector(`button[onclick*="toggleVariables(${domainId}"]`);
+            const domainNameCell = domainRow.closest('tr').querySelector('.domain-name-cell');
+            const domainName = domainNameCell.textContent;
 
-            updateVariable(variableId, domainId, newName, newValue);
+            // Set the domain name in the modal
+            document.getElementById('editModalDomainName').textContent = domainName;
+
+            // Pre-fill the form with current values
+            document.getElementById('editVariableName').value = currentName;
+            document.getElementById('editVariableValue').value = currentValue || '';
+
+            // Clear any previous errors
+            document.getElementById('editModalError').classList.remove('show');
+
+            // Show the modal
+            document.getElementById('editVariableModal').classList.add('active');
+
+            // Focus on the first input
+            setTimeout(() => {
+                document.getElementById('editVariableName').focus();
+            }, 100);
         }
 
-        async function updateVariable(variableId, domainId, variableName, variableValue) {
+        function closeEditVariableModal() {
+            document.getElementById('editVariableModal').classList.remove('active');
+            document.getElementById('editVariableForm').reset();
+            document.getElementById('editModalError').classList.remove('show');
+        }
+
+        function showEditModalError(message) {
+            const errorDiv = document.getElementById('editModalError');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
+        }
+
+        async function submitEditVariable(event) {
+            event.preventDefault();
+
+            const submitBtn = document.getElementById('editModalSubmitBtn');
+            const variableName = document.getElementById('editVariableName').value;
+            const variableValue = document.getElementById('editVariableValue').value;
+            const variableId = window.currentEditVariableId;
+            const domainId = window.currentEditDomainId;
+
+            // Disable submit button
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Updating...';
+
             try {
                 const response = await fetch(`/api/domains/${domainId}/variables/${variableId}`, {
                     method: 'PUT',
@@ -853,13 +948,25 @@
                     throw new Error(errorData.error || 'Failed to update variable');
                 }
 
+                // Close the modal
+                closeEditVariableModal();
+
                 // Refresh the variables for this domain
                 await fetchVariables(domainId);
             } catch (error) {
                 console.error('Error updating variable:', error);
-                alert('Error: ' + error.message);
+                showEditModalError(error.message);
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Update Variable';
             }
         }
+
+        // Close edit modal when clicking outside of it
+        document.getElementById('editVariableModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeEditVariableModal();
+            }
+        });
 
         async function deleteVariable(variableId, domainId) {
             if (confirm('Are you sure you want to delete this variable?')) {
