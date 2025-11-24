@@ -76,6 +76,20 @@
             padding: 15px;
         }
 
+        .expand-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            padding: 5px 10px;
+            transition: transform 0.3s;
+        }
+
+        .expand-btn.expanded {
+            transform: rotate(90deg);
+        }
+
         .segment-name-cell {
             font-weight: 600;
             color: var(--text-color);
@@ -111,6 +125,475 @@
 
         .btn-delete:hover {
             background: #d32f2f;
+        }
+
+        /* Variables section styles */
+        .variables-row {
+            display: none;
+            background: #f5f5f5;
+        }
+
+        .variables-row.visible {
+            display: table-row;
+        }
+
+        .variables-cell {
+            padding: 0 !important;
+        }
+
+        .variables-container {
+            padding: 20px;
+            background: white;
+            margin: 10px;
+            border-radius: 5px;
+            border: 2px solid var(--border-color);
+        }
+
+        .variables-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .variables-header h4 {
+            color: var(--primary-color);
+            margin: 0;
+        }
+
+        .variables-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .variables-table thead {
+            background: #f9f9f9;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .variables-table th {
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .variables-table td {
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .variables-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .no-variables {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .btn-add-variable {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-add-variable:hover {
+            background: var(--secondary-color);
+        }
+
+        /* Modal Styles (copied from domains page) */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: var(--primary-color);
+            font-size: 1.3rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-light);
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+
+        .modal-close:hover {
+            background: #f0f0f0;
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        .modal-segment-info {
+            background: #f5f5f5;
+            padding: 12px 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .modal-segment-label {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-bottom: 3px;
+        }
+
+        .modal-segment-name {
+            font-weight: 600;
+            color: var(--text-color);
+            font-size: 1.1rem;
+        }
+
+        .modal-form-group {
+            margin-bottom: 20px;
+        }
+
+        .modal-label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-color);
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .modal-label.required::after {
+            content: " *";
+            color: var(--error-color);
+        }
+
+        .modal-input,
+        .modal-textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+
+        .modal-input:focus,
+        .modal-textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .modal-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .modal-footer {
+            padding: 20px 25px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-weight: 500;
+        }
+
+        .modal-btn-cancel {
+            background: white;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+        }
+
+        .modal-btn-cancel:hover {
+            background: #f5f5f5;
+        }
+
+        .modal-btn-submit {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .modal-btn-submit:hover {
+            background: var(--secondary-color);
+        }
+
+        .modal-btn-submit:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .modal-error {
+            background: #ffebee;
+            color: var(--error-color);
+            padding: 12px 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--error-color);
+            display: none;
+        }
+
+        .modal-error.show {
+            display: block;
+        }
+
+        /* Multi-step Modal Styles */
+        .modal-step {
+            display: none;
+        }
+
+        .modal-step.active {
+            display: block;
+        }
+
+        .modal-progress {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 25px;
+            background: #f9f9f9;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .progress-step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+            padding: 10px;
+        }
+
+        .progress-step::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--border-color);
+            z-index: 0;
+        }
+
+        .progress-step:first-child::before {
+            left: 50%;
+        }
+
+        .progress-step:last-child::before {
+            right: 50%;
+        }
+
+        .progress-number {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid var(--border-color);
+            color: var(--text-light);
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+            margin-bottom: 5px;
+        }
+
+        .progress-step.completed .progress-number {
+            background: var(--success-color);
+            border-color: var(--success-color);
+            color: white;
+        }
+
+        .progress-step.active .progress-number {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+
+        .progress-label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-light);
+            margin-top: 5px;
+        }
+
+        .progress-step.active .progress-label {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .segments-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background: #f9f9f9;
+        }
+
+        .segment-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .segment-item:last-child {
+            border-bottom: none;
+        }
+
+        .segment-icon {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            flex-shrink: 0;
+        }
+
+        .segment-name {
+            font-weight: 500;
+            color: var(--text-color);
+            flex: 1;
+        }
+
+        .no-segments-message {
+            padding: 30px;
+            text-align: center;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .warning-message {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            color: #856404;
+        }
+
+        .success-message {
+            background: #e8f5e9;
+            border: 1px solid var(--success-color);
+            border-left: 4px solid var(--success-color);
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            color: var(--success-color);
+        }
+
+        .info-message {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            color: #1565c0;
+        }
+
+        .info-message .staged-changes-link {
+            display: block;
+        }
+
+        .staged-changes-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        .staged-changes-link:hover {
+            text-decoration: underline;
+        }
+
+        .segment-item.success {
+            background: #e8f5e9;
+        }
+
+        .segment-item.success .segment-icon {
+            background: var(--success-color);
+        }
+
+        .segment-status {
+            margin-left: auto;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            background: var(--success-color);
+            color: white;
         }
 
         .loading {
@@ -315,6 +798,7 @@
                         <table class="segments-table">
                             <thead>
                                 <tr>
+                                    <th style="width: 50px;"></th>
                                     <th>Segment ID</th>
                                     <th>Segment Name</th>
                                     <th>Domain</th>
@@ -323,7 +807,12 @@
                             </thead>
                             <tbody>
                                 ${segments.map(segment => `
-                                    <tr>
+                                    <tr class="segment-row">
+                                        <td>
+                                            <button class="expand-btn" onclick="toggleVariables(${segment.segment_id}, this)">
+                                                ▶
+                                            </button>
+                                        </td>
                                         <td>${segment.segment_id}</td>
                                         <td class="segment-name-cell">${highlightText(segment.segment_name, searchTerm)}</td>
                                         <td>${highlightText(allDomains[segment.domain_id] || 'Unknown', searchTerm)}</td>
@@ -335,6 +824,23 @@
                                                 <button class="btn-small btn-delete" onclick="deleteSegment(${segment.segment_id}, '${escapeHtml(segment.segment_name)}')">
                                                     Delete
                                                 </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="variables-row" id="variables-${segment.segment_id}">
+                                        <td colspan="5" class="variables-cell">
+                                            <div class="variables-container">
+                                                <div class="variables-header">
+                                                    <h4>Variables for ${escapeHtml(segment.segment_name)}</h4>
+                                                    <button class="btn-add-variable" onclick="addVariable(${segment.segment_id})">
+                                                        + Add Variable
+                                                    </button>
+                                                </div>
+                                                <div id="variables-content-${segment.segment_id}" class="variables-content">
+                                                    <div class="loading" style="text-align: center; padding: 20px; color: var(--text-light);">
+                                                        Loading variables...
+                                                    </div>
+                                                </div>
                                             </div>
                                         </td>
                                     </tr>
@@ -389,11 +895,120 @@
             domainSearch.addEventListener('input', performSearch);
         });
 
+        // ==================== SEGMENT VARIABLE FUNCTIONS ====================
+
+        async function toggleVariables(segmentId, button) {
+            const variablesRow = document.getElementById(`variables-${segmentId}`);
+            const isVisible = variablesRow.classList.contains('visible');
+
+            if (isVisible) {
+                // Collapse
+                variablesRow.classList.remove('visible');
+                button.classList.remove('expanded');
+            } else {
+                // Expand
+                variablesRow.classList.add('visible');
+                button.classList.add('expanded');
+
+                // Fetch variables if not already loaded
+                const contentDiv = document.getElementById(`variables-content-${segmentId}`);
+                if (contentDiv.querySelector('.loading')) {
+                    await fetchVariables(segmentId);
+                }
+            }
+        }
+
+        async function fetchVariables(segmentId) {
+            const contentDiv = document.getElementById(`variables-content-${segmentId}`);
+
+            try {
+                const response = await fetch(`/api/segments/${segmentId}/variables`);
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch variables');
+                }
+
+                const variables = await response.json();
+                renderVariables(segmentId, variables);
+            } catch (error) {
+                console.error('Error fetching variables:', error);
+                contentDiv.innerHTML = `
+                    <div class="no-variables" style="color: var(--error-color);">
+                        Error loading variables: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function renderVariables(segmentId, variables) {
+            const contentDiv = document.getElementById(`variables-content-${segmentId}`);
+
+            if (!variables || variables.length === 0) {
+                contentDiv.innerHTML = '<div class="no-variables">No variables found for this segment.</div>';
+                return;
+            }
+
+            const variablesHTML = `
+                <table class="variables-table">
+                    <thead>
+                        <tr>
+                            <th>Variable ID</th>
+                            <th>Variable Name</th>
+                            <th>Variable Value</th>
+                            <th style="width: 150px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${variables.map(variable => `
+                            <tr>
+                                <td>${variable.segment_variable_id}</td>
+                                <td>${escapeHtml(variable.segment_variable_name)}</td>
+                                <td>${escapeHtml(variable.segment_variable_value || '')}</td>
+                                <td>
+                                    <div style="display: flex; gap: 5px;">
+                                        <button class="btn-small btn-edit" onclick="editVariable(${variable.segment_variable_id}, ${segmentId}, '${escapeHtml(variable.segment_variable_name)}', '${escapeHtml(variable.segment_variable_value || '')}')">
+                                            Edit
+                                        </button>
+                                        <button class="btn-small btn-delete" onclick="deleteVariable(${variable.segment_variable_id}, ${segmentId})">
+                                            Delete
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            contentDiv.innerHTML = variablesHTML;
+        }
+
         function escapeHtml(text) {
             if (!text) return '';
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
+        }
+
+        async function deleteVariable(variableId, segmentId) {
+            if (confirm('Are you sure you want to delete this variable?')) {
+                try {
+                    const response = await fetch(`/api/segments/${segmentId}/variables/${variableId}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || 'Failed to delete variable');
+                    }
+
+                    // Refresh the variables for this segment
+                    await fetchVariables(segmentId);
+                } catch (error) {
+                    console.error('Error deleting variable:', error);
+                    alert('Error: ' + error.message);
+                }
+            }
         }
 
         function editSegment(id, currentName) {
@@ -447,6 +1062,303 @@
                 }
             }
         }
+    </script>
+
+    <!-- Create Variable Modal -->
+    <div id="variableModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Add Variable</h3>
+                <button class="modal-close" onclick="closeVariableModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="modalError" class="modal-error"></div>
+
+                <div class="modal-segment-info">
+                    <div class="modal-segment-label">Creating variable for segment:</div>
+                    <div class="modal-segment-name" id="modalSegmentName"></div>
+                </div>
+
+                <form id="variableForm">
+                    <div class="modal-form-group">
+                        <label for="variableName" class="modal-label required">Variable Name</label>
+                        <input
+                            type="text"
+                            id="variableName"
+                            class="modal-input"
+                            placeholder="e.g., API_KEY"
+                            required
+                        >
+                    </div>
+
+                    <div class="modal-form-group">
+                        <label for="variableValue" class="modal-label">Variable Value</label>
+                        <textarea
+                            id="variableValue"
+                            class="modal-textarea"
+                            placeholder="Enter the value for this variable (optional)"
+                        ></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="modal-btn modal-btn-cancel" onclick="closeVariableModal()">
+                    Cancel
+                </button>
+                <button type="button" class="modal-btn modal-btn-submit" id="modalSubmitBtn" onclick="submitVariable()">
+                    Create Variable
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Variable Modal -->
+    <div id="editVariableModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Edit Variable</h3>
+                <button class="modal-close" onclick="closeEditVariableModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="editModalError" class="modal-error"></div>
+
+                <div class="modal-segment-info">
+                    <div class="modal-segment-label">Editing variable for segment:</div>
+                    <div class="modal-segment-name" id="editModalSegmentName"></div>
+                </div>
+
+                <form id="editVariableForm">
+                    <div class="modal-form-group">
+                        <label for="editVariableName" class="modal-label required">Variable Name</label>
+                        <input
+                            type="text"
+                            id="editVariableName"
+                            class="modal-input"
+                            placeholder="e.g., API_KEY"
+                            required
+                        >
+                    </div>
+
+                    <div class="modal-form-group">
+                        <label for="editVariableValue" class="modal-label">Variable Value</label>
+                        <textarea
+                            id="editVariableValue"
+                            class="modal-textarea"
+                            placeholder="Enter the value for this variable (optional)"
+                        ></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="modal-btn modal-btn-cancel" onclick="closeEditVariableModal()">
+                    Cancel
+                </button>
+                <button type="button" class="modal-btn modal-btn-submit" id="editModalSubmitBtn" onclick="submitEditVariable()">
+                    Update Variable
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== CREATE VARIABLE FUNCTIONS ====================
+
+        function addVariable(segmentId) {
+            window.currentSegmentId = segmentId;
+
+            // Find the segment name from the table
+            const segmentRow = document.querySelector(`button[onclick*="toggleVariables(${segmentId}"]`);
+            const segmentNameCell = segmentRow.closest('tr').querySelector('.segment-name-cell');
+            const segmentName = segmentNameCell.textContent;
+
+            // Set the segment name in the modal
+            document.getElementById('modalSegmentName').textContent = segmentName;
+
+            // Clear previous form data and errors
+            document.getElementById('variableForm').reset();
+            document.getElementById('modalError').classList.remove('show');
+
+            // Show the modal
+            document.getElementById('variableModal').classList.add('active');
+
+            // Focus on the first input
+            setTimeout(() => {
+                document.getElementById('variableName').focus();
+            }, 100);
+        }
+
+        function closeVariableModal() {
+            document.getElementById('variableModal').classList.remove('active');
+            document.getElementById('variableForm').reset();
+            document.getElementById('modalError').classList.remove('show');
+        }
+
+        function showModalError(message) {
+            const errorDiv = document.getElementById('modalError');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
+        }
+
+        async function submitVariable() {
+            const submitBtn = document.getElementById('modalSubmitBtn');
+            const variableName = document.getElementById('variableName').value;
+            const variableValue = document.getElementById('variableValue').value;
+            const segmentId = window.currentSegmentId;
+
+            if (!variableName || variableName.trim() === '') {
+                showModalError('Variable name is required');
+                return;
+            }
+
+            // Disable submit button
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating...';
+
+            try {
+                const response = await fetch(`/api/segments/${segmentId}/variables`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        segment_variable_name: variableName,
+                        segment_variable_value: variableValue
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to create variable');
+                }
+
+                // Close the modal
+                closeVariableModal();
+
+                // Refresh the variables for this segment
+                await fetchVariables(segmentId);
+            } catch (error) {
+                console.error('Error creating variable:', error);
+                showModalError(error.message);
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Create Variable';
+            }
+        }
+
+        // Close modal when clicking outside of it
+        document.getElementById('variableModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeVariableModal();
+            }
+        });
+
+        // ==================== EDIT VARIABLE FUNCTIONS ====================
+
+        function editVariable(variableId, segmentId, currentName, currentValue) {
+            window.currentEditVariableId = variableId;
+            window.currentEditSegmentId = segmentId;
+
+            // Find the segment name from the table
+            const segmentRow = document.querySelector(`button[onclick*="toggleVariables(${segmentId}"]`);
+            const segmentNameCell = segmentRow.closest('tr').querySelector('.segment-name-cell');
+            const segmentName = segmentNameCell.textContent;
+
+            // Set the segment name in the modal
+            document.getElementById('editModalSegmentName').textContent = segmentName;
+
+            // Pre-fill the form with current values
+            document.getElementById('editVariableName').value = currentName;
+            document.getElementById('editVariableValue').value = currentValue || '';
+
+            // Clear any previous errors
+            document.getElementById('editModalError').classList.remove('show');
+
+            // Show the modal
+            document.getElementById('editVariableModal').classList.add('active');
+
+            // Focus on the first input
+            setTimeout(() => {
+                document.getElementById('editVariableName').focus();
+            }, 100);
+        }
+
+        function closeEditVariableModal() {
+            document.getElementById('editVariableModal').classList.remove('active');
+            document.getElementById('editVariableForm').reset();
+            document.getElementById('editModalError').classList.remove('show');
+        }
+
+        function showEditModalError(message) {
+            const errorDiv = document.getElementById('editModalError');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
+        }
+
+        async function submitEditVariable() {
+            const submitBtn = document.getElementById('editModalSubmitBtn');
+            const variableName = document.getElementById('editVariableName').value;
+            const variableValue = document.getElementById('editVariableValue').value;
+            const variableId = window.currentEditVariableId;
+            const segmentId = window.currentEditSegmentId;
+
+            if (!variableName || variableName.trim() === '') {
+                showEditModalError('Variable name is required');
+                return;
+            }
+
+            // Disable submit button
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Updating...';
+
+            try {
+                const response = await fetch(`/api/segments/${segmentId}/variables/${variableId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        segment_variable_name: variableName,
+                        segment_variable_value: variableValue
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to update variable');
+                }
+
+                // Close the modal
+                closeEditVariableModal();
+
+                // Refresh the variables for this segment
+                await fetchVariables(segmentId);
+            } catch (error) {
+                console.error('Error updating variable:', error);
+                showEditModalError(error.message);
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Update Variable';
+            }
+        }
+
+        // Close edit modal when clicking outside of it
+        document.getElementById('editVariableModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeEditVariableModal();
+            }
+        });
+
+        // Close modals on Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const createModal = document.getElementById('variableModal');
+                const editModal = document.getElementById('editVariableModal');
+
+                if (createModal.classList.contains('active')) {
+                    closeVariableModal();
+                } else if (editModal.classList.contains('active')) {
+                    closeEditVariableModal();
+                }
+            }
+        });
     </script>
 </body>
 </html>

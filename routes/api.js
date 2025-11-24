@@ -444,4 +444,170 @@ router.delete('/segments/:id', async (req, res) => {
   }
 });
 
+// ==================== SEGMENT VARIABLES ENDPOINTS ====================
+
+// GET all variables for a segment
+router.get('/segments/:segmentId/variables', async (req, res) => {
+  try {
+    const { segmentId } = req.params;
+
+    // Check if segment exists
+    const segmentCheck = await db.query(
+      'SELECT * FROM segments WHERE segment_id = $1',
+      [segmentId]
+    );
+
+    if (segmentCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Segment not found' });
+    }
+
+    const result = await db.query(
+      'SELECT * FROM segment_variables WHERE segment_id = $1 ORDER BY segment_variable_id ASC',
+      [segmentId]
+    );
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching segment variables:', error);
+    res.status(500).json({ error: 'Failed to fetch segment variables' });
+  }
+});
+
+// GET single segment variable
+router.get('/segments/:segmentId/variables/:variableId', async (req, res) => {
+  try {
+    const { segmentId, variableId } = req.params;
+
+    const result = await db.query(
+      'SELECT * FROM segment_variables WHERE segment_variable_id = $1 AND segment_id = $2',
+      [variableId, segmentId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Variable not found' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error fetching variable:', error);
+    res.status(500).json({ error: 'Failed to fetch variable' });
+  }
+});
+
+// POST create new variable for a segment
+router.post('/segments/:segmentId/variables', async (req, res) => {
+  try {
+    const { segmentId } = req.params;
+    const { segment_variable_name, segment_variable_value } = req.body;
+
+    // Validation
+    if (!segment_variable_name || segment_variable_name.trim() === '') {
+      return res.status(400).json({ error: 'Variable name is required' });
+    }
+
+    // Check if segment exists
+    const segmentCheck = await db.query(
+      'SELECT * FROM segments WHERE segment_id = $1',
+      [segmentId]
+    );
+
+    if (segmentCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Segment not found' });
+    }
+
+    // Check for duplicate variable name within the same segment
+    const existingVariable = await db.query(
+      'SELECT * FROM segment_variables WHERE segment_id = $1 AND segment_variable_name = $2',
+      [segmentId, segment_variable_name]
+    );
+
+    if (existingVariable.rows.length > 0) {
+      return res.status(409).json({ error: 'Variable name already exists for this segment' });
+    }
+
+    // Insert new variable
+    const result = await db.query(
+      'INSERT INTO segment_variables (segment_variable_name, segment_variable_value, segment_id) VALUES ($1, $2, $3) RETURNING *',
+      [segment_variable_name, segment_variable_value || null, segmentId]
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error('Error creating variable:', error);
+    res.status(500).json({ error: 'Failed to create variable' });
+  }
+});
+
+// PUT update segment variable
+router.put('/segments/:segmentId/variables/:variableId', async (req, res) => {
+  try {
+    const { segmentId, variableId } = req.params;
+    const { segment_variable_name, segment_variable_value } = req.body;
+
+    // Validation
+    if (!segment_variable_name || segment_variable_name.trim() === '') {
+      return res.status(400).json({ error: 'Variable name is required' });
+    }
+
+    // Check if variable exists
+    const existingVariable = await db.query(
+      'SELECT * FROM segment_variables WHERE segment_variable_id = $1 AND segment_id = $2',
+      [variableId, segmentId]
+    );
+
+    if (existingVariable.rows.length === 0) {
+      return res.status(404).json({ error: 'Variable not found' });
+    }
+
+    // Check for duplicate variable name (excluding current variable)
+    const duplicateVariable = await db.query(
+      'SELECT * FROM segment_variables WHERE segment_id = $1 AND segment_variable_name = $2 AND segment_variable_id != $3',
+      [segmentId, segment_variable_name, variableId]
+    );
+
+    if (duplicateVariable.rows.length > 0) {
+      return res.status(409).json({ error: 'Variable name already exists for this segment' });
+    }
+
+    // Update variable
+    const result = await db.query(
+      'UPDATE segment_variables SET segment_variable_name = $1, segment_variable_value = $2 WHERE segment_variable_id = $3 AND segment_id = $4 RETURNING *',
+      [segment_variable_name, segment_variable_value || null, variableId, segmentId]
+    );
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error updating variable:', error);
+    res.status(500).json({ error: 'Failed to update variable' });
+  }
+});
+
+// DELETE segment variable
+router.delete('/segments/:segmentId/variables/:variableId', async (req, res) => {
+  try {
+    const { segmentId, variableId } = req.params;
+
+    // Check if variable exists
+    const existingVariable = await db.query(
+      'SELECT * FROM segment_variables WHERE segment_variable_id = $1 AND segment_id = $2',
+      [variableId, segmentId]
+    );
+
+    if (existingVariable.rows.length === 0) {
+      return res.status(404).json({ error: 'Variable not found' });
+    }
+
+    // Delete variable
+    await db.query(
+      'DELETE FROM segment_variables WHERE segment_variable_id = $1 AND segment_id = $2',
+      [variableId, segmentId]
+    );
+
+    res.json({ message: 'Variable deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting variable:', error);
+    res.status(500).json({ error: 'Failed to delete variable' });
+  }
+});
+
 module.exports = router;
