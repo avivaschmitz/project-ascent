@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/styles.css">
     <style>
         .create-container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
             padding: 20px;
         }
@@ -43,6 +43,90 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
+        /* Progress Bar */
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+
+        .progress-step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+
+        .progress-step::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--border-color);
+            z-index: 0;
+        }
+
+        .progress-step:first-child::before {
+            left: 50%;
+        }
+
+        .progress-step:last-child::before {
+            right: 50%;
+        }
+
+        .progress-number {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid var(--border-color);
+            color: var(--text-light);
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+            margin-bottom: 5px;
+        }
+
+        .progress-step.completed .progress-number {
+            background: var(--success-color);
+            border-color: var(--success-color);
+            color: white;
+        }
+
+        .progress-step.active .progress-number {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+
+        .progress-label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-top: 5px;
+        }
+
+        .progress-step.active .progress-label {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        /* Form Steps */
+        .form-step {
+            display: none;
+        }
+
+        .form-step.active {
+            display: block;
+        }
+
         .form-group {
             margin-bottom: 25px;
         }
@@ -69,6 +153,7 @@
             font-size: 1rem;
             font-family: inherit;
             transition: border-color 0.3s;
+            box-sizing: border-box;
         }
 
         .form-input:focus,
@@ -84,6 +169,92 @@
             color: var(--text-light);
         }
 
+        .clone-section {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid var(--border-color);
+        }
+
+        .clone-header {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 15px;
+        }
+
+        .clone-dropdowns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        /* Variable Fields */
+        .variable-field {
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #f9f9f9;
+            position: relative;
+        }
+
+        .variable-field-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .variable-field-title {
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .btn-remove-variable {
+            background: var(--error-color);
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .btn-remove-variable:hover {
+            background: #d32f2f;
+        }
+
+        .variable-field-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .btn-add-variable {
+            width: 100%;
+            background: white;
+            color: var(--primary-color);
+            border: 2px dashed var(--primary-color);
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .btn-add-variable:hover {
+            background: #f5f5f5;
+        }
+
+        .no-variables-message {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        /* Form Actions */
         .form-actions {
             display: flex;
             gap: 15px;
@@ -92,77 +263,117 @@
             border-top: 1px solid var(--border-color);
         }
 
-        .btn-primary {
+        .btn {
             flex: 1;
+            padding: 14px 28px;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-cancel {
+            background: white;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-cancel:hover {
+            background: #f5f5f5;
+        }
+
+        .btn-back {
+            background: white;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+
+        .btn-back:hover {
+            background: #f5f5f5;
+        }
+
+        .btn-next,
+        .btn-create {
             background: var(--primary-color);
             color: white;
             border: none;
-            padding: 14px 28px;
-            font-size: 1rem;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s;
-            font-weight: 500;
         }
 
-        .btn-primary:hover {
+        .btn-next:hover,
+        .btn-create:hover {
             background: var(--secondary-color);
         }
 
-        .btn-primary:disabled {
+        .btn:disabled {
             background: #cccccc;
             cursor: not-allowed;
         }
 
-        .btn-secondary {
-            flex: 1;
-            background: white;
-            color: var(--primary-color);
-            border: 2px solid var(--primary-color);
-            padding: 14px 28px;
-            font-size: 1rem;
+        .error-message {
+            background: #ffebee;
+            color: var(--error-color);
+            padding: 12px 16px;
             border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: 500;
-        }
-
-        .btn-secondary:hover {
-            background: var(--primary-color);
-            color: white;
-        }
-
-        .alert {
-            padding: 15px 20px;
-            border-radius: 5px;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--error-color);
             display: none;
         }
 
-        .alert.show {
+        .error-message.show {
             display: block;
         }
 
-        .alert-success {
+        .success-message {
             background: #e8f5e9;
             color: var(--success-color);
-            border: 1px solid var(--success-color);
+            padding: 12px 16px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--success-color);
+            text-align: center;
         }
 
-        .alert-error {
-            background: #ffebee;
-            color: var(--error-color);
-            border: 1px solid var(--error-color);
+        .searchable-select {
+            position: relative;
         }
 
-        @media (max-width: 768px) {
-            .form-card {
-                padding: 25px;
-            }
+        .searchable-select input {
+            width: 100%;
+        }
 
-            .form-actions {
-                flex-direction: column;
-            }
+        .searchable-options {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            max-height: 200px;
+            overflow-y: auto;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-top: none;
+            border-radius: 0 0 5px 5px;
+            z-index: 10;
+            display: none;
+        }
+
+        .searchable-options.show {
+            display: block;
+        }
+
+        .searchable-option {
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .searchable-option:hover {
+            background: #f5f5f5;
+        }
+
+        .searchable-option.selected {
+            background: var(--primary-color);
+            color: white;
         }
     </style>
 </head>
@@ -174,13 +385,30 @@
         </div>
 
         <div class="form-card">
-            <div id="alertBox" class="alert"></div>
+            <!-- Progress Bar -->
+            <div class="progress-bar">
+                <div class="progress-step active" data-step="1">
+                    <span class="progress-number">1</span>
+                    <span class="progress-label">Segment Info</span>
+                </div>
+                <div class="progress-step" data-step="2">
+                    <span class="progress-number">2</span>
+                    <span class="progress-label">Variables</span>
+                </div>
+                <div class="progress-step" data-step="3">
+                    <span class="progress-number">3</span>
+                    <span class="progress-label">Review & Create</span>
+                </div>
+            </div>
 
-            <form id="segmentForm">
+            <div id="errorMessage" class="error-message"></div>
+
+            <!-- Step 1: Segment Info -->
+            <div id="step1" class="form-step active">
                 <div class="form-group">
-                    <label for="domainId" class="form-label required">Domain</label>
-                    <select id="domainId" name="domainId" class="form-select" required>
-                        <option value="">Select a domain</option>
+                    <label for="domainSelect" class="form-label required">Domain</label>
+                    <select id="domainSelect" class="form-select" required>
+                        <option value="">Select a domain...</option>
                     </select>
                     <span class="form-help">Select the domain this segment belongs to</span>
                 </div>
@@ -190,7 +418,6 @@
                     <input
                         type="text"
                         id="segmentName"
-                        name="segmentName"
                         class="form-input"
                         placeholder="e.g., Premium Users"
                         required
@@ -198,114 +425,501 @@
                     <span class="form-help">Enter a descriptive name for this segment</span>
                 </div>
 
-                <div class="form-actions">
-                    <button type="button" class="btn-secondary" onclick="window.location.href='/segments/view'">
-                        Cancel
-                    </button>
-                    <button type="submit" class="btn-primary" id="submitBtn">
-                        Create Segment
-                    </button>
+                <div class="clone-section">
+                    <div class="clone-header">Clone Existing Segment (Optional)</div>
+                    <div class="clone-dropdowns">
+                        <div class="form-group">
+                            <label for="cloneDomainSearch" class="form-label">Clone from Domain</label>
+                            <div class="searchable-select">
+                                <input
+                                    type="text"
+                                    id="cloneDomainSearch"
+                                    class="form-input"
+                                    placeholder="Search domains..."
+                                    autocomplete="off"
+                                >
+                                <div id="cloneDomainOptions" class="searchable-options"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cloneSegmentSearch" class="form-label">Clone from Segment</label>
+                            <div class="searchable-select">
+                                <input
+                                    type="text"
+                                    id="cloneSegmentSearch"
+                                    class="form-input"
+                                    placeholder="Select domain first..."
+                                    autocomplete="off"
+                                    disabled
+                                >
+                                <div id="cloneSegmentOptions" class="searchable-options"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="form-help">Optionally clone segment variables from an existing segment</span>
                 </div>
-            </form>
+            </div>
+
+            <!-- Step 2: Variables -->
+            <div id="step2" class="form-step">
+                <div id="variablesContainer"></div>
+                <button type="button" class="btn-add-variable" id="addVariableBtn" onclick="addVariableField()">
+                    + Add Variable
+                </button>
+            </div>
+
+            <!-- Step 3: Review -->
+            <div id="step3" class="form-step">
+                <div id="reviewContent"></div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="button" class="btn btn-cancel" id="cancelBtn" onclick="window.location.href='/segments/view'">
+                    Cancel
+                </button>
+                <button type="button" class="btn btn-back" id="backBtn" onclick="previousStep()" style="display: none;">
+                    Back
+                </button>
+                <button type="button" class="btn btn-next" id="nextBtn" onclick="nextStep()">
+                    Next
+                </button>
+                <button type="button" class="btn btn-create" id="createBtn" onclick="createSegment()" style="display: none;">
+                    Create Segment
+                </button>
+            </div>
         </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const form = document.getElementById('segmentForm');
-            const submitBtn = document.getElementById('submitBtn');
-            const alertBox = document.getElementById('alertBox');
-            const domainSelect = document.getElementById('domainId');
+        let currentStep = 1;
+        let allDomains = [];
+        let allSegments = [];
+        let selectedCloneDomainId = null;
+        let selectedCloneSegmentId = null;
+        let variableCounter = 0;
 
-            // Fetch domains to populate the dropdown
-            fetchDomains();
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadDomains();
+            await loadAllSegments();
+            setupSearchableSelects();
+        });
 
-            async function fetchDomains() {
-                try {
-                    const response = await fetch('/api/domains');
+        async function loadDomains() {
+            try {
+                const response = await fetch('/api/domains');
+                if (!response.ok) throw new Error('Failed to load domains');
 
-                    if (!response.ok) {
-                        throw new Error('Failed to fetch domains');
-                    }
+                allDomains = await response.json();
 
-                    const domains = await response.json();
-
-                    if (domains.length === 0) {
-                        showAlert('error', 'No domains available. Please create a domain first.');
-                        submitBtn.disabled = true;
-                        return;
-                    }
-
-                    // Populate the dropdown
-                    domains.forEach(domain => {
-                        const option = document.createElement('option');
-                        option.value = domain.domain_id;
-                        option.textContent = domain.domain_name;
-                        domainSelect.appendChild(option);
-                    });
-                } catch (error) {
-                    console.error('Error fetching domains:', error);
-                    showAlert('error', 'Failed to load domains. Please try again.');
-                }
+                const domainSelect = document.getElementById('domainSelect');
+                allDomains.forEach(domain => {
+                    const option = document.createElement('option');
+                    option.value = domain.domain_id;
+                    option.textContent = domain.domain_name;
+                    domainSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading domains:', error);
+                showError('Failed to load domains. Please refresh the page.');
             }
+        }
 
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
+        async function loadAllSegments() {
+            try {
+                const response = await fetch('/api/segments');
+                if (!response.ok) throw new Error('Failed to load segments');
+                allSegments = await response.json();
+            } catch (error) {
+                console.error('Error loading segments:', error);
+            }
+        }
 
-                // Disable submit button
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'Creating...';
-                hideAlert();
+        function setupSearchableSelects() {
+            const cloneDomainSearch = document.getElementById('cloneDomainSearch');
+            const cloneDomainOptions = document.getElementById('cloneDomainOptions');
+            const cloneSegmentSearch = document.getElementById('cloneSegmentSearch');
+            const cloneSegmentOptions = document.getElementById('cloneSegmentOptions');
 
-                // Collect form data
-                const formData = {
-                    domain_id: parseInt(document.getElementById('domainId').value),
-                    segment_name: document.getElementById('segmentName').value
-                };
+            // Clone Domain Search
+            cloneDomainSearch.addEventListener('focus', () => {
+                renderCloneDomainOptions('');
+                cloneDomainOptions.classList.add('show');
+            });
 
-                try {
-                    const response = await fetch('/api/segments', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(formData)
-                    });
+            cloneDomainSearch.addEventListener('input', (e) => {
+                renderCloneDomainOptions(e.target.value);
+            });
 
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.error || 'Failed to create segment');
-                    }
+            cloneDomainSearch.addEventListener('blur', () => {
+                setTimeout(() => cloneDomainOptions.classList.remove('show'), 200);
+            });
 
-                    const data = await response.json();
-
-                    showAlert('success', 'Segment created successfully! Redirecting...');
-
-                    // Reset form
-                    form.reset();
-
-                    // Redirect to view page after 2 seconds
-                    setTimeout(() => {
-                        window.location.href = '/segments/view';
-                    }, 2000);
-
-                } catch (error) {
-                    console.error('Error creating segment:', error);
-                    showAlert('error', error.message || 'Failed to create segment. Please try again.');
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Create Segment';
+            // Clone Segment Search
+            cloneSegmentSearch.addEventListener('focus', () => {
+                if (selectedCloneDomainId) {
+                    renderCloneSegmentOptions('');
+                    cloneSegmentOptions.classList.add('show');
                 }
             });
 
-            function showAlert(type, message) {
-                alertBox.textContent = message;
-                alertBox.className = `alert alert-${type} show`;
+            cloneSegmentSearch.addEventListener('input', (e) => {
+                if (selectedCloneDomainId) {
+                    renderCloneSegmentOptions(e.target.value);
+                }
+            });
+
+            cloneSegmentSearch.addEventListener('blur', () => {
+                setTimeout(() => cloneSegmentOptions.classList.remove('show'), 200);
+            });
+        }
+
+        function renderCloneDomainOptions(searchTerm) {
+            const container = document.getElementById('cloneDomainOptions');
+            const filtered = allDomains.filter(d =>
+                d.domain_name.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="searchable-option" style="color: #999;">No domains found</div>';
+                return;
             }
 
-            function hideAlert() {
-                alertBox.className = 'alert';
+            container.innerHTML = filtered.map(domain => `
+                <div class="searchable-option ${selectedCloneDomainId === domain.domain_id ? 'selected' : ''}"
+                     onclick="selectCloneDomain(${domain.domain_id}, '${escapeHtml(domain.domain_name)}')">
+                    ${escapeHtml(domain.domain_name)}
+                </div>
+            `).join('');
+        }
+
+        function selectCloneDomain(domainId, domainName) {
+            selectedCloneDomainId = domainId;
+            selectedCloneSegmentId = null;
+
+            document.getElementById('cloneDomainSearch').value = domainName;
+            document.getElementById('cloneDomainOptions').classList.remove('show');
+
+            // Enable segment search
+            const cloneSegmentSearch = document.getElementById('cloneSegmentSearch');
+            cloneSegmentSearch.disabled = false;
+            cloneSegmentSearch.placeholder = 'Search segments...';
+            cloneSegmentSearch.value = '';
+        }
+
+        function renderCloneSegmentOptions(searchTerm) {
+            const container = document.getElementById('cloneSegmentOptions');
+            const filtered = allSegments.filter(s =>
+                s.domain_id === selectedCloneDomainId &&
+                s.segment_name.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="searchable-option" style="color: #999;">No segments found</div>';
+                return;
             }
-        });
+
+            container.innerHTML = filtered.map(segment => `
+                <div class="searchable-option ${selectedCloneSegmentId === segment.segment_id ? 'selected' : ''}"
+                     onclick="selectCloneSegment(${segment.segment_id}, '${escapeHtml(segment.segment_name)}')">
+                    ${escapeHtml(segment.segment_name)}
+                </div>
+            `).join('');
+        }
+
+        function selectCloneSegment(segmentId, segmentName) {
+            selectedCloneSegmentId = segmentId;
+            document.getElementById('cloneSegmentSearch').value = segmentName;
+            document.getElementById('cloneSegmentOptions').classList.remove('show');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
+            setTimeout(() => errorDiv.classList.remove('show'), 5000);
+        }
+
+        function updateProgressBar(step) {
+            document.querySelectorAll('.progress-step').forEach((el, index) => {
+                el.classList.remove('active', 'completed');
+                if (index + 1 < step) {
+                    el.classList.add('completed');
+                } else if (index + 1 === step) {
+                    el.classList.add('active');
+                }
+            });
+        }
+
+        function showStep(step) {
+            document.querySelectorAll('.form-step').forEach(el => el.classList.remove('active'));
+            document.getElementById(`step${step}`).classList.add('active');
+
+            const cancelBtn = document.getElementById('cancelBtn');
+            const backBtn = document.getElementById('backBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const createBtn = document.getElementById('createBtn');
+
+            if (step === 1) {
+                cancelBtn.style.display = 'block';
+                backBtn.style.display = 'none';
+                nextBtn.style.display = 'block';
+                createBtn.style.display = 'none';
+            } else if (step === 2) {
+                cancelBtn.style.display = 'none';
+                backBtn.style.display = 'block';
+                nextBtn.style.display = 'block';
+                createBtn.style.display = 'none';
+            } else if (step === 3) {
+                cancelBtn.style.display = 'none';
+                backBtn.style.display = 'block';
+                nextBtn.style.display = 'none';
+                createBtn.style.display = 'block';
+            }
+
+            updateProgressBar(step);
+            currentStep = step;
+        }
+
+        async function nextStep() {
+            if (currentStep === 1) {
+                // Validate step 1
+                const domainId = document.getElementById('domainSelect').value;
+                const segmentName = document.getElementById('segmentName').value.trim();
+
+                if (!domainId) {
+                    showError('Please select a domain');
+                    return;
+                }
+
+                if (!segmentName) {
+                    showError('Please enter a segment name');
+                    return;
+                }
+
+                // Check for duplicate segment name
+                const duplicate = allSegments.find(s =>
+                    s.domain_id === parseInt(domainId) &&
+                    s.segment_name.toLowerCase() === segmentName.toLowerCase()
+                );
+
+                if (duplicate) {
+                    showError('A segment with this name already exists in this domain');
+                    return;
+                }
+
+                // Prepare step 2
+                await prepareVariablesStep();
+                showStep(2);
+            } else if (currentStep === 2) {
+                // Prepare step 3
+                prepareReviewStep();
+                showStep(3);
+            }
+        }
+
+        function previousStep() {
+            if (currentStep > 1) {
+                showStep(currentStep - 1);
+            }
+        }
+
+        async function prepareVariablesStep() {
+            const container = document.getElementById('variablesContainer');
+
+            if (selectedCloneSegmentId) {
+                // Load variables from cloned segment
+                try {
+                    const response = await fetch(`/api/segments/${selectedCloneSegmentId}/variables`);
+                    if (!response.ok) throw new Error('Failed to load segment variables');
+
+                    const variables = await response.json();
+
+                    if (variables.length === 0) {
+                        container.innerHTML = '<div class="no-variables-message">No variables found in cloned segment. Add variables below.</div>';
+                    } else {
+                        container.innerHTML = '';
+                        variables.forEach(variable => {
+                            addVariableField(variable.segment_variable_name, variable.segment_variable_value);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error loading cloned variables:', error);
+                    showError('Failed to load variables from cloned segment');
+                    container.innerHTML = '';
+                }
+            } else {
+                // Start with empty container
+                container.innerHTML = '<div class="no-variables-message">No variables added yet. Click "+ Add Variable" to create one.</div>';
+            }
+        }
+
+        function addVariableField(name = '', value = '') {
+            const container = document.getElementById('variablesContainer');
+
+            // Remove "no variables" message if present
+            const noVarsMsg = container.querySelector('.no-variables-message');
+            if (noVarsMsg) {
+                noVarsMsg.remove();
+            }
+
+            variableCounter++;
+            const fieldHtml = `
+                <div class="variable-field" id="variable-${variableCounter}">
+                    <div class="variable-field-header">
+                        <span class="variable-field-title">Variable ${variableCounter}</span>
+                        <button type="button" class="btn-remove-variable" onclick="removeVariableField(${variableCounter})">
+                            Remove
+                        </button>
+                    </div>
+                    <div class="variable-field-row">
+                        <div class="form-group">
+                            <label class="form-label required">Variable Name</label>
+                            <input
+                                type="text"
+                                class="form-input variable-name"
+                                placeholder="e.g., API_KEY"
+                                value="${escapeHtml(name)}"
+                                required
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Variable Value</label>
+                            <input
+                                type="text"
+                                class="form-input variable-value"
+                                placeholder="Enter value (optional)"
+                                value="${escapeHtml(value)}"
+                            >
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            container.insertAdjacentHTML('beforeend', fieldHtml);
+        }
+
+        function removeVariableField(id) {
+            const field = document.getElementById(`variable-${id}`);
+            if (field) {
+                field.remove();
+
+                // If no more variables, show message
+                const container = document.getElementById('variablesContainer');
+                if (container.children.length === 0) {
+                    container.innerHTML = '<div class="no-variables-message">No variables added yet. Click "+ Add Variable" to create one.</div>';
+                }
+            }
+        }
+
+        function prepareReviewStep() {
+            const domainId = document.getElementById('domainSelect').value;
+            const domainName = allDomains.find(d => d.domain_id == domainId)?.domain_name;
+            const segmentName = document.getElementById('segmentName').value;
+
+            const variables = [];
+            document.querySelectorAll('.variable-field').forEach(field => {
+                const name = field.querySelector('.variable-name').value.trim();
+                const value = field.querySelector('.variable-value').value.trim();
+                if (name) {
+                    variables.push({ name, value });
+                }
+            });
+
+            let cloneInfo = '';
+            if (selectedCloneSegmentId) {
+                const clonedSegment = allSegments.find(s => s.segment_id === selectedCloneSegmentId);
+                cloneInfo = `<p><strong>Cloned from:</strong> ${escapeHtml(clonedSegment.segment_name)}</p>`;
+            }
+
+            const reviewHtml = `
+                <h3 style="margin-bottom: 20px; color: var(--primary-color);">Review Segment Details</h3>
+                <div style="background: #f9f9f9; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
+                    <p><strong>Domain:</strong> ${escapeHtml(domainName)}</p>
+                    <p><strong>Segment Name:</strong> ${escapeHtml(segmentName)}</p>
+                    ${cloneInfo}
+                </div>
+
+                <h4 style="margin-bottom: 15px;">Segment Variables (${variables.length})</h4>
+                ${variables.length === 0 ?
+                    '<p style="color: var(--text-light); font-style: italic;">No variables defined</p>' :
+                    `<div style="background: #f9f9f9; padding: 15px; border-radius: 5px;">
+                        ${variables.map((v, i) => `
+                            <div style="padding: 10px 0; ${i < variables.length - 1 ? 'border-bottom: 1px solid #ddd;' : ''}">
+                                <strong>${escapeHtml(v.name)}:</strong> ${v.value ? escapeHtml(v.value) : '<em style="color: #999;">No value</em>'}
+                            </div>
+                        `).join('')}
+                    </div>`
+                }
+            `;
+
+            document.getElementById('reviewContent').innerHTML = reviewHtml;
+        }
+
+        async function createSegment() {
+            const createBtn = document.getElementById('createBtn');
+            createBtn.disabled = true;
+            createBtn.textContent = 'Creating...';
+
+            try {
+                const domainId = document.getElementById('domainSelect').value;
+                const segmentName = document.getElementById('segmentName').value.trim();
+
+                // Create segment
+                const segmentResponse = await fetch('/api/segments', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        domain_id: parseInt(domainId),
+                        segment_name: segmentName
+                    })
+                });
+
+                if (!segmentResponse.ok) {
+                    const error = await segmentResponse.json();
+                    throw new Error(error.error || 'Failed to create segment');
+                }
+
+                const newSegment = await segmentResponse.json();
+
+                // Create variables
+                const variables = [];
+                document.querySelectorAll('.variable-field').forEach(field => {
+                    const name = field.querySelector('.variable-name').value.trim();
+                    const value = field.querySelector('.variable-value').value.trim();
+                    if (name) {
+                        variables.push({ name, value });
+                    }
+                });
+
+                for (const variable of variables) {
+                    await fetch(`/api/segments/${newSegment.segment_id}/variables`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            segment_variable_name: variable.name,
+                            segment_variable_value: variable.value || null
+                        })
+                    });
+                }
+
+                // Success! Redirect to segments view with the new segment expanded
+                window.location.href = `/segments/view#segment-${newSegment.segment_id}`;
+            } catch (error) {
+                console.error('Error creating segment:', error);
+                showError(error.message);
+                createBtn.disabled = false;
+                createBtn.textContent = 'Create Segment';
+            }
+        }
     </script>
 </body>
 </html>
