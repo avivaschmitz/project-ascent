@@ -795,6 +795,9 @@
                         showEmptyState();
                     } else {
                         renderSegments(segments);
+
+                        // Check if URL has anchor to expand a specific segment
+                        checkUrlAnchor();
                     }
                 } catch (error) {
                     console.error('Error fetching data:', error);
@@ -805,6 +808,23 @@
                             <button class="btn" onclick="location.reload()">Retry</button>
                         </div>
                     `;
+                }
+            }
+
+            function checkUrlAnchor() {
+                const hash = window.location.hash;
+                if (hash && hash.startsWith('#segment-')) {
+                    const segmentId = hash.replace('#segment-', '');
+                    const expandButton = document.querySelector(`button[onclick*="toggleVariables(${segmentId}"]`);
+
+                    if (expandButton && !expandButton.classList.contains('expanded')) {
+                        // Small delay to ensure the page is fully rendered
+                        setTimeout(() => {
+                            expandButton.click();
+                            // Scroll to the expanded row
+                            expandButton.closest('tr').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }, 100);
+                    }
                 }
             }
 
@@ -964,10 +984,17 @@
                 // Collapse
                 variablesRow.classList.remove('visible');
                 button.classList.remove('expanded');
+                // Remove anchor from URL
+                if (window.location.hash === `#segment-${segmentId}`) {
+                    history.pushState(null, null, window.location.pathname + window.location.search);
+                }
             } else {
                 // Expand
                 variablesRow.classList.add('visible');
                 button.classList.add('expanded');
+
+                // Add anchor to URL
+                history.pushState(null, null, `#segment-${segmentId}`);
 
                 // Fetch both segment and domain variables if not already loaded
                 const segmentContentDiv = document.getElementById(`segment-variables-content-${segmentId}`);

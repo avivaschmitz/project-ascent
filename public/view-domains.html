@@ -1196,6 +1196,9 @@
 
                         // Check if we need to auto-open edit modal for domain variable
                         checkForDomainVariableEdit();
+
+                        // Check if URL has anchor to expand a specific domain
+                        checkUrlAnchor();
                     }
                 } catch (error) {
                     console.error('Error fetching domains:', error);
@@ -1231,6 +1234,23 @@
                     } catch (error) {
                         console.error('Error processing domain variable edit:', error);
                         sessionStorage.removeItem('editDomainVariable');
+                    }
+                }
+            }
+
+            function checkUrlAnchor() {
+                const hash = window.location.hash;
+                if (hash && hash.startsWith('#domain-')) {
+                    const domainId = hash.replace('#domain-', '');
+                    const expandButton = document.querySelector(`button[onclick*="toggleVariables(${domainId}"]`);
+
+                    if (expandButton && !expandButton.classList.contains('expanded')) {
+                        // Small delay to ensure the page is fully rendered
+                        setTimeout(() => {
+                            expandButton.click();
+                            // Scroll to the expanded row
+                            expandButton.closest('tr').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }, 100);
                     }
                 }
             }
@@ -1357,10 +1377,17 @@
                 // Collapse
                 variablesRow.classList.remove('visible');
                 button.classList.remove('expanded');
+                // Remove anchor from URL
+                if (window.location.hash === `#domain-${domainId}`) {
+                    history.pushState(null, null, window.location.pathname + window.location.search);
+                }
             } else {
                 // Expand
                 variablesRow.classList.add('visible');
                 button.classList.add('expanded');
+
+                // Add anchor to URL
+                history.pushState(null, null, `#domain-${domainId}`);
 
                 // Fetch aliases if not already loaded
                 const aliasesContentDiv = document.getElementById(`aliases-content-${domainId}`);
