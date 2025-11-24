@@ -324,6 +324,15 @@
             display: block;
         }
 
+        .warning-message {
+            background: #fff3cd;
+            color: #856404;
+            padding: 12px 16px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #ffc107;
+        }
+
         .success-message {
             background: #e8f5e9;
             color: var(--success-color);
@@ -463,6 +472,9 @@
 
             <!-- Step 2: Variables -->
             <div id="step2" class="form-step">
+                <div id="domainVariableWarning" class="warning-message" style="display: none;">
+                    <strong>⚠️ Warning:</strong> Domain level variables will not be copied to the new segment.
+                </div>
                 <div id="variablesContainer"></div>
                 <button type="button" class="btn-add-variable" id="addVariableBtn" onclick="addVariableField()">
                     + Add Variable
@@ -734,6 +746,21 @@
 
         async function prepareVariablesStep() {
             const container = document.getElementById('variablesContainer');
+            const warningDiv = document.getElementById('domainVariableWarning');
+
+            // Check if we should show the domain variable warning
+            const newSegmentDomainId = parseInt(document.getElementById('domainSelect').value);
+            let showWarning = false;
+
+            if (selectedCloneSegmentId) {
+                const clonedSegment = allSegments.find(s => s.segment_id === selectedCloneSegmentId);
+                if (clonedSegment && clonedSegment.domain_id !== newSegmentDomainId) {
+                    showWarning = true;
+                }
+            }
+
+            // Show or hide warning
+            warningDiv.style.display = showWarning ? 'block' : 'none';
 
             if (selectedCloneSegmentId) {
                 // Load variables from cloned segment
