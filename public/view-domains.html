@@ -95,6 +95,19 @@
             color: var(--text-color);
         }
 
+        .organic-warning {
+            display: inline-block;
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffc107;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 10px;
+            white-space: nowrap;
+        }
+
         .domain-actions {
             display: flex;
             gap: 10px;
@@ -1229,6 +1242,7 @@
             const domainsContent = document.getElementById('domainsContent');
             const searchInput = document.getElementById('searchInput');
             let allDomains = [];
+            let allSegments = [];
 
             // Fetch domains from API
             fetchDomains();
@@ -1243,6 +1257,9 @@
 
                     const domains = await response.json();
                     allDomains = domains;
+
+                    // Also fetch all segments to check for organic segment
+                    await fetchSegments();
 
                     if (domains.length === 0) {
                         showEmptyState();
@@ -1291,6 +1308,25 @@
                         sessionStorage.removeItem('editDomainVariable');
                     }
                 }
+            }
+
+            async function fetchSegments() {
+                try {
+                    const response = await fetch('/api/segments');
+                    if (response.ok) {
+                        allSegments = await response.json();
+                    }
+                } catch (error) {
+                    console.error('Error fetching segments:', error);
+                    // Don't fail the whole page if segments can't be loaded
+                }
+            }
+
+            function hasOrganicSegment(domainId) {
+                return allSegments.some(segment =>
+                    segment.domain_id === domainId &&
+                    segment.segment_name.toLowerCase() === 'organic'
+                );
             }
 
             function checkUrlAnchor() {
@@ -1346,7 +1382,10 @@
                                             </button>
                                         </td>
                                         <td>${domain.domain_id}</td>
-                                        <td class="domain-name-cell">${escapeHtml(domain.domain_name)}</td>
+                                        <td class="domain-name-cell">
+                                            ${escapeHtml(domain.domain_name)}
+                                            ${!hasOrganicSegment(domain.domain_id) ? '<span class="organic-warning">Organic Segment Missing</span>' : ''}
+                                        </td>
                                         <td>
                                             <div class="domain-actions">
                                                 <button class="btn-small btn-edit" onclick="editDomain(${domain.domain_id}, '${escapeHtml(domain.domain_name)}')">
