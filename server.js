@@ -33,6 +33,16 @@ app.get('/segments/create', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'create-segment.html'));
 });
 
+// Selector routes
+app.get('/selectors', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'selectors.html'));
+});
+
+// Selector Sets routes
+app.get('/selector-sets', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'selector-sets.html'));
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', message: 'Server is running' });
