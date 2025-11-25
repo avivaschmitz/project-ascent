@@ -247,6 +247,83 @@
             transition: background 0.3s;
         }
 
+        .btn-view-raw {
+            background: #424242;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-view-raw:hover {
+            background: #616161;
+        }
+
+        .raw-data-section {
+            display: none;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid var(--border-color);
+        }
+
+        .raw-data-section.visible {
+            display: block;
+        }
+
+        .raw-data-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .raw-data-header h4 {
+            color: var(--primary-color);
+            margin: 0;
+        }
+
+        .btn-copy-json {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-copy-json:hover {
+            background: var(--secondary-color);
+        }
+
+        .btn-copy-json.copied {
+            background: var(--success-color);
+        }
+
+        .json-container {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .json-container pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
         .btn-add-variable:hover {
             background: var(--secondary-color);
         }
@@ -920,6 +997,24 @@
                                                         </div>
                                                     </div>
                                                 </div>
+
+                                                <!-- View Raw Data Button -->
+                                                <button class="btn-view-raw" onclick="toggleRawData(${segment.segment_id})">
+                                                    View Raw Data
+                                                </button>
+
+                                                <!-- Raw Data Section -->
+                                                <div class="raw-data-section" id="raw-data-${segment.segment_id}">
+                                                    <div class="raw-data-header">
+                                                        <h4>Raw JSON Data</h4>
+                                                        <button class="btn-copy-json" onclick="copyJsonToClipboard(${segment.segment_id})">
+                                                            Copy JSON
+                                                        </button>
+                                                    </div>
+                                                    <div class="json-container">
+                                                        <pre id="json-content-${segment.segment_id}"></pre>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </td>
                                     </tr>
@@ -1536,6 +1631,257 @@
                 }
             }
         });
+
+        // ==================== RAW DATA FUNCTIONS ====================
+
+        // Hardcoded JSON data (same for all segments for now)
+        const hardcodedJsonData = {
+            "domain": "search.refinement.guide",
+            "segment": "organic",
+            "partner_id": 43653,
+            "google_settings": {
+                "pub_id": "infospace-refinementguide",
+                "style_id": 2951788965,
+                "web_pub_id": "infospace-refinementguide",
+                "segment_channel": "ch10"
+            },
+            "selector_set_id": 1,
+            "request_overrides": [
+                {
+                    "label": "web_search",
+                    "overrides": {
+                        "layout": {
+                            "mainline": [
+                                {
+                                    "count": 4,
+                                    "width": 300,
+                                    "backend": "google",
+                                    "max_top": 3,
+                                    "result_type": "ads",
+                                    "container_name": "csa-ads-top"
+                                },
+                                {
+                                    "count": 4,
+                                    "backend": "google",
+                                    "result_type": "web"
+                                },
+                                {
+                                    "count": 8,
+                                    "backend": "google",
+                                    "result_type": "aylf",
+                                    "container_name": "gcsa-aylf-top"
+                                }
+                            ]
+                        },
+                        "site_assets": {
+                            "faviconUrl": "https://s.flocdn.com/@search/sem-assets/refinement/3200/favicon.ico"
+                        },
+                        "render_options": {
+                            "footer": {
+                                "links": [
+                                    {
+                                        "url": "HTTPS://refinement.guide/about",
+                                        "text": "About Us"
+                                    },
+                                    {
+                                        "url": "https://system1.com/terms/privacy-policy",
+                                        "text": "Privacy Policy"
+                                    },
+                                    {
+                                        "url": "https://system1.com/terms/terms-of-use",
+                                        "text": "Terms of Use"
+                                    },
+                                    {
+                                        "url": "https://system1.com/contact",
+                                        "text": "Contact Us"
+                                    }
+                                ]
+                            },
+                            "header": {
+                                "logo_image_url": "https://s.flocdn.com/@search/sem-assets/refinement/3200/logo-serp.png",
+                                "logo_destination_url": "HTTPS://refinement.guide"
+                            }
+                        }
+                    },
+                    "match_criteria": {
+                        "query_category": "web"
+                    }
+                },
+                {
+                    "label": "rsoc_cta",
+                    "overrides": {
+                        "layout": {
+                            "slot1": [
+                                {
+                                    "count": 5,
+                                    "width": 300,
+                                    "backend": "google",
+                                    "result_type": "rsoc",
+                                    "container_name": "rampjs_slot1"
+                                }
+                            ],
+                            "slot2": [
+                                {
+                                    "count": 5,
+                                    "width": 300,
+                                    "backend": "google",
+                                    "result_type": "rsoc",
+                                    "container_name": "rampjs_slot5"
+                                }
+                            ]
+                        }
+                    },
+                    "match_criteria": {}
+                }
+            ],
+            "rev_sub_params_intrinsic": "",
+            "non_rev_sub_params_intrinsic": "sem_params",
+            "_selectors": [
+                {
+                    "selector_id": 1,
+                    "selector_name": "mobile_device",
+                    "match_criteria": {
+                        "device_type": "mobile"
+                    },
+                    "payload": {
+                        "request_overrides": [
+                            {
+                                "label": "web_search",
+                                "overrides": {
+                                    "layout": {
+                                        "mainline": [
+                                            {
+                                                "count": 2,
+                                                "width": 300,
+                                                "backend": "google",
+                                                "max_top": 3,
+                                                "result_type": "ads",
+                                                "container_name": "csa-ads-top"
+                                            },
+                                            {
+                                                "count": 2,
+                                                "backend": "google",
+                                                "result_type": "web"
+                                            },
+                                            {
+                                                "count": 8,
+                                                "backend": "google",
+                                                "result_type": "aylf",
+                                                "container_name": "gcsa-aylf-top"
+                                            }
+                                        ]
+                                    },
+                                    "site_assets": {
+                                        "faviconUrl": "https://s.flocdn.com/@search/sem-assets/refinement/3200/favicon.ico"
+                                    },
+                                    "render_options": {
+                                        "footer": {
+                                            "links": [
+                                                {
+                                                    "url": "https://HTTPS://refinement.guide/about",
+                                                    "text": "About Us"
+                                                },
+                                                {
+                                                    "url": "https://HTTPS://refinement.guide/privacy",
+                                                    "text": "Privacy Policy"
+                                                }
+                                            ]
+                                        },
+                                        "header": {
+                                            "logo_image_url": "https://dwl84ucsau83w.cloudfront.net/eyJidWNrZXQiOiJhY3MtcHViLXN0b3JhZ2UiLCJrZXkiOiJyZWZpbmVtZW50LWd1aWRlL3dwLWNvbnRlbnQvdXBsb2Fkcy8yMDI1LzA0L2RhcmstNDMucG5nIn0=",
+                                            "logo_destination_url": "https://HTTPS://refinement.guide"
+                                        }
+                                    }
+                                },
+                                "match_criteria": {
+                                    "query_category": "web"
+                                }
+                            },
+                            {
+                                "label": "rsoc_cta",
+                                "overrides": {
+                                    "layout": {
+                                        "slot1": [
+                                            {
+                                                "count": 5,
+                                                "width": 300,
+                                                "backend": "google",
+                                                "result_type": "rsoc",
+                                                "container_name": "rampjs_slot1_darkmode"
+                                            }
+                                        ],
+                                        "slot2": [
+                                            {
+                                                "count": 5,
+                                                "width": 300,
+                                                "backend": "google",
+                                                "result_type": "rsoc",
+                                                "container_name": "rampjs_slot1_darkmode"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "match_criteria": {}
+                            }
+                        ]
+                    },
+                    "priority": 0
+                }
+            ],
+            "_experiments": [],
+            "_metadata": {
+                "segment_id": 5,
+                "segment_name": "organic",
+                "segment_template_id": 1,
+                "domain_id": 3,
+                "domain_name": "search.refinement.guide",
+                "is_staged": false,
+                "version": 1,
+                "generated_at": "2025-11-24T20:28:04.212469+00:00"
+            }
+        };
+
+        function toggleRawData(segmentId) {
+            const rawDataSection = document.getElementById(`raw-data-${segmentId}`);
+            const jsonContent = document.getElementById(`json-content-${segmentId}`);
+            const isVisible = rawDataSection.classList.contains('visible');
+
+            if (isVisible) {
+                // Hide the raw data section
+                rawDataSection.classList.remove('visible');
+            } else {
+                // Show the raw data section and populate it with JSON
+                rawDataSection.classList.add('visible');
+
+                // Only populate if empty
+                if (!jsonContent.textContent) {
+                    jsonContent.textContent = JSON.stringify(hardcodedJsonData, null, 2);
+                }
+            }
+        }
+
+        async function copyJsonToClipboard(segmentId) {
+            const button = event.target;
+            const jsonContent = document.getElementById(`json-content-${segmentId}`).textContent;
+
+            try {
+                await navigator.clipboard.writeText(jsonContent);
+
+                // Show success feedback
+                const originalText = button.textContent;
+                button.textContent = 'Copied!';
+                button.classList.add('copied');
+
+                // Reset after 2 seconds
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.classList.remove('copied');
+                }, 2000);
+            } catch (error) {
+                console.error('Failed to copy JSON:', error);
+                alert('Failed to copy JSON to clipboard');
+            }
+        }
     </script>
 </body>
 </html>
