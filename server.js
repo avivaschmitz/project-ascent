@@ -43,6 +43,11 @@ app.get('/selector-sets', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'selector-sets.html'));
 });
 
+// Segment Templates routes
+app.get('/segment-templates', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'segment-templates.html'));
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', message: 'Server is running' });
