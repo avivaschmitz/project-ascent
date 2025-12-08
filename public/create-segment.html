@@ -763,10 +763,11 @@
             const warningDiv = document.getElementById('domainVariableWarning');
 
             // Check if we should show the domain variable warning
+            // Only show for non-organic segments when cloning from a different domain
             const newSegmentDomainId = parseInt(document.getElementById('domainSelect').value);
             let showWarning = false;
 
-            if (selectedCloneSegmentId) {
+            if (selectedCloneSegmentId && !isOrganicSegment) {
                 const clonedSegment = allSegments.find(s => s.segment_id === selectedCloneSegmentId);
                 if (clonedSegment && clonedSegment.domain_id !== newSegmentDomainId) {
                     showWarning = true;
