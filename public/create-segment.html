@@ -236,31 +236,71 @@
             gap: 15px;
         }
 
-        .btn-add-variable {
-            width: 100%;
-            background: white;
-            color: var(--primary-color);
-            border: 2px dashed var(--primary-color);
-            padding: 12px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 500;
-            transition: background 0.3s;
+        /* New styles for variable level checkboxes */
+        .variable-field-with-level {
+            display: grid;
+            grid-template-columns: 1fr 1fr 150px 150px;
+            gap: 15px;
+            align-items: end;
         }
 
-        .btn-add-variable:hover {
-            background: #f5f5f5;
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: var(--text-color);
+            margin-bottom: 10px;
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .checkbox-label input[type="checkbox"]:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .checkbox-group-header {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 8px;
         }
 
         .no-variables-message {
             text-align: center;
-            padding: 30px;
+            padding: 40px;
             color: var(--text-light);
+            background: #f9f9f9;
+            border-radius: 5px;
             font-style: italic;
         }
 
-        /* Form Actions */
+        .domain-variable-warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .domain-variable-warning strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+
         .form-actions {
             display: flex;
             gap: 15px;
@@ -269,126 +309,102 @@
             border-top: 1px solid var(--border-color);
         }
 
-        .btn {
+        .btn-primary {
             flex: 1;
-            padding: 14px 28px;
-            border-radius: 5px;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .btn-cancel {
-            background: white;
-            color: var(--text-color);
-            border: 1px solid var(--border-color);
-        }
-
-        .btn-cancel:hover {
-            background: #f5f5f5;
-        }
-
-        .btn-back {
-            background: white;
-            color: var(--primary-color);
-            border: 1px solid var(--primary-color);
-        }
-
-        .btn-back:hover {
-            background: #f5f5f5;
-        }
-
-        .btn-next,
-        .btn-create {
             background: var(--primary-color);
             color: white;
             border: none;
+            padding: 14px 28px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-weight: 500;
         }
 
-        .btn-next:hover,
-        .btn-create:hover {
+        .btn-primary:hover {
             background: var(--secondary-color);
         }
 
-        .btn:disabled {
+        .btn-primary:disabled {
             background: #cccccc;
             cursor: not-allowed;
         }
 
-        .error-message {
-            background: #ffebee;
-            color: var(--error-color);
-            padding: 12px 16px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            border-left: 4px solid var(--error-color);
-            display: none;
-        }
-
-        .error-message.show {
-            display: block;
-        }
-
-        .warning-message {
-            background: #fff3cd;
-            color: #856404;
-            padding: 12px 16px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            border-left: 4px solid #ffc107;
-        }
-
-        .success-message {
-            background: #e8f5e9;
-            color: var(--success-color);
-            padding: 12px 16px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            border-left: 4px solid var(--success-color);
-            text-align: center;
-        }
-
-        .searchable-select {
-            position: relative;
-        }
-
-        .searchable-select input {
-            width: 100%;
-        }
-
-        .searchable-options {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            max-height: 200px;
-            overflow-y: auto;
+        .btn-secondary {
+            flex: 1;
             background: white;
-            border: 1px solid var(--border-color);
-            border-top: none;
-            border-radius: 0 0 5px 5px;
-            z-index: 10;
-            display: none;
-        }
-
-        .searchable-options.show {
-            display: block;
-        }
-
-        .searchable-option {
-            padding: 10px 16px;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            padding: 14px 28px;
+            font-size: 1rem;
+            border-radius: 5px;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: all 0.3s;
+            font-weight: 500;
         }
 
-        .searchable-option:hover {
-            background: #f5f5f5;
-        }
-
-        .searchable-option.selected {
+        .btn-secondary:hover {
             background: var(--primary-color);
             color: white;
+        }
+
+        .btn-add-variable {
+            background: var(--success-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            transition: background 0.3s;
+        }
+
+        .btn-add-variable:hover {
+            background: #45a049;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 5px;
+            margin-bottom: 25px;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert-success {
+            background: #e8f5e9;
+            color: var(--success-color);
+            border: 1px solid var(--success-color);
+        }
+
+        .alert-error {
+            background: #ffebee;
+            color: var(--error-color);
+            border: 1px solid var(--error-color);
+        }
+
+        @media (max-width: 768px) {
+            .form-card {
+                padding: 25px;
+            }
+
+            .clone-dropdowns {
+                grid-template-columns: 1fr;
+            }
+
+            .variable-field-row,
+            .variable-field-with-level {
+                grid-template-columns: 1fr;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
@@ -400,113 +416,110 @@
         </div>
 
         <div class="form-card">
+            <div id="alertBox" class="alert"></div>
+
             <!-- Progress Bar -->
             <div class="progress-bar">
-                <div class="progress-step active" data-step="1">
+                <div class="progress-step active" id="progressStep1">
                     <span class="progress-number">1</span>
-                    <span class="progress-label">Segment Info</span>
+                    <span class="progress-label">Basic Info</span>
                 </div>
-                <div class="progress-step" data-step="2">
+                <div class="progress-step" id="progressStep2">
                     <span class="progress-number">2</span>
                     <span class="progress-label">Variables</span>
                 </div>
-                <div class="progress-step" data-step="3">
+                <div class="progress-step" id="progressStep3">
                     <span class="progress-number">3</span>
-                    <span class="progress-label">Review & Create</span>
+                    <span class="progress-label">Review</span>
                 </div>
             </div>
 
-            <div id="errorMessage" class="error-message"></div>
+            <form id="segmentForm">
+                <!-- Step 1: Basic Information -->
+                <div class="form-step active" id="step1">
+                    <h2 style="margin-bottom: 25px; color: var(--primary-color);">Basic Information</h2>
 
-            <!-- Step 1: Segment Info -->
-            <div id="step1" class="form-step active">
-                <div class="form-group">
-                    <label for="domainSelect" class="form-label required">Domain</label>
-                    <select id="domainSelect" class="form-select" required>
-                        <option value="">Select a domain...</option>
-                    </select>
-                    <span class="form-help">Select the domain this segment belongs to</span>
-                </div>
+                    <div class="form-group">
+                        <label for="domainSelect" class="form-label required">Domain</label>
+                        <select id="domainSelect" name="domainSelect" class="form-select" required>
+                            <option value="">-- Select Domain --</option>
+                        </select>
+                        <span class="form-help">Select the domain for this segment</span>
+                    </div>
 
-                <div class="form-group">
-                    <label for="segmentName" class="form-label required">Segment Name</label>
-                    <input
-                        type="text"
-                        id="segmentName"
-                        class="form-input"
-                        placeholder="e.g., Premium Users"
-                        required
-                    >
-                    <span class="form-help">Enter a descriptive name for this segment</span>
-                </div>
+                    <div class="form-group">
+                        <label for="segmentName" class="form-label required">Segment Name</label>
+                        <input
+                            type="text"
+                            id="segmentName"
+                            name="segmentName"
+                            class="form-input"
+                            placeholder="e.g., organic, paid-search, social-media"
+                            required
+                        >
+                        <span class="form-help">Enter a unique name for this segment</span>
+                    </div>
 
-                <div class="clone-section">
-                    <div class="clone-header">Clone Existing Segment (Optional)</div>
-                    <div class="clone-dropdowns">
-                        <div class="form-group">
-                            <label for="cloneDomainSearch" class="form-label">Clone from Domain</label>
-                            <div class="searchable-select">
-                                <input
-                                    type="text"
-                                    id="cloneDomainSearch"
-                                    class="form-input"
-                                    placeholder="Search domains..."
-                                    autocomplete="off"
-                                >
-                                <div id="cloneDomainOptions" class="searchable-options"></div>
+                    <!-- Clone Section -->
+                    <div class="clone-section">
+                        <div class="clone-header">Clone from Existing Segment (Optional)</div>
+                        <div class="clone-dropdowns">
+                            <div class="form-group">
+                                <label for="cloneDomainSelect" class="form-label">Source Domain</label>
+                                <select id="cloneDomainSelect" class="form-select">
+                                    <option value="">-- Select Domain --</option>
+                                </select>
                             </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="cloneSegmentSearch" class="form-label">Clone from Segment</label>
-                            <div class="searchable-select">
-                                <input
-                                    type="text"
-                                    id="cloneSegmentSearch"
-                                    class="form-input"
-                                    placeholder="Select domain first..."
-                                    autocomplete="off"
-                                    disabled
-                                >
-                                <div id="cloneSegmentOptions" class="searchable-options"></div>
+                            <div class="form-group">
+                                <label for="cloneSegmentSelect" class="form-label">Source Segment</label>
+                                <select id="cloneSegmentSelect" class="form-select" disabled>
+                                    <option value="">-- Select Segment --</option>
+                                </select>
                             </div>
                         </div>
                     </div>
-                    <span class="form-help">Optionally clone segment variables from an existing segment</span>
                 </div>
-            </div>
 
-            <!-- Step 2: Variables -->
-            <div id="step2" class="form-step">
-                <div id="domainVariableWarning" class="warning-message" style="display: none;">
-                    <strong>⚠️ Warning:</strong> Domain level variables will not be copied to the new segment.
+                <!-- Step 2: Variables -->
+                <div class="form-step" id="step2">
+                    <h2 style="margin-bottom: 25px; color: var(--primary-color);">Configure Variables</h2>
+
+                    <div id="domainVariableWarning" class="domain-variable-warning">
+                        <strong>Note:</strong> The cloned segment is from a different domain. Domain-level variables from the source will be created as segment-level variables in the new segment.
+                    </div>
+
+                    <button type="button" class="btn-add-variable" onclick="addVariableField()">
+                        + Add Variable
+                    </button>
+
+                    <div id="variablesContainer">
+                        <div class="no-variables-message">
+                            No variables added yet. Click "+ Add Variable" to create one.
+                        </div>
+                    </div>
                 </div>
-                <div id="variablesContainer"></div>
-                <button type="button" class="btn-add-variable" id="addVariableBtn" onclick="addVariableField()">
-                    + Add Variable
-                </button>
-            </div>
 
-            <!-- Step 3: Review -->
-            <div id="step3" class="form-step">
-                <div id="reviewContent"></div>
-            </div>
+                <!-- Step 3: Review -->
+                <div class="form-step" id="step3">
+                    <div id="reviewContent"></div>
+                </div>
 
-            <!-- Form Actions -->
-            <div class="form-actions">
-                <button type="button" class="btn btn-cancel" id="cancelBtn" onclick="window.location.href='/segments/view'">
-                    Cancel
-                </button>
-                <button type="button" class="btn btn-back" id="backBtn" onclick="previousStep()" style="display: none;">
-                    Back
-                </button>
-                <button type="button" class="btn btn-next" id="nextBtn" onclick="nextStep()">
-                    Next
-                </button>
-                <button type="button" class="btn btn-create" id="createBtn" onclick="createSegment()" style="display: none;">
-                    Create Segment
-                </button>
-            </div>
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" id="backBtn" onclick="previousStep()" style="display: none;">
+                        ← Back
+                    </button>
+                    <button type="button" class="btn-secondary" onclick="window.location.href='/segments/view'">
+                        Cancel
+                    </button>
+                    <button type="button" class="btn-primary" id="nextBtn" onclick="nextStep()">
+                        Next →
+                    </button>
+                    <button type="button" class="btn-primary" id="createBtn" onclick="createSegment()" style="display: none;">
+                        Create Segment
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -514,15 +527,15 @@
         let currentStep = 1;
         let allDomains = [];
         let allSegments = [];
-        let selectedCloneDomainId = null;
         let selectedCloneSegmentId = null;
         let variableCounter = 0;
+        let isOrganicSegment = false;
 
         // Initialize
         document.addEventListener('DOMContentLoaded', async () => {
             await loadDomains();
-            await loadAllSegments();
-            setupSearchableSelects();
+            await loadSegments();
+            setupCloneListeners();
         });
 
         async function loadDomains() {
@@ -533,166 +546,105 @@
                 allDomains = await response.json();
 
                 const domainSelect = document.getElementById('domainSelect');
-                allDomains.forEach(domain => {
-                    const option = document.createElement('option');
-                    option.value = domain.domain_id;
-                    option.textContent = domain.domain_name;
-                    domainSelect.appendChild(option);
-                });
+                const cloneDomainSelect = document.getElementById('cloneDomainSelect');
 
-                // Add event listener to check for organic segment when domain is selected
-                domainSelect.addEventListener('change', handleDomainSelection);
+                allDomains.forEach(domain => {
+                    const option1 = new Option(domain.domain_name, domain.domain_id);
+                    const option2 = new Option(domain.domain_name, domain.domain_id);
+                    domainSelect.add(option1);
+                    cloneDomainSelect.add(option2);
+                });
             } catch (error) {
                 console.error('Error loading domains:', error);
-                showError('Failed to load domains. Please refresh the page.');
+                showError('Failed to load domains');
             }
         }
 
-        function handleDomainSelection() {
-            const domainId = parseInt(document.getElementById('domainSelect').value);
-            const segmentNameInput = document.getElementById('segmentName');
-            const segmentNameLabel = document.querySelector('label[for="segmentName"]');
-            const segmentNameHelp = segmentNameInput.nextElementSibling;
-
-            if (!domainId) {
-                // Reset if no domain selected
-                segmentNameInput.value = '';
-                segmentNameInput.disabled = false;
-                segmentNameInput.placeholder = 'e.g., Premium Users';
-                segmentNameHelp.textContent = 'Enter a descriptive name for this segment';
-                return;
-            }
-
-            // Check if domain has organic segment
-            const hasOrganic = allSegments.some(segment =>
-                segment.domain_id === domainId &&
-                segment.segment_name.toLowerCase() === 'organic'
-            );
-
-            if (!hasOrganic) {
-                // Domain needs organic segment - lock the name
-                segmentNameInput.value = 'organic';
-                segmentNameInput.disabled = true;
-                segmentNameHelp.textContent = 'This domain requires an "organic" segment. The name is pre-filled and cannot be changed.';
-                segmentNameHelp.style.color = '#856404';
-                segmentNameHelp.style.fontWeight = '500';
-            } else {
-                // Domain has organic segment - allow custom name
-                segmentNameInput.value = '';
-                segmentNameInput.disabled = false;
-                segmentNameInput.placeholder = 'e.g., Premium Users';
-                segmentNameHelp.textContent = 'Enter a descriptive name for this segment';
-                segmentNameHelp.style.color = '';
-                segmentNameHelp.style.fontWeight = '';
-            }
-        }
-
-        async function loadAllSegments() {
+        async function loadSegments() {
             try {
                 const response = await fetch('/api/segments');
                 if (!response.ok) throw new Error('Failed to load segments');
+
                 allSegments = await response.json();
             } catch (error) {
                 console.error('Error loading segments:', error);
+                showError('Failed to load segments');
             }
         }
 
-        function setupSearchableSelects() {
-            const cloneDomainSearch = document.getElementById('cloneDomainSearch');
-            const cloneDomainOptions = document.getElementById('cloneDomainOptions');
-            const cloneSegmentSearch = document.getElementById('cloneSegmentSearch');
-            const cloneSegmentOptions = document.getElementById('cloneSegmentOptions');
+        function setupCloneListeners() {
+            const cloneDomainSelect = document.getElementById('cloneDomainSelect');
+            const cloneSegmentSelect = document.getElementById('cloneSegmentSelect');
 
-            // Clone Domain Search
-            cloneDomainSearch.addEventListener('focus', () => {
-                renderCloneDomainOptions('');
-                cloneDomainOptions.classList.add('show');
-            });
+            cloneDomainSelect.addEventListener('change', (e) => {
+                const selectedDomainId = parseInt(e.target.value);
+                cloneSegmentSelect.innerHTML = '<option value="">-- Select Segment --</option>';
 
-            cloneDomainSearch.addEventListener('input', (e) => {
-                renderCloneDomainOptions(e.target.value);
-            });
-
-            cloneDomainSearch.addEventListener('blur', () => {
-                setTimeout(() => cloneDomainOptions.classList.remove('show'), 200);
-            });
-
-            // Clone Segment Search
-            cloneSegmentSearch.addEventListener('focus', () => {
-                if (selectedCloneDomainId) {
-                    renderCloneSegmentOptions('');
-                    cloneSegmentOptions.classList.add('show');
+                if (selectedDomainId) {
+                    const domainSegments = allSegments.filter(s => s.domain_id === selectedDomainId);
+                    domainSegments.forEach(segment => {
+                        const option = new Option(segment.segment_name, segment.segment_id);
+                        cloneSegmentSelect.add(option);
+                    });
+                    cloneSegmentSelect.disabled = false;
+                } else {
+                    cloneSegmentSelect.disabled = true;
+                    selectedCloneSegmentId = null;
                 }
             });
 
-            cloneSegmentSearch.addEventListener('input', (e) => {
-                if (selectedCloneDomainId) {
-                    renderCloneSegmentOptions(e.target.value);
-                }
-            });
-
-            cloneSegmentSearch.addEventListener('blur', () => {
-                setTimeout(() => cloneSegmentOptions.classList.remove('show'), 200);
+            cloneSegmentSelect.addEventListener('change', (e) => {
+                selectedCloneSegmentId = e.target.value ? parseInt(e.target.value) : null;
             });
         }
 
-        function renderCloneDomainOptions(searchTerm) {
-            const container = document.getElementById('cloneDomainOptions');
-            const filtered = allDomains.filter(d =>
-                d.domain_name.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-
-            if (filtered.length === 0) {
-                container.innerHTML = '<div class="searchable-option" style="color: #999;">No domains found</div>';
-                return;
+        function showStep(stepNumber) {
+            // Hide all steps
+            for (let i = 1; i <= 3; i++) {
+                document.getElementById(`step${i}`).classList.remove('active');
+                document.getElementById(`progressStep${i}`).classList.remove('active', 'completed');
             }
 
-            container.innerHTML = filtered.map(domain => `
-                <div class="searchable-option ${selectedCloneDomainId === domain.domain_id ? 'selected' : ''}"
-                     onclick="selectCloneDomain(${domain.domain_id}, '${escapeHtml(domain.domain_name)}')">
-                    ${escapeHtml(domain.domain_name)}
-                </div>
-            `).join('');
-        }
+            // Show current step
+            document.getElementById(`step${stepNumber}`).classList.add('active');
+            document.getElementById(`progressStep${stepNumber}`).classList.add('active');
 
-        function selectCloneDomain(domainId, domainName) {
-            selectedCloneDomainId = domainId;
-            selectedCloneSegmentId = null;
-
-            document.getElementById('cloneDomainSearch').value = domainName;
-            document.getElementById('cloneDomainOptions').classList.remove('show');
-
-            // Enable segment search
-            const cloneSegmentSearch = document.getElementById('cloneSegmentSearch');
-            cloneSegmentSearch.disabled = false;
-            cloneSegmentSearch.placeholder = 'Search segments...';
-            cloneSegmentSearch.value = '';
-        }
-
-        function renderCloneSegmentOptions(searchTerm) {
-            const container = document.getElementById('cloneSegmentOptions');
-            const filtered = allSegments.filter(s =>
-                s.domain_id === selectedCloneDomainId &&
-                s.segment_name.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-
-            if (filtered.length === 0) {
-                container.innerHTML = '<div class="searchable-option" style="color: #999;">No segments found</div>';
-                return;
+            // Mark previous steps as completed
+            for (let i = 1; i < stepNumber; i++) {
+                document.getElementById(`progressStep${i}`).classList.add('completed');
             }
 
-            container.innerHTML = filtered.map(segment => `
-                <div class="searchable-option ${selectedCloneSegmentId === segment.segment_id ? 'selected' : ''}"
-                     onclick="selectCloneSegment(${segment.segment_id}, '${escapeHtml(segment.segment_name)}')">
-                    ${escapeHtml(segment.segment_name)}
-                </div>
-            `).join('');
+            // Update buttons
+            const backBtn = document.getElementById('backBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const createBtn = document.getElementById('createBtn');
+
+            if (stepNumber === 1) {
+                backBtn.style.display = 'none';
+                nextBtn.style.display = 'block';
+                createBtn.style.display = 'none';
+            } else if (stepNumber === 2) {
+                backBtn.style.display = 'block';
+                nextBtn.style.display = 'block';
+                createBtn.style.display = 'none';
+            } else if (stepNumber === 3) {
+                backBtn.style.display = 'block';
+                nextBtn.style.display = 'none';
+                createBtn.style.display = 'block';
+            }
+
+            currentStep = stepNumber;
         }
 
-        function selectCloneSegment(segmentId, segmentName) {
-            selectedCloneSegmentId = segmentId;
-            document.getElementById('cloneSegmentSearch').value = segmentName;
-            document.getElementById('cloneSegmentOptions').classList.remove('show');
+        function showError(message) {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.textContent = message;
+            alertBox.className = 'alert alert-error show';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function hideAlert() {
+            document.getElementById('alertBox').className = 'alert';
         }
 
         function escapeHtml(text) {
@@ -701,55 +653,9 @@
             return div.innerHTML;
         }
 
-        function showError(message) {
-            const errorDiv = document.getElementById('errorMessage');
-            errorDiv.textContent = message;
-            errorDiv.classList.add('show');
-            setTimeout(() => errorDiv.classList.remove('show'), 5000);
-        }
-
-        function updateProgressBar(step) {
-            document.querySelectorAll('.progress-step').forEach((el, index) => {
-                el.classList.remove('active', 'completed');
-                if (index + 1 < step) {
-                    el.classList.add('completed');
-                } else if (index + 1 === step) {
-                    el.classList.add('active');
-                }
-            });
-        }
-
-        function showStep(step) {
-            document.querySelectorAll('.form-step').forEach(el => el.classList.remove('active'));
-            document.getElementById(`step${step}`).classList.add('active');
-
-            const cancelBtn = document.getElementById('cancelBtn');
-            const backBtn = document.getElementById('backBtn');
-            const nextBtn = document.getElementById('nextBtn');
-            const createBtn = document.getElementById('createBtn');
-
-            if (step === 1) {
-                cancelBtn.style.display = 'block';
-                backBtn.style.display = 'none';
-                nextBtn.style.display = 'block';
-                createBtn.style.display = 'none';
-            } else if (step === 2) {
-                cancelBtn.style.display = 'none';
-                backBtn.style.display = 'block';
-                nextBtn.style.display = 'block';
-                createBtn.style.display = 'none';
-            } else if (step === 3) {
-                cancelBtn.style.display = 'none';
-                backBtn.style.display = 'block';
-                nextBtn.style.display = 'none';
-                createBtn.style.display = 'block';
-            }
-
-            updateProgressBar(step);
-            currentStep = step;
-        }
-
         async function nextStep() {
+            hideAlert();
+
             if (currentStep === 1) {
                 // Validate step 1
                 const domainId = document.getElementById('domainSelect').value;
@@ -765,9 +671,9 @@
                     return;
                 }
 
-                // Check for duplicate segment name
+                // Check if segment name already exists in this domain
                 const duplicate = allSegments.find(s =>
-                    s.domain_id === parseInt(domainId) &&
+                    s.domain_id == domainId &&
                     s.segment_name.toLowerCase() === segmentName.toLowerCase()
                 );
 
@@ -775,6 +681,9 @@
                     showError('A segment with this name already exists in this domain');
                     return;
                 }
+
+                // Check if this is an organic segment
+                isOrganicSegment = segmentName.toLowerCase() === 'organic';
 
                 // Prepare step 2
                 await prepareVariablesStep();
@@ -811,19 +720,55 @@
             warningDiv.style.display = showWarning ? 'block' : 'none';
 
             if (selectedCloneSegmentId) {
-                // Load variables from cloned segment
+                // Load both domain and segment variables from cloned segment
                 try {
-                    const response = await fetch(`/api/segments/${selectedCloneSegmentId}/variables`);
-                    if (!response.ok) throw new Error('Failed to load segment variables');
+                    const clonedSegment = allSegments.find(s => s.segment_id === selectedCloneSegmentId);
+                    const sourceDomainId = clonedSegment.domain_id;
 
-                    const variables = await response.json();
+                    // Fetch domain variables
+                    const domainVarsResponse = await fetch(`/api/domains/${sourceDomainId}/variables`);
+                    if (!domainVarsResponse.ok) throw new Error('Failed to load domain variables');
+                    const domainVariables = await domainVarsResponse.json();
 
-                    if (variables.length === 0) {
+                    // Fetch segment variables
+                    const segmentVarsResponse = await fetch(`/api/segments/${selectedCloneSegmentId}/variables`);
+                    if (!segmentVarsResponse.ok) throw new Error('Failed to load segment variables');
+                    const segmentVariables = await segmentVarsResponse.json();
+
+                    // Combine and display variables
+                    const allVariables = [];
+
+                    // Add domain variables
+                    domainVariables.forEach(v => {
+                        allVariables.push({
+                            name: v.variable_name,
+                            value: v.variable_value,
+                            currentLevel: 'domain',
+                            isDomainVar: true
+                        });
+                    });
+
+                    // Add segment variables
+                    segmentVariables.forEach(v => {
+                        allVariables.push({
+                            name: v.segment_variable_name,
+                            value: v.segment_variable_value,
+                            currentLevel: 'segment',
+                            isDomainVar: false
+                        });
+                    });
+
+                    if (allVariables.length === 0) {
                         container.innerHTML = '<div class="no-variables-message">No variables found in cloned segment. Add variables below.</div>';
                     } else {
                         container.innerHTML = '';
-                        variables.forEach(variable => {
-                            addVariableField(variable.segment_variable_name, variable.segment_variable_value);
+                        allVariables.forEach(variable => {
+                            addVariableFieldWithLevel(
+                                variable.name,
+                                variable.value,
+                                variable.currentLevel,
+                                variable.isDomainVar
+                            );
                         });
                     }
                 } catch (error) {
@@ -832,7 +777,7 @@
                     container.innerHTML = '';
                 }
             } else {
-                // Start with empty container
+                // Start with empty container (no cloning)
                 container.innerHTML = '<div class="no-variables-message">No variables added yet. Click "+ Add Variable" to create one.</div>';
             }
         }
@@ -882,6 +827,116 @@
             container.insertAdjacentHTML('beforeend', fieldHtml);
         }
 
+        function addVariableFieldWithLevel(name = '', value = '', currentLevel = 'segment', isDomainVar = false) {
+            const container = document.getElementById('variablesContainer');
+
+            // Remove "no variables" message if present
+            const noVarsMsg = container.querySelector('.no-variables-message');
+            if (noVarsMsg) {
+                noVarsMsg.remove();
+            }
+
+            variableCounter++;
+
+            // Determine if new level checkboxes should be editable
+            const newLevelEditable = isOrganicSegment;
+            const newLevelDomain = currentLevel === 'domain';
+            const newLevelSegment = currentLevel === 'segment' || !isOrganicSegment;
+
+            const fieldHtml = `
+                <div class="variable-field" id="variable-${variableCounter}">
+                    <div class="variable-field-header">
+                        <span class="variable-field-title">Variable ${variableCounter}</span>
+                        <button type="button" class="btn-remove-variable" onclick="removeVariableField(${variableCounter})">
+                            Remove
+                        </button>
+                    </div>
+                    <div class="variable-field-with-level">
+                        <div class="form-group">
+                            <label class="form-label required">Variable Name</label>
+                            <input
+                                type="text"
+                                class="form-input variable-name"
+                                placeholder="e.g., API_KEY"
+                                value="${escapeHtml(name)}"
+                                required
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Variable Value</label>
+                            <input
+                                type="text"
+                                class="form-input variable-value"
+                                placeholder="Enter value (optional)"
+                                value="${escapeHtml(value)}"
+                            >
+                        </div>
+                        <div class="checkbox-group">
+                            <div class="checkbox-group-header">Model Level</div>
+                            <label class="checkbox-label">
+                                <input type="checkbox" ${currentLevel === 'domain' ? 'checked' : ''} disabled>
+                                Domain
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" ${currentLevel === 'segment' ? 'checked' : ''} disabled>
+                                Segment
+                            </label>
+                        </div>
+                        <div class="checkbox-group">
+                            <div class="checkbox-group-header">New Level</div>
+                            <label class="checkbox-label">
+                                <input
+                                    type="checkbox"
+                                    class="new-level-domain"
+                                    ${newLevelDomain ? 'checked' : ''}
+                                    ${!newLevelEditable ? 'disabled' : ''}
+                                    onchange="handleLevelChange(${variableCounter}, 'domain')"
+                                >
+                                Domain
+                            </label>
+                            <label class="checkbox-label">
+                                <input
+                                    type="checkbox"
+                                    class="new-level-segment"
+                                    ${newLevelSegment ? 'checked' : ''}
+                                    ${!newLevelEditable ? 'disabled' : ''}
+                                    onchange="handleLevelChange(${variableCounter}, 'segment')"
+                                >
+                                Segment
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            container.insertAdjacentHTML('beforeend', fieldHtml);
+        }
+
+        function handleLevelChange(variableId, level) {
+            const field = document.getElementById(`variable-${variableId}`);
+            const domainCheckbox = field.querySelector('.new-level-domain');
+            const segmentCheckbox = field.querySelector('.new-level-segment');
+
+            if (level === 'domain') {
+                if (domainCheckbox.checked) {
+                    segmentCheckbox.checked = false;
+                }
+            } else {
+                if (segmentCheckbox.checked) {
+                    domainCheckbox.checked = false;
+                }
+            }
+
+            // Ensure at least one is checked
+            if (!domainCheckbox.checked && !segmentCheckbox.checked) {
+                if (level === 'domain') {
+                    segmentCheckbox.checked = true;
+                } else {
+                    domainCheckbox.checked = true;
+                }
+            }
+        }
+
         function removeVariableField(id) {
             const field = document.getElementById(`variable-${id}`);
             if (field) {
@@ -900,12 +955,29 @@
             const domainName = allDomains.find(d => d.domain_id == domainId)?.domain_name;
             const segmentName = document.getElementById('segmentName').value;
 
-            const variables = [];
+            const domainVariables = [];
+            const segmentVariables = [];
+
             document.querySelectorAll('.variable-field').forEach(field => {
                 const name = field.querySelector('.variable-name').value.trim();
                 const value = field.querySelector('.variable-value').value.trim();
+
                 if (name) {
-                    variables.push({ name, value });
+                    // Check if this field has level checkboxes
+                    const domainCheckbox = field.querySelector('.new-level-domain');
+                    const segmentCheckbox = field.querySelector('.new-level-segment');
+
+                    if (domainCheckbox && segmentCheckbox) {
+                        // Variable from cloned segment
+                        if (domainCheckbox.checked) {
+                            domainVariables.push({ name, value });
+                        } else {
+                            segmentVariables.push({ name, value });
+                        }
+                    } else {
+                        // Manually added variable (no cloning)
+                        segmentVariables.push({ name, value });
+                    }
                 }
             });
 
@@ -923,12 +995,24 @@
                     ${cloneInfo}
                 </div>
 
-                <h4 style="margin-bottom: 15px;">Segment Variables (${variables.length})</h4>
-                ${variables.length === 0 ?
-                    '<p style="color: var(--text-light); font-style: italic;">No variables defined</p>' :
+                <h4 style="margin-bottom: 15px;">Domain Variables (${domainVariables.length})</h4>
+                ${domainVariables.length === 0 ?
+                    '<p style="color: var(--text-light); font-style: italic; margin-bottom: 25px;">No domain variables defined</p>' :
+                    `<div style="background: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 25px;">
+                        ${domainVariables.map((v, i) => `
+                            <div style="padding: 10px 0; ${i < domainVariables.length - 1 ? 'border-bottom: 1px solid #ddd;' : ''}">
+                                <strong>${escapeHtml(v.name)}:</strong> ${v.value ? escapeHtml(v.value) : '<em style="color: #999;">No value</em>'}
+                            </div>
+                        `).join('')}
+                    </div>`
+                }
+
+                <h4 style="margin-bottom: 15px;">Segment Variables (${segmentVariables.length})</h4>
+                ${segmentVariables.length === 0 ?
+                    '<p style="color: var(--text-light); font-style: italic;">No segment variables defined</p>' :
                     `<div style="background: #f9f9f9; padding: 15px; border-radius: 5px;">
-                        ${variables.map((v, i) => `
-                            <div style="padding: 10px 0; ${i < variables.length - 1 ? 'border-bottom: 1px solid #ddd;' : ''}">
+                        ${segmentVariables.map((v, i) => `
+                            <div style="padding: 10px 0; ${i < segmentVariables.length - 1 ? 'border-bottom: 1px solid #ddd;' : ''}">
                                 <strong>${escapeHtml(v.name)}:</strong> ${v.value ? escapeHtml(v.value) : '<em style="color: #999;">No value</em>'}
                             </div>
                         `).join('')}
@@ -966,16 +1050,43 @@
                 const newSegment = await segmentResponse.json();
 
                 // Create variables
-                const variables = [];
+                const domainVariables = [];
+                const segmentVariables = [];
+
                 document.querySelectorAll('.variable-field').forEach(field => {
                     const name = field.querySelector('.variable-name').value.trim();
                     const value = field.querySelector('.variable-value').value.trim();
+
                     if (name) {
-                        variables.push({ name, value });
+                        const domainCheckbox = field.querySelector('.new-level-domain');
+                        const segmentCheckbox = field.querySelector('.new-level-segment');
+
+                        if (domainCheckbox && segmentCheckbox) {
+                            if (domainCheckbox.checked) {
+                                domainVariables.push({ name, value });
+                            } else {
+                                segmentVariables.push({ name, value });
+                            }
+                        } else {
+                            segmentVariables.push({ name, value });
+                        }
                     }
                 });
 
-                for (const variable of variables) {
+                // Create domain variables
+                for (const variable of domainVariables) {
+                    await fetch(`/api/domains/${domainId}/variables`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            variable_name: variable.name,
+                            variable_value: variable.value || null
+                        })
+                    });
+                }
+
+                // Create segment variables
+                for (const variable of segmentVariables) {
                     await fetch(`/api/segments/${newSegment.segment_id}/variables`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
