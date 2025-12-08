@@ -388,6 +388,12 @@
             border: 1px solid var(--error-color);
         }
 
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffc107;
+        }
+
         @media (max-width: 768px) {
             .form-card {
                 padding: 25px;
@@ -596,6 +602,46 @@
             cloneSegmentSelect.addEventListener('change', (e) => {
                 selectedCloneSegmentId = e.target.value ? parseInt(e.target.value) : null;
             });
+
+            // Add listener for main domain select to check for organic segment
+            const domainSelect = document.getElementById('domainSelect');
+            const segmentNameInput = document.getElementById('segmentName');
+
+            domainSelect.addEventListener('change', (e) => {
+                const selectedDomainId = parseInt(e.target.value);
+
+                if (selectedDomainId) {
+                    // Check if this domain has an organic segment
+                    const hasOrganicSegment = allSegments.some(s =>
+                        s.domain_id === selectedDomainId &&
+                        s.segment_name.toLowerCase() === 'organic'
+                    );
+
+                    if (!hasOrganicSegment) {
+                        // Force organic segment creation
+                        segmentNameInput.value = 'organic';
+                        segmentNameInput.disabled = true;
+                        segmentNameInput.classList.add('form-input');
+
+                        // Show a notice
+                        hideAlert();
+                        const alertBox = document.getElementById('alertBox');
+                        alertBox.textContent = 'This domain does not have an organic segment yet. You must create the organic segment first.';
+                        alertBox.className = 'alert alert-warning show';
+                    } else {
+                        // Allow normal segment creation
+                        segmentNameInput.disabled = false;
+                        if (segmentNameInput.value === 'organic') {
+                            segmentNameInput.value = '';
+                        }
+                        hideAlert();
+                    }
+                } else {
+                    segmentNameInput.disabled = false;
+                    segmentNameInput.value = '';
+                    hideAlert();
+                }
+            });
         }
 
         function showStep(stepNumber) {
@@ -682,8 +728,19 @@
                     return;
                 }
 
-                // Check if this is an organic segment
+                // Determine if this is an organic segment
                 isOrganicSegment = segmentName.toLowerCase() === 'organic';
+
+                // Check if domain requires organic segment first
+                const hasOrganicSegment = allSegments.some(s =>
+                    s.domain_id == domainId &&
+                    s.segment_name.toLowerCase() === 'organic'
+                );
+
+                if (!hasOrganicSegment && !isOrganicSegment) {
+                    showError('This domain does not have an organic segment yet. You must create the organic segment first.');
+                    return;
+                }
 
                 // Prepare step 2
                 await prepareVariablesStep();
