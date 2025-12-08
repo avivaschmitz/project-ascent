@@ -239,7 +239,7 @@
         /* New styles for variable level checkboxes */
         .variable-field-with-level {
             display: grid;
-            grid-template-columns: 1fr 1fr 150px 150px;
+            grid-template-columns: 1fr 1fr 150px;
             gap: 15px;
             align-items: end;
         }
@@ -838,10 +838,13 @@
 
             variableCounter++;
 
-            // Determine if new level checkboxes should be editable
-            const newLevelEditable = isOrganicSegment;
-            const newLevelDomain = currentLevel === 'domain';
-            const newLevelSegment = currentLevel === 'segment' || !isOrganicSegment;
+            // Determine if checkboxes should be editable
+            const isEditable = isOrganicSegment;
+
+            // For organic segments: pre-populate based on current level
+            // For non-organic segments: force to segment level
+            let isDomainChecked = isOrganicSegment ? (currentLevel === 'domain') : false;
+            let isSegmentChecked = isOrganicSegment ? (currentLevel === 'segment') : true;
 
             const fieldHtml = `
                 <div class="variable-field" id="variable-${variableCounter}">
@@ -872,24 +875,13 @@
                             >
                         </div>
                         <div class="checkbox-group">
-                            <div class="checkbox-group-header">Model Level</div>
-                            <label class="checkbox-label">
-                                <input type="checkbox" ${currentLevel === 'domain' ? 'checked' : ''} disabled>
-                                Domain
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="checkbox" ${currentLevel === 'segment' ? 'checked' : ''} disabled>
-                                Segment
-                            </label>
-                        </div>
-                        <div class="checkbox-group">
-                            <div class="checkbox-group-header">New Level</div>
+                            <div class="checkbox-group-header">Variable Level</div>
                             <label class="checkbox-label">
                                 <input
                                     type="checkbox"
-                                    class="new-level-domain"
-                                    ${newLevelDomain ? 'checked' : ''}
-                                    ${!newLevelEditable ? 'disabled' : ''}
+                                    class="level-domain"
+                                    ${isDomainChecked ? 'checked' : ''}
+                                    ${!isEditable ? 'disabled' : ''}
                                     onchange="handleLevelChange(${variableCounter}, 'domain')"
                                 >
                                 Domain
@@ -897,9 +889,9 @@
                             <label class="checkbox-label">
                                 <input
                                     type="checkbox"
-                                    class="new-level-segment"
-                                    ${newLevelSegment ? 'checked' : ''}
-                                    ${!newLevelEditable ? 'disabled' : ''}
+                                    class="level-segment"
+                                    ${isSegmentChecked ? 'checked' : ''}
+                                    ${!isEditable ? 'disabled' : ''}
                                     onchange="handleLevelChange(${variableCounter}, 'segment')"
                                 >
                                 Segment
@@ -914,8 +906,8 @@
 
         function handleLevelChange(variableId, level) {
             const field = document.getElementById(`variable-${variableId}`);
-            const domainCheckbox = field.querySelector('.new-level-domain');
-            const segmentCheckbox = field.querySelector('.new-level-segment');
+            const domainCheckbox = field.querySelector('.level-domain');
+            const segmentCheckbox = field.querySelector('.level-segment');
 
             if (level === 'domain') {
                 if (domainCheckbox.checked) {
@@ -964,8 +956,8 @@
 
                 if (name) {
                     // Check if this field has level checkboxes
-                    const domainCheckbox = field.querySelector('.new-level-domain');
-                    const segmentCheckbox = field.querySelector('.new-level-segment');
+                    const domainCheckbox = field.querySelector('.level-domain');
+                    const segmentCheckbox = field.querySelector('.level-segment');
 
                     if (domainCheckbox && segmentCheckbox) {
                         // Variable from cloned segment
@@ -1058,8 +1050,8 @@
                     const value = field.querySelector('.variable-value').value.trim();
 
                     if (name) {
-                        const domainCheckbox = field.querySelector('.new-level-domain');
-                        const segmentCheckbox = field.querySelector('.new-level-segment');
+                        const domainCheckbox = field.querySelector('.level-domain');
+                        const segmentCheckbox = field.querySelector('.level-segment');
 
                         if (domainCheckbox && segmentCheckbox) {
                             if (domainCheckbox.checked) {
